@@ -11,7 +11,6 @@ from sympy import (
     sympify, Symbol, Expr, SympifyError, count_ops, default_sort_key,
     AtomicExpr, Integer, S
 )
-from sympy.core.assumptions import ManagedProperties
 from sympy.core.sympify import CantSympify
 
 
@@ -89,7 +88,7 @@ class NonsympifiableFunc(CantSympify):
         return self._func(*args, **kwargs)
 
 
-class _EnumSymbsMeta(ManagedProperties):
+class _EnumSymbsMeta(type):
     """The meta class for enumeration symbols.
 
     The primary purpose of this metaclass is to set the concrete singleton
