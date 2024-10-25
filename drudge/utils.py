@@ -89,7 +89,7 @@ class NonsympifiableFunc(CantSympify):
         return self._func(*args, **kwargs)
 
 
-class _EnumSymbsMeta(ManagedProperties):
+class _EnumSymbsMeta(type):
     """The meta class for enumeration symbols.
 
     The primary purpose of this metaclass is to set the concrete singleton
@@ -140,7 +140,7 @@ class EnumSymbs(AtomicExpr, metaclass=_EnumSymbsMeta):
 
     Subclasses can set `_symbs_` inside the class body to be a sequence of
     string pairs.  Then attributes named after the first field of the pairs will
-    be created, with the LaTeX form controlled by the second pair.
+    be created, with the LaTeX form controlled by the second field of the pair.
 
     The resulted values are valid SymPy expressions.  They are ordered according
     to their order in the given enumeration sequence.
@@ -221,6 +221,15 @@ class EnumSymbs(AtomicExpr, metaclass=_EnumSymbsMeta):
         Only the ``is_zero`` property is guaranteed.
         """
         return self.__sub__(other)
+
+    def __getstate__(self):
+        """Retrieve state of object for pickling/serialization"""
+        return {slot: getattr(self, slot) for slot in self.__slots__}
+
+    def __setstate__(self, state):
+        """Create state of object for deserialization"""
+        for key, value in state.items():
+            setattr(self, key, value)
 
     def sort_key(self, order=None):
         return (
