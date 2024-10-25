@@ -19,7 +19,7 @@ from drudge import (
 from conftest import skip_in_spark
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture
 def free_alg(spark_ctx):
     """Initialize the environment for a free algebra."""
 
