@@ -347,13 +347,13 @@ class DrsEnv(dict):
         if key.startswith('__') and key.endswith('__'):
             raise KeyError(key)
 
-        for entry, excl in self._path:
-            if hasattr(entry, key) and key not in excl:
-                resolv = getattr(entry, key)
+        for entry, excl in self._path: #For every module/variable in the environment
+            if hasattr(entry, key) and key not in excl: # check if our key is defined in it
+                resolv = getattr(entry, key) # if found, pull it from the environment
                 break
             else:
                 continue
-        else:
+        else: # if we didn't find earlier and break, default to defining it instead
             resolv = DrsSymbol(self._drudge, key)
         return resolv
 
