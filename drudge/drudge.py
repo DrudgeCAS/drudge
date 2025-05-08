@@ -3490,7 +3490,7 @@ def _union(orig, new):
 
 
 def _inters(orig, new):
-    """Make the interaction of two sets.
+    """Make the intersection of two sets.
 
     If the original is a None value, a new set will be created with elements
     from the new set.  When both operands are None, the result is None.
