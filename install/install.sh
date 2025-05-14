@@ -8,7 +8,14 @@ ENV_NAME=drudge_testing
 # Conda env creation
 echo "Creating Conda Environment"
 conda create --name $ENV_NAME python=3.9 -y
-conda install --name $ENV_NAME --file env.txt -y
+
+
+if [[ "$(uname -m)" == "x86_64" ]]; then
+    conda install --name $ENV_NAME --file env_x86.txt -y
+else
+    echo "CONDA ENVIRONMENT FOR arm64 NOT YET VERIFIED"
+    conda install --name $ENV_NAME --file env_arm.txt -y
+fi
 
 conda init
 conda activate $ENV_NAME
@@ -16,7 +23,7 @@ conda activate $ENV_NAME
 
 # Get Dummy Spark
 echo "Getting Dummy Spark"
-git clone https://github.com/DrudgeCAS/DummyRDD ./dummyRDD/
+git clone https://github.com/DrudgeCAS/DummyRDD ../dummyRDD/
 
 # Clone repository
 #echo "Cloning Repositories"
@@ -44,6 +51,7 @@ cp build/lib.linux-x86_64-cpython-39/drudge/canonpy.cpython-39-x86_64-linux-gnu.
 echo "Moving Dummy Spark"
 cp -r ../dummyRDD/dummy_spark .
 
+rm -rf ../dummyRDD/
 
 echo "DONE!!!"
 echo  'Assuming you ran this with '\''source'\'' you'\''re now inside the drudge folder. To get started with development simply type '\''code .'\'' and you'\''ll open a vscode window at this location'

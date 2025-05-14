@@ -1,0 +1,6 @@
+IPython==8.15.0
+sympy==1.13.2
+pyspark==3.4.1
+jinja2
+pytest
+coveralls

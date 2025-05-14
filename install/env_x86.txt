@@ -1,0 +1,8 @@
+conda-forge::gcc==14.2.0
+conda-forge::gxx_linux-64==14.2.0
+IPython==8.15.0
+sympy==1.13.2
+pyspark==3.4.1
+jinja2
+pytest
+coveralls
