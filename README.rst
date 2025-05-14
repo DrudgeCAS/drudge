@@ -1,8 +1,8 @@
-.. image:: https://circleci.com/gh/tschijnmo/drudge.svg?style=shield
-    :target: https://circleci.com/gh/tschijnmo/drudge
+.. image:: https://circleci.com/gh/DrudgeCAS/drudge.svg?style=shield
+    :target: https://circleci.com/gh/DrudgeCAS/drudge
 
-.. image:: https://travis-ci.org/tschijnmo/drudge.svg?branch=master
-    :target: https://travis-ci.org/tschijnmo/drudge
+.. image:: https://travis-ci.org/DrudgeCAS/drudge.svg?branch=master
+    :target: https://travis-ci.org/DrudgeCAS/drudge
 
 .. image:: https://coveralls.io/repos/github/tschijnmo/drudge/badge.svg?branch=master
     :target: https://coveralls.io/github/tschijnmo/drudge?branch=master
@@ -58,6 +58,14 @@ with heavy dependence on tensor contraction and sums of tensor contractions,
 substantial optimization could be given.
 
 
+Documentation/Installation
+------
+Documentation Pages are located at the github pages `documentation`_ site. 
+Installation instructions can be seen at `installation`_.
+
+
+
+
 Drudge is developed by Jinmo Zhao and Prof Gustavo E Scuseria at Rice
 University, and was supported as part of the Center for the Computational Design
 of Functional Layered Materials, an Energy Frontier Research Center funded by
@@ -71,3 +79,5 @@ Award DE-SC0012575.
 .. _Clifford algebras: https://en.wikipedia.org/wiki/Clifford_algebra
 .. _su(2) algebra: https://en.m.wikipedia.org/wiki/Special_unitary_group#Lie_Algebra
 .. _gristmill: https://github.com/tschijnmo/gristmill
+.. _documentation: https://drudgecas.github.io/drudge/
+.. _installation: https://drudgecas.github.io/drudge/install.html
