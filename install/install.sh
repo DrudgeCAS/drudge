@@ -1,15 +1,18 @@
 #!/bin/bash
 # 
 #    INSTRUCTIONS:
+#      0) Check the ENV_NAME doesn't collide with previously defined environments
+#         - List current environments with `conda env list`
 #      1) Run this With `source install_in.sh`
 # 
-ENV_NAME=drudge_testing
+
+ENV_NAME=drudge
 
 # Conda env creation
 echo "Creating Conda Environment"
 conda create --name $ENV_NAME python=3.9 -y
 
-
+# Choose the correct conda package list
 if [[ "$(uname -m)" == "x86_64" ]]; then
     conda install --name $ENV_NAME --file env_x86.txt -y
 else
@@ -17,18 +20,14 @@ else
     conda install --name $ENV_NAME --file env_arm.txt -y
 fi
 
+# Force Conda into Base, then into created environment
+echo "Initializing Conda"
 conda init
 conda activate $ENV_NAME
 
 
-# Get Dummy Spark
-echo "Getting Dummy Spark"
-git clone https://github.com/DrudgeCAS/DummyRDD ../dummyRDD/
-
 # Clone repository
-#echo "Cloning Repositories"
-#git clone --recurse-submodules https://github.com/DrudgeCAS/drudge ./drudge/
-#cd drudge
+echo "Cloning Submodules"
 git submodule update --init --recursive
 
 
@@ -48,11 +47,15 @@ cp build/lib.linux-x86_64-cpython-39/drudge/wickcore.cpython-39-x86_64-linux-gnu
 cp build/lib.linux-x86_64-cpython-39/drudge/canonpy.cpython-39-x86_64-linux-gnu.so drudge/
 
 # Add Dummy Spark
+echo "Getting Dummy Spark"
+git clone https://github.com/DrudgeCAS/DummyRDD ../dummyRDD/
+
 echo "Moving Dummy Spark"
 cp -r ../dummyRDD/dummy_spark .
 
+# Remove unneeded folder
 rm -rf ../dummyRDD/
 
-echo "DONE!!!"
-echo  'Assuming you ran this with '\''source'\'' you'\''re now inside the drudge folder. To get started with development simply type '\''code .'\'' and you'\''ll open a vscode window at this location'
+echo "Installation Complete!"
+echo 'Assuming you ran this with '\''source'\'' you'\''re now inside the drudge folder. To get started with development simply type '\''code .'\'' and you'\''ll open a vscode window at this location'
 
