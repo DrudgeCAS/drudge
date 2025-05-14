@@ -14,10 +14,10 @@ conda create --name $ENV_NAME python=3.9 -y
 
 # Choose the correct conda package list
 if [[ "$(uname -m)" == "x86_64" ]]; then
-    conda install --name $ENV_NAME --file env_x86.txt -y
+    conda install --name $ENV_NAME --file install/env_x86.txt -y
 else
     echo "CONDA ENVIRONMENT FOR arm64 NOT YET VERIFIED"
-    conda install --name $ENV_NAME --file env_arm.txt -y
+    conda install --name $ENV_NAME --file install/env_arm.txt -y
 fi
 
 # Force Conda into Base, then into created environment
