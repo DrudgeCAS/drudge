@@ -24,6 +24,7 @@ if [[ "$(uname -m)" == "x86_64" ]]; then
 else
     # echo "CONDA ENVIRONMENT FOR arm64 NOT YET VERIFIED"
     # conda install --name $ENV_NAME --file install/env_arm.txt -y
+    echo ""
 fi
 
 conda install IPython==8.15.0 -y
