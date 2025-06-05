@@ -56,9 +56,9 @@ python3 setup.py build
 python3 setup.py install
 
 # Copy the cpp files where needed
-echo "Moving cpp files"
-cp build/lib.linux-x86_64-cpython-39/drudge/wickcore.cpython-39-x86_64-linux-gnu.so drudge/
-cp build/lib.linux-x86_64-cpython-39/drudge/canonpy.cpython-39-x86_64-linux-gnu.so drudge/
+# echo "Moving cpp files"
+# cp build/lib.linux-x86_64-cpython-39/drudge/wickcore.cpython-39-x86_64-linux-gnu.so drudge/
+# cp build/lib.linux-x86_64-cpython-39/drudge/canonpy.cpython-39-x86_64-linux-gnu.so drudge/
 
 # Add Dummy Spark
 echo "Getting Dummy Spark"
@@ -71,5 +71,9 @@ cp -r ../dummyRDD/dummy_spark .
 rm -rf ../dummyRDD/
 
 echo "Installation Complete!"
-echo 'Assuming you ran this with '\''source'\'' you'\''re now inside the drudge folder. To get started with development simply type '\''code .'\'' and you'\''ll open a vscode window at this location'
-
+echo "Assuming you ran this with '\''source'\'' you'\''re now inside the drudge folder. To get started using drudge you'll want to do 3 things after opening your chosen IDE to your code location:"
+echo "   1) Ensure your Python Interpreter is set to the Conda Environment Python we just created"
+echo "   2) Ensure this conda environment is activated with '\''conda activate drudge '\'' in the terminal which runs your program"
+echo "   3) Set your pythonpath to the build directory of this repository like '\''export PYTHONPATH=\$PYTHONPATH:/path/to/drudge/build'\''"
+echo " "
+echo "Have Fun!"
