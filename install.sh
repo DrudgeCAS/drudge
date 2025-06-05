@@ -11,14 +11,24 @@ ENV_NAME=drudge
 # Conda env creation
 echo "Creating Conda Environment"
 conda create --name $ENV_NAME python=3.9 -y
+conda activate $ENV_NAME
 
 # Choose the correct conda package list
 if [[ "$(uname -m)" == "x86_64" ]]; then
-    conda install --name $ENV_NAME --file install/env_x86.txt -y
+    # conda install --name $ENV_NAME --file install/env_x86.txt -y
+    conda install conda-forge::gcc==14.2.0 -y
+    conda install conda-forge::gxx_linux-64==14.2.0 -y
 else
-    echo "CONDA ENVIRONMENT FOR arm64 NOT YET VERIFIED"
-    conda install --name $ENV_NAME --file install/env_arm.txt -y
+    # echo "CONDA ENVIRONMENT FOR arm64 NOT YET VERIFIED"
+    # conda install --name $ENV_NAME --file install/env_arm.txt -y
 fi
+
+conda install IPython==8.15.0 -y
+conda install sympy==1.13.2 -y
+conda install pyspark==3.4.1 -y
+conda install jinja2 -y 
+conda install pytest -y
+conda install coveralls -y
 
 # Force Conda into Base, then into created environment
 echo "Initializing Conda"
