@@ -8,6 +8,9 @@
 
 ENV_NAME=drudge
 
+# Ensure latest conda installed 
+conda update -n base -c defaults conda
+
 # Conda env creation
 echo "Creating Conda Environment"
 conda create --name $ENV_NAME python=3.9 -y
