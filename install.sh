@@ -9,7 +9,7 @@
 ENV_NAME=drudge
 
 # Ensure latest conda installed 
-conda update -n base -c defaults conda
+conda update -n base -c defaults conda -y
 
 # Conda env creation
 echo "Creating Conda Environment"
