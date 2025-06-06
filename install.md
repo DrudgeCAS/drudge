@@ -94,6 +94,7 @@ conda activate $ENV_NAME
     - `arm64 -> env_arm.txt`
     - `x86_64 -> env_x86.txt`
     - If you get something other than `arm64` or `x86_64` feel free to try to install either file anyway and let us know if it doesn't work 
+  - (UPDATE) Conda has been having issues lately so if you encounter problems ensure you're on the latest conda version with `conda update -n base -c defaults conda` and conda install the packages one at a time. Sometimes attempting to install multiple packages in a single transaction breaks conda.
 
 ### Clone Submodules
 ```
@@ -103,17 +104,18 @@ This installs necessary dependencies` github repositories
 
 ### Set Environment Variables and Build
 ```
-export PYTHONPATH=$(pwd)
-export DUMMY_SPARK=1
-
 python3 setup.py build
 python3 setup.py install
+
+export PYTHONPATH=/PATH/TO/drudge/build
+export DUMMY_SPARK=1
 ```
-The first two lines set necessary environment variables, so python knows where to find our python imports, and to utilize local dummy_spark instead of apache spark (which isn't quite working on python3.9 yet).
 
-The next two lines build the c++ files into cpython files which can be imported and executed by our python program. By default python cannot import or utilize c++ files, this step is necessary for a fully functioning drudge
+The first two lines build the c++ files into cpython files which can be imported and executed by our python program. By default python cannot import or utilize c++ files, this step is necessary for a fully functioning drudge.
 
-### Copy the built cpython files
+The next two lines set necessary environment variables, so python knows where to find our python imports, and to utilize local dummy_spark instead of apache spark (which isn't quite working on python3.9 yet). The PYTHONPATH should be set to the build directory inside the drudge repository, this build directory is created by the `setup.py` `build` and `install` commands in the previous lines.
+
+<!-- ### Copy the built cpython files
 ```
 cp build/lib.linux-x86_64-cpython-39/drudge/wickcore.cpython-39-x86_64-linux-gnu.so drudge/
 cp build/lib.linux-x86_64-cpython-39/drudge/canonpy.cpython-39-x86_64-linux-gnu.so drudge/
@@ -126,7 +128,7 @@ These are _**EXAMPLE**_ lines. Yours might look different. What you're looking f
 
 Copy both these files into the `drudge/drudge` folder that contains the `canonpy.cpp` and `wickcore.cpp` files.
 
-This step is the reason that the script is impossible to generalize across operating systems. I can see little rhyme or reason for the way these files/folders get named so predicting them in code appears impossible.
+This step is the reason that the script is impossible to generalize across operating systems. I can see little rhyme or reason for the way these files/folders get named so predicting them in code appears impossible. -->
 
 ### Get Dummy Spark
 Ensure you're in the base drudge directory and
@@ -136,17 +138,19 @@ cp -r ../dummyRDD/dummy_spark .
 rm -rf ../dummyRDD/
 ```
 
-These lines:
+These code lines do the following:
   1) Clone the repository that contains dummy_spark just outside of the drudge directory
   2) Copies the relevant `dummy_spark/` folder into the drudge base directory
   3) Deletes the now unnecessary `dummyRDD` repository
 
 ### That's it!
-   It should be completely installed now. If you now run `code .` from the drudge base directory you'll open a vscode window with the conda environment activated, the environment variables set, and the correct interpreter selected.
+   It should be completely installed now. You can open your desired location in your desired IDE but you must ensure 3 things are true before running the code. 
 
-   If you should close this vscode window and want to open it again you'll need to do a couple steps
+   1) The python interpreter used by the IDE is set to the python executable inside your conda environment. Likely at something like `~/miniconda3/envs/drudge/bin/python`. This tells the IDE which python executable to use to run all your code.
+   2) The conda environment must be activated by whatever is running the code. In VSCode there's a terminal which shows the debug or run commands when you click debug or run. This terminal is where the conda environment must be activated. This tells the IDE where to find all the dependencies/packages required for drudge to run
+   3) PYTHONPATH environment variable must be set to the `build` folder in your drudge repository. This build folder is created when you run the `setup.py` steps. This tells the IDE where to find all the drudge files that you'll want to import.
 
-## Utilizing VSCode
+## VSCode Specific Instructions
 There are some steps required for drudge to function in its current state in vscode. You should treat this as a checklist every time you open the project.
 
 ### 1) Correct Interpreter
