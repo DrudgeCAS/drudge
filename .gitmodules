@@ -1,3 +1,6 @@
 [submodule "deps/libcanon"]
 	path = deps/libcanon
 	url = https://github.com/tschijnmo/libcanon.git
+[submodule "deps/DummyRDD"]
+	path = deps/DummyRDD
+	url = https://github.com/DrudgeCAS/DummyRDD
