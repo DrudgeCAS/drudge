@@ -143,10 +143,10 @@ These code lines do the following:
   2) Copies the relevant `dummy_spark/` folder into the drudge base directory
   3) Deletes the now unnecessary `dummyRDD` repository
 
-### That's it!
+### Running It
    It should be completely installed now. You can open your desired location in your desired IDE but you must ensure 3 things are true before running the code. 
 
-   1) The python interpreter used by the IDE is set to the python executable inside your conda environment. Likely at something like `~/miniconda3/envs/drudge/bin/python`. This tells the IDE which python executable to use to run all your code.
+   1) The python interpreter used by the IDE must be set to the python executable inside your conda environment, likely at something like `~/miniconda3/envs/drudge/bin/python`. This tells the IDE which python executable to use to run all your code.
    2) The conda environment must be activated by whatever is running the code. In VSCode there's a terminal which shows the debug or run commands when you click debug or run. This terminal is where the conda environment must be activated. This tells the IDE where to find all the dependencies/packages required for drudge to run
    3) PYTHONPATH environment variable must be set to the `build` folder in your drudge repository. This build folder is created when you run the `setup.py` steps. This tells the IDE where to find all the drudge files that you'll want to import.
 
