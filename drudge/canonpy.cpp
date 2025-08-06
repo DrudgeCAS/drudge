@@ -317,7 +317,7 @@ static PyObject* perm_repr(Perm_object* self)
     // This is used for empty or non-empty permutation.
     repr += L')';
 
-    return PyUnicode_FromUnicode(repr.data(), repr.size());
+    return PyUnicode_FromWideChar(repr.data(), repr.size());
 }
 
 /** Creates a new Perm object.
