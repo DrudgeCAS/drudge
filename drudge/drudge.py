@@ -59,22 +59,10 @@ def _safe_simplify(expr):
     """Safely simplify expression avoiding doit() on symbolic quantum objects.
     
     If the expression contains symbolic quantum objects, return it unchanged.
-    For Sum expressions containing KroneckerDelta, try doit() first, then simplify.
     Otherwise, apply normal SymPy simplification.
     """
     if _has_symbolic_quantum_objects(expr):
         return expr
-    
-    # Special handling for Sum expressions with KroneckerDelta
-    from sympy import Sum, KroneckerDelta
-    if isinstance(expr, Sum) and expr.has(KroneckerDelta):
-        try:
-            # Try doit() first for sums with KroneckerDelta
-            result = expr.doit()
-            if result != expr:
-                return result.simplify() if not _has_symbolic_quantum_objects(result) else result
-        except Exception:
-            pass
     
     return expr.simplify()
 
