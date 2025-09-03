@@ -30,7 +30,7 @@ jobs:
 
     - name: Install coverage tools
       run: |
-        uv add --dev coverage coveralls
+        uv pip install coverage coveralls
 
     - name: Run tests with coverage
       env:
