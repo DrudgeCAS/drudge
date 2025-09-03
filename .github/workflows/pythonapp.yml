@@ -28,8 +28,17 @@ jobs:
         uv sync --locked --extra dev
         uv build
 
-    - name: Run tests
+    - name: Install coverage tools
+      run: |
+        uv add --dev coverage coveralls
+
+    - name: Run tests with coverage
       env:
         DUMMY_SPARK: 1
-      run: uv run pytest tests
+      run: uv run coverage run --source=drudge -m pytest tests
+
+    - name: Upload coverage to Coveralls
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: uv run coveralls --service=github
  
