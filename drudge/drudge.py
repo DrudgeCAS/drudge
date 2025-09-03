@@ -36,6 +36,49 @@ from .utils import (
 _DECR_SUFFIX = '_InternalProxy'
 
 
+def _has_symbolic_quantum_objects(expr):
+    """Check if expression contains symbolic quantum objects that cannot be simplified with doit().
+    
+    Returns True if the expression contains quantum physics objects like CG, Wigner3j, Wigner6j
+    that have is_symbolic=True attribute.
+    """
+    # Import quantum physics classes to check against
+    from sympy.physics.quantum.cg import CG, Wigner3j, Wigner6j
+    
+    # Check if this is a quantum physics object with is_symbolic=True
+    if isinstance(expr, (CG, Wigner3j, Wigner6j)) and hasattr(expr, 'is_symbolic') and expr.is_symbolic:
+        return True
+    
+    if hasattr(expr, 'args'):
+        return any(_has_symbolic_quantum_objects(arg) for arg in expr.args)
+    
+    return False
+
+
+def _safe_simplify(expr):
+    """Safely simplify expression avoiding doit() on symbolic quantum objects.
+    
+    If the expression contains symbolic quantum objects, return it unchanged.
+    For Sum expressions containing KroneckerDelta, try doit() first, then simplify.
+    Otherwise, apply normal SymPy simplification.
+    """
+    if _has_symbolic_quantum_objects(expr):
+        return expr
+    
+    # Special handling for Sum expressions with KroneckerDelta
+    from sympy import Sum, KroneckerDelta
+    if isinstance(expr, Sum) and expr.has(KroneckerDelta):
+        try:
+            # Try doit() first for sums with KroneckerDelta
+            result = expr.doit()
+            if result != expr:
+                return result.simplify() if not _has_symbolic_quantum_objects(result) else result
+        except Exception:
+            pass
+    
+    return expr.simplify()
+
+
 class Tensor:
     """The main tensor class.
 
@@ -453,7 +496,7 @@ class Tensor:
         """Get the terms with amplitude simplified by SymPy."""
 
         simplified_terms = terms.map(
-            lambda term: term.map(lambda x: x.simplify(), skip_vecs=True)
+            lambda term: term.map(lambda x: _safe_simplify(x), skip_vecs=True)
         ).filter(_is_nonzero)
 
         return simplified_terms
@@ -3624,5 +3667,5 @@ def _simplify_symbolic_sum(expr, **_):
     assert len(expr.args) == 2
 
     return eval_sum_symbolic(
-        expr.args[0].simplify(), expr.args[1]
+        _safe_simplify(expr.args[0]), expr.args[1]
     )

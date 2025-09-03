@@ -208,7 +208,7 @@ def test_wigner3j_sum_to_wigner6j(nuclear: NuclearBogoliubovDrudge):
             ((-1) ** (j3 - m3) / (2 * j3 + 1))
             * KroneckerDelta(j3, jprm3) * KroneckerDelta(m3, mprm3)
             * Wigner6j(j1, j2, j3, j4, j5, j6)
-    ).expand().simplify()
+    ).expand()
 
     # For performance reason, just test a random arrangement of the summations.
     random.shuffle(sums)
