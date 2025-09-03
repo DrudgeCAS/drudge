@@ -131,10 +131,10 @@ static Simple_perm make_perm_from_args(PyObject* args, PyObject* kwargs)
     PyObject* pre_images;
     char acc = 0;
 
-    static char* kwlist[] = { "pre_images", "acc", NULL };
+    static const char* kwlist[] = { "pre_images", "acc", nullptr };
 
     auto args_stat = PyArg_ParseTupleAndKeywords(
-        args, kwargs, "O|b", kwlist, &pre_images, &acc);
+        args, kwargs, "O|b", const_cast<char**>(kwlist), &pre_images, &acc);
 
     if (!args_stat)
         throw err;
