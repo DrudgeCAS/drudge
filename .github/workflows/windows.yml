@@ -1,6 +1,6 @@
 name: Windows
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
   build:
@@ -41,6 +41,15 @@ jobs:
         uv build
         echo "Package build completed successfully"
 
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: windows-build
+        path: |
+          .venv/
+          dist/
+        retention-days: 1
+
   test:
     name: Windows Tests
     runs-on: windows-latest
@@ -70,9 +79,10 @@ jobs:
         python --version
         python -c "import sys; print('Platform:', sys.platform)"
 
-    - name: Install the project
-      run: |
-        uv sync --locked --extra dev
+    - name: Download build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: windows-build
 
     - name: Install coverage tools
       run: |
