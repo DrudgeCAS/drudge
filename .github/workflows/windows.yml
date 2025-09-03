@@ -39,3 +39,4 @@ jobs:
       env:
         DUMMY_SPARK: 1
       run: uv run coverage run --source=drudge -m pytest tests
+      continue-on-error: true

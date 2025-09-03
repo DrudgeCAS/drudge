@@ -23,8 +23,7 @@ classifiers = [
   'Topic :: Scientific/Engineering :: Mathematics'
 ]
 readme = "README.md"
-license = "MIT"
-license-files = ["LICENSE"]
+license = {text = "MIT"}
 authors = [
   { name = "Jinmo Zhao" },
   { name = "Gustavo E. Scuseria" }

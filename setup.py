@@ -1,15 +1,23 @@
 """Setup script for drudge."""
 
 import os.path
+import sys
 
 from setuptools import setup, find_packages, Extension
 
 PROJ_ROOT = os.path.dirname(os.path.abspath(__file__))
 INCLUDE_DIRS = [
-    '/'.join([PROJ_ROOT, i])
+    os.path.join(PROJ_ROOT, i)
     for i in ['deps/libcanon/include', 'drudge']
 ]
-COMPILE_FLAGS = ['-std=c++14']
+
+# Platform-specific compiler flags
+if sys.platform == "win32":
+    # MSVC compiler flags
+    COMPILE_FLAGS = ['/std:c++14']
+else:
+    # GCC/Clang compiler flags  
+    COMPILE_FLAGS = ['-std=c++14']
 
 canonpy = Extension(
     'drudge.canonpy',
