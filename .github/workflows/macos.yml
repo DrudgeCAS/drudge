@@ -1,11 +1,11 @@
-name: Python application
+name: macOS
 
 on: [push, pull_request]
 
 jobs:
   build-and-test:
-    name: Drudge
-    runs-on: ubuntu-latest
+    name: macOS Tests
+    runs-on: macos-latest
 
     steps:
     - uses: actions/checkout@v5
@@ -36,9 +36,3 @@ jobs:
       env:
         DUMMY_SPARK: 1
       run: uv run coverage run --source=drudge -m pytest tests
-
-    - name: Upload coverage to Coveralls
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: uv run coveralls --service=github
- 
