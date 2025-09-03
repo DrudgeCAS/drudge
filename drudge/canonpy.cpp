@@ -131,7 +131,7 @@ static Simple_perm make_perm_from_args(PyObject* args, PyObject* kwargs)
     PyObject* pre_images;
     char acc = 0;
 
-    static char* kwlist[] = { const_cast<char*>("pre_images"), const_cast<char*>("acc"), NULL };
+    static char* kwlist[] = { "pre_images", "acc", NULL };
 
     auto args_stat = PyArg_ParseTupleAndKeywords(
         args, kwargs, "O|b", kwlist, &pre_images, &acc);
@@ -744,7 +744,7 @@ static Transv_ptr build_sims_transv_from_args(PyObject* args, PyObject* kwargs)
 {
     PyObject* input;
 
-    static char* kwlist[] = { const_cast<char*>("gens"), NULL };
+    static char* kwlist[] = { "gens", NULL };
 
     auto args_stat
         = PyArg_ParseTupleAndKeywords(args, kwargs, "O", kwlist, &input);
@@ -1188,7 +1188,7 @@ static PyObject* canon_eldag_func(
 
     constexpr int err_code = 1;
 
-    static char* kwlist[] = { const_cast<char*>("edges"), const_cast<char*>("ia"), const_cast<char*>("symms"), const_cast<char*>("colours"), NULL };
+    static char* kwlist[] = { "edges", "ia", "symms", "colours", NULL };
 
     auto arg_stat = PyArg_ParseTupleAndKeywords(args, keywds, "OOOO", kwlist,
         &edges_arg, &ia_arg, &symms_arg, &colours_arg);
