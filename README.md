@@ -1,7 +1,7 @@
 [![Ubuntu](https://github.com/DrudgeCAS/drudge/workflows/Ubuntu/badge.svg)](https://github.com/DrudgeCAS/drudge/actions/workflows/ubuntu.yml)
 [![macOS](https://github.com/DrudgeCAS/drudge/workflows/macOS/badge.svg)](https://github.com/DrudgeCAS/drudge/actions/workflows/macos.yml)
 [![Windows](https://github.com/DrudgeCAS/drudge/workflows/Windows/badge.svg)](https://github.com/DrudgeCAS/drudge/actions/workflows/windows.yml)
-[![Coveralls](https://coveralls.io/repos/github/DrudgeCAS/drudge/badge.svg)](https://coveralls.io/github/DrudgeCAS/drudge)
+[![Coveralls](https://coveralls.io/repos/github/DrudgeCAS/drudge/badge.svg?branch=master)](https://coveralls.io/github/DrudgeCAS/drudge?branch=master)
 
 <h1 align="center">Drudge</h1>
 

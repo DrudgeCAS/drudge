@@ -14,7 +14,7 @@ INCLUDE_DIRS = [
 # Platform-specific compiler flags
 if sys.platform == "win32":
     # MSVC compiler flags
-    COMPILE_FLAGS = ['/std:c++14']
+    COMPILE_FLAGS = ['/std:c++14', '/EHsc', '/bigobj']
 else:
     # GCC/Clang compiler flags  
     COMPILE_FLAGS = ['-std=c++14']
