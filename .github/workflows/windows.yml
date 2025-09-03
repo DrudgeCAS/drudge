@@ -26,10 +26,20 @@ jobs:
     - name: Install uv
       uses: astral-sh/setup-uv@v6
 
+    - name: Check Python and environment
+      run: |
+        python --version
+        python -c "import sys; print('Platform:', sys.platform)"
+        echo "MSVC environment variables:"
+        echo "INCLUDE: $env:INCLUDE"
+        echo "LIB: $env:LIB"
+
     - name: Install the project
       run: |
         uv sync --locked --extra dev
+        echo "Dependencies installed successfully"
         uv build
+        echo "Package build completed successfully"
 
   test:
     name: Windows Tests
@@ -54,6 +64,11 @@ jobs:
 
     - name: Install uv
       uses: astral-sh/setup-uv@v6
+
+    - name: Check Python and environment
+      run: |
+        python --version
+        python -c "import sys; print('Platform:', sys.platform)"
 
     - name: Install the project
       run: |
