@@ -42,15 +42,19 @@ def _has_symbolic_quantum_objects(expr):
     Returns True if the expression contains quantum physics objects like CG, Wigner3j, Wigner6j
     that have is_symbolic=True attribute.
     """
-    # Import quantum physics classes to check against
-    from sympy.physics.quantum.cg import CG, Wigner3j, Wigner6j
-    
-    # Check if this is a quantum physics object with is_symbolic=True
-    if isinstance(expr, (CG, Wigner3j, Wigner6j)) and hasattr(expr, 'is_symbolic') and expr.is_symbolic:
-        return True
-    
-    if hasattr(expr, 'args'):
-        return any(_has_symbolic_quantum_objects(arg) for arg in expr.args)
+    try:
+        # Import quantum physics classes to check against
+        from sympy.physics.quantum.cg import CG, Wigner3j, Wigner6j
+        
+        # Check if this is a quantum physics object with is_symbolic=True
+        if isinstance(expr, (CG, Wigner3j, Wigner6j)) and hasattr(expr, 'is_symbolic') and expr.is_symbolic:
+            return True
+        
+        if hasattr(expr, 'args'):
+            return any(_has_symbolic_quantum_objects(arg) for arg in expr.args)
+    except (ImportError, AttributeError):
+        # If there are any import issues, be conservative and return False
+        pass
     
     return False
 
