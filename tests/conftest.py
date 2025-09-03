@@ -11,9 +11,13 @@ def spark_ctx():
     """A simple spark context."""
 
     if IF_DUMMY_SPARK:
-        from dummy_spark import SparkConf, SparkContext
-        conf = SparkConf()
-        ctx = SparkContext(master='', conf=conf)
+        try:
+            from dummy_spark import SparkConf, SparkContext
+            conf = SparkConf()
+            ctx = SparkContext(master='', conf=conf)
+        except ImportError:
+            # Fallback to None if dummy_spark is not available
+            return None
     else:
         from pyspark import SparkConf, SparkContext
         conf = SparkConf().setMaster('local[2]').setAppName('drudge-unittest')
