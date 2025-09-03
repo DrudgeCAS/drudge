@@ -52,13 +52,24 @@ class DrsSymbol(_Definable, Symbol):
 
     def __new__(cls, drudge, name):
         """Create a symbol object."""
-        symb = super().__new__(cls, name)
+        # Handle the case where drudge is None during unpickling
+        if drudge is None:
+            # During unpickling, we just need the name for __new__
+            symb = super().__new__(cls, name)
+        else:
+            symb = super().__new__(cls, name)
         return symb
 
     def __init__(self, drudge, name):
         """Initialize the symbol object."""
-        self._drudge = drudge
-        self._orig = Symbol(name)
+        # During unpickling, drudge might be None, __setstate__ will fix it
+        if drudge is not None:
+            self._drudge = drudge
+            self._orig = Symbol(name)
+        else:
+            # This will be set properly in __setstate__
+            self._drudge = None
+            self._orig = Symbol(name)
 
     def __eq__(self, other):
         """Make equality comparison."""
@@ -144,7 +155,10 @@ class DrsSymbol(_Definable, Symbol):
         from .drudge import current_drudge
         if current_drudge is None:
             raise ValueError(_PICKLE_ENV_ERR)
-        self.__init__(current_drudge, self.name)
+        self._drudge = current_drudge
+        # _orig should already be set from __init__, but make sure
+        if not hasattr(self, '_orig'):
+            self._orig = Symbol(self.name)
 
     # Better error reporting.
     def __getattr__(self, item):
