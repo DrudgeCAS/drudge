@@ -222,7 +222,7 @@ static Simple_perm make_perm_from_args(PyObject* args, PyObject* kwargs)
 // -------------------
 //
 
-const static char* perm_getnewargs_doc
+static const char* perm_getnewargs_doc
     = "Get the arguments for new to construct the Perm.";
 
 static PyObject* perm_getnewargs(Perm_object* self)
@@ -744,10 +744,10 @@ static Transv_ptr build_sims_transv_from_args(PyObject* args, PyObject* kwargs)
 {
     PyObject* input;
 
-    static char* kwlist[] = { "gens", NULL };
+    static const char* kwlist[] = { "gens", NULL };
 
     auto args_stat
-        = PyArg_ParseTupleAndKeywords(args, kwargs, "O", kwlist, &input);
+        = PyArg_ParseTupleAndKeywords(args, kwargs, "O", const_cast<char**>(kwlist), &input);
     if (!args_stat) {
         return nullptr;
     }
@@ -813,7 +813,7 @@ static Transv_ptr build_sims_transv_from_args(PyObject* args, PyObject* kwargs)
 // -------------------
 //
 
-const static char* group_getnewargs_doc
+static const char* group_getnewargs_doc
     = "Get the arguments for new to construct the Group.";
 
 static PyObject* group_getnewargs(Group_object* self)
@@ -1188,9 +1188,9 @@ static PyObject* canon_eldag_func(
 
     constexpr int err_code = 1;
 
-    static char* kwlist[] = { "edges", "ia", "symms", "colours", NULL };
+    static const char* kwlist[] = { "edges", "ia", "symms", "colours", NULL };
 
-    auto arg_stat = PyArg_ParseTupleAndKeywords(args, keywds, "OOOO", kwlist,
+    auto arg_stat = PyArg_ParseTupleAndKeywords(args, keywds, "OOOO", const_cast<char**>(kwlist),
         &edges_arg, &ia_arg, &symms_arg, &colours_arg);
     if (!arg_stat) {
         return NULL;

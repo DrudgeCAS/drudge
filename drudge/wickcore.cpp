@@ -169,10 +169,10 @@ static PyObject* compose_wick_func(
     PyObject* vec_order_arg;
     PyObject* contrs_arg;
 
-    static char* kwlist[] = { "vec_order", "contrs", NULL };
+    static const char* kwlist[] = { "vec_order", "contrs", NULL };
 
     auto arg_stat = PyArg_ParseTupleAndKeywords(
-        args, keywds, "OO", kwlist, &vec_order_arg, &contrs_arg);
+        args, keywds, "OO", const_cast<char**>(kwlist), &vec_order_arg, &contrs_arg);
     if (!arg_stat) {
         return NULL;
     }
