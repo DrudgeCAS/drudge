@@ -1873,6 +1873,12 @@ def proc_delta(arg1, arg2, sums_dict, resolvers):
                     # Try to get the range of the substituting expression.
                     range_of_i = try_resolve_range(i, sums_dict, resolvers)
                     if range_of_i is None:
+                        # If we can't resolve the range but i is an integer,
+                        # check if it falls within the range bounds
+                        if i.is_integer and hasattr(range_, 'args') and len(range_.args) >= 3:
+                            label, start, end = range_.args[:3]
+                            if start <= i < end:
+                                return _UNITY, (dumm, i)
                         continue
                     if range_of_i == range_:
                         return _UNITY, (dumm, i)
