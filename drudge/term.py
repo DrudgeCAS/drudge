@@ -1854,11 +1854,14 @@ def proc_delta(arg1, arg2, sums_dict, resolvers):
         sol = solveset(eqn, dumm, domain)
 
         # Strip off trivial intersecting with the domain.
-        if isinstance(sol, Intersection) and len(sol.args) == 2:
-            if sol.args[0] == domain:
-                sol = sol.args[1]
-            elif sol.args[1] == domain:
-                sol = sol.args[0]
+        if isinstance(sol, Intersection):
+            # More robust handling of intersection with domain
+            non_domain_args = [arg for arg in sol.args if arg != domain]
+            if len(non_domain_args) == 1:
+                sol = non_domain_args[0]
+            elif len(non_domain_args) == 0:
+                # All args were domain, this means sol == domain
+                sol = domain
 
         if sol == domain:
             # Now we can be sure that we got an identity.
