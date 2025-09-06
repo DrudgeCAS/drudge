@@ -135,9 +135,19 @@ class DrsSymbol(_Definable, Symbol):
         """Get the arguments for __new__."""
         return None, self.name
 
+    def __getnewargs_ex__(self):
+        """Get the arguments and keyword arguments for __new__.
+        
+        This method takes precedence over __getnewargs__ in Python 3.6+
+        and is used by SymPy v1.9+. We need to override it to ensure
+        proper pickling/unpickling of DrsSymbol objects.
+        """
+        return (None, self.name), {}
+
     def __getstate__(self):
         """Get the state for pickling."""
-        return None
+        # Return a non-None state to ensure __setstate__ is called
+        return {}
 
     def __setstate__(self, state):
         """Set the state according to pickled content."""
@@ -205,10 +215,20 @@ class DrsIndexed(_Definable, Indexed):
         """Get the arguments for __new__."""
         return (None, self.base) + self.indices
 
+    def __getnewargs_ex__(self):
+        """Get the arguments and keyword arguments for __new__.
+        
+        This method takes precedence over __getnewargs__ in Python 3.6+
+        and is used by SymPy v1.9+. We need to override it to ensure
+        proper pickling/unpickling of DrsIndexed objects.
+        """
+        return ((None, self.base) + self.indices), {}
+
     def __getstate__(self):
         """Get the state for pickling."""
-        return None
-
+        # Return a non-None state to ensure __setstate__ is called
+        return {}
+        
     def __setstate__(self, state):
         """Set the state according to pickled content."""
         from .drudge import current_drudge
