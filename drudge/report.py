@@ -153,8 +153,6 @@ class Report:
                         _PDFLATEX, filename, stat.stdout, stat.stderr
                     )
                     warnings.warn(err_msg)
-            else:
-                warnings.warn('{} cannot be found.'.format(_PDFLATEX))
 
 
 _PDFLATEX = 'pdflatex'

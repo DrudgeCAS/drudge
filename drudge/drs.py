@@ -255,7 +255,7 @@ class _NumFixer(ast.NodeTransformer):
     Integer literals will be changed into creation of symbolic integers.
     """
 
-    def visit_Num(self, node: ast.Constant):
+    def visit_Constant(self, node: ast.Constant):
         """Update the number nodes."""
         val = node.value
         if isinstance(val, int):
@@ -265,7 +265,7 @@ class _NumFixer(ast.NodeTransformer):
             ast.copy_location(fixed, node)
             return fixed
         else:
-            return val
+            return node
 
 
 _DEF_METH_NAME = 'def_as'
