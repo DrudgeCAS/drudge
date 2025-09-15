@@ -1,0 +1,39 @@
+# CITATION.cff
+cff-version: 1.2.0
+message: "If you use Drudge, please cite the following works."
+authors:
+  - family-names: Zhao
+    given-names: Jinmo
+  - family-names: Chen
+    given-names: Guo P.
+  - family-names: Gaurav
+    given-names: Harsha
+  - family-names: Matthew
+    given-names: Wholey
+  - family-names: Henderson
+    given-names: Thomas M.
+  - family-names: Scuseria
+    given-names: Gustavo E.
+title: "Drudge: A symbolic algebra system for tensorial and noncommutative algebras"
+type: software
+repository-code: "https://github.com/DrudgeCAS/drudge"
+abstract: "Drudge is a symbolic algebra system built on top of SymPy, focusing primarily on tensorial and noncommutative algebras. It is motivated by tedious symbolic derivations in quantum chemistry and many-body theory but is also useful for any symbolic manipulation and simplification involving indexed quantities, symbolic summations, and noncommutative algebras."
+keywords:
+  - symbolic algebra
+  - tensor algebra
+  - quantum chemistry
+  - many-body theory
+license: MIT
+version: 0.11.0
+date-released: 2025-09-15
+
+references:
+  - type: thesis
+    authors:
+      - family-names: Zhao
+        given-names: Jinmo
+    title: "Symbolic Solution for Computational Quantum Many-Body Theory Development"
+    year: 2018
+    publisher: Rice University
+    url: "https://www.proquest.com/openview/61a9a86c07dbb6e5270bdeb1c84384db/1?pq-origsite=gscholar&cbl=18750&diss=y"
+
