@@ -2,6 +2,7 @@
 [![macOS](https://github.com/DrudgeCAS/drudge/workflows/macOS/badge.svg)](https://github.com/DrudgeCAS/drudge/actions/workflows/macos.yml)
 [![Windows](https://github.com/DrudgeCAS/drudge/workflows/Windows/badge.svg)](https://github.com/DrudgeCAS/drudge/actions/workflows/windows.yml)
 [![Coveralls](https://coveralls.io/repos/github/DrudgeCAS/drudge/badge.svg?branch=master)](https://coveralls.io/github/DrudgeCAS/drudge?branch=master)
+[![Cite this repo](https://img.shields.io/badge/Cite-this_repo-blue.svg)](./CITATION.cff)
 
 <h1 align="center">Drudge</h1>
 
@@ -68,7 +69,7 @@ pip install git+https://github.com/DrudgeCAS/drudge.git
 ```
 
 
-## Citations
+## Citation
 
 If you use Drudge in your work, please cite this repository and Jinmo Zhao's
 Ph.D. thesis:
