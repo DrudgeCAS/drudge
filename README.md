@@ -7,7 +7,7 @@
 
 Drudge is a symbolic algebra system built on top of
 [SymPy](http://www.sympy.org), focusing primarily on tensorial and
-non-commutative algebras. It is motivated by complex symbolic problems in
+non-commutative algebras. It is motivated by tedious symbolic derivations in
 quantum chemistry and many-body theory but is also useful for any symbolic
 manipulation and simplification involving indexed quantities, symbolic
 summations, and non-commutative algebras.
@@ -39,7 +39,7 @@ irrespective of the names and ordering of the summation indices.
 
 In addition to fully considering the permutational symmetries of tensors and
 summations, Drudge provides a general framework for handling non-commutative
-algebraic systems. Currently, Drudge directly supports the [canonical
+algebraic systems. Currently, Drudge natively supports the [canonical
 commutation relations (CCR) and canonical anticommutation relations (CAR)
 algebras](https://en.wikipedia.org/wiki/CCR_and_CAR_algebras) for fermions and
 bosons, respectively, in many-body theory, general [Clifford
@@ -58,7 +58,7 @@ contractions and their sums.
 ## Installation
 
 Drudge can be installed directly from the GitHub repository using
-[uv](https://github.com/astral-sh/uv) (preferred)
+[uv](https://github.com/astral-sh/uv) (recommended)
 ```bash
 uv pip install git+https://github.com/DrudgeCAS/drudge.git
 ```
