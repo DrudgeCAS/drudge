@@ -85,7 +85,6 @@ Ph.D. thesis:
   note         = {GitHub repository}
 }
 ```
-Link: [Drudge on GitHub](https://github.com/DrudgeCAS/drudge)
 
 **2. Jinmo Zhao’s Ph.D. thesis**  
 ```bibtex
