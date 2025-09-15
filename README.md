@@ -39,7 +39,8 @@ irrespective of the names and ordering of the summation indices.
 
 In addition to fully considering the permutational symmetries of tensors and
 summations, Drudge provides a general framework for handling non-commutative
-algebraic systems. Currently, Drudge directly supports the [CCR and CAR
+algebraic systems. Currently, Drudge directly supports the [canonical
+commutation relations (CCR) and canonical anticommutation relations (CAR)
 algebras](https://en.wikipedia.org/wiki/CCR_and_CAR_algebras) for fermions and
 bosons, respectively, in many-body theory, general [Clifford
 algebras](https://en.wikipedia.org/wiki/Clifford_algebra), and the [su(2)
@@ -53,11 +54,6 @@ and generate numerical code. Optimal computational complexity can be achieved
 for various methods in quantum chemistry, which heavily rely on tensor
 contractions and their sums.
 
-Drudge is developed by Jinmo Zhao and Prof Gustavo E Scuseria at Rice
-University, and was supported as part of the Center for the Computational
-Design of Functional Layered Materials, an Energy Frontier Research Center
-funded by the U.S. Department of Energy, Office of Science, Basic Energy
-Sciences under Award DE-SC0012575.
 
 ## Installation
 
@@ -71,3 +67,10 @@ or [pip](https://pypi.org/project/pip/)
 pip install git+https://github.com/DrudgeCAS/drudge.git
 ```
 
+## Acknowledgments
+
+Drudge is developed by Jinmo Zhao and Prof Gustavo E. Scuseria at Rice
+University, and was supported as part of the Center for the Computational
+Design of Functional Layered Materials, an Energy Frontier Research Center
+funded by the U.S. Department of Energy, Office of Science, Basic Energy
+Sciences under Award DE-SC0012575.
