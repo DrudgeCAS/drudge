@@ -72,7 +72,9 @@ jobs:
 
       # Install only what we need to run tests + the built package from dist
       - name: Install test tooling
-        run: uv pip install pytest coverage coveralls
+        run: |
+          uv venv
+          uv pip install pytest coverage coveralls
 
       - name: Install package from built wheel (no rebuild)
         run: uv pip install --no-index --find-links dist drudge
