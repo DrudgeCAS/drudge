@@ -1,10 +1,11 @@
-name: CI (Ubuntu + macOS)
+# .github/workflows/ci.yml
+name: CI (Build once, test from wheel)
 
 on: [push]
 
 jobs:
   build:
-    name: ${{ matrix.plat.name }} Build
+    name: Build (${{ matrix.plat.name }})
     runs-on: ${{ matrix.plat.os }}
     strategy:
       fail-fast: false
@@ -23,18 +24,26 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version-file: "pyproject.toml"
+          python-version-file: pyproject.toml
 
       - name: Install uv
         uses: astral-sh/setup-uv@v6
 
-      - name: Install the project
-        run: |
-          uv sync --locked --extra dev
-          uv build
+      # Install dev deps once so the sdist/wheel can be built cleanly
+      - name: Sync env (dev)
+        run: uv sync --locked --extra dev
 
-  test:
-    name: ${{ matrix.plat.name }} Tests
+      - name: Build wheel and sdist
+        run: uv build  # outputs to dist/
+
+      - name: Upload dist artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: drudge-dist-${{ matrix.plat.name }}
+          path: dist/*
+
+  tests:
+    name: Tests (${{ matrix.plat.name }})
     runs-on: ${{ matrix.plat.os }}
     needs: build
     strategy:
@@ -45,25 +54,28 @@ jobs:
           - { os: macos-latest,  name: macOS }
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v5  # to get the tests/ directory
 
-      - name: Download submodules
-        shell: bash
-        run: git submodule update --init --recursive
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: drudge-dist-${{ matrix.plat.name }}
+          path: dist
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version-file: "pyproject.toml"
+          python-version-file: pyproject.toml
 
       - name: Install uv
         uses: astral-sh/setup-uv@v6
 
-      - name: Install the project
-        run: uv sync --locked --extra dev
+      # Install only what we need to run tests + the built package from dist
+      - name: Install test tooling
+        run: uv pip install pytest coverage coveralls
 
-      - name: Install coverage tools
-        run: uv pip install coverage coveralls
+      - name: Install package from built wheel (no rebuild)
+        run: uv pip install --no-index --find-links dist drudge
 
       - name: Run tests with coverage
         env:
