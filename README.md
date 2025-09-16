@@ -1,6 +1,4 @@
-[![Ubuntu](https://github.com/DrudgeCAS/drudge/workflows/Ubuntu/badge.svg)](https://github.com/DrudgeCAS/drudge/actions/workflows/ubuntu.yml)
-[![macOS](https://github.com/DrudgeCAS/drudge/workflows/macOS/badge.svg)](https://github.com/DrudgeCAS/drudge/actions/workflows/macos.yml)
-[![Windows](https://github.com/DrudgeCAS/drudge/workflows/Windows/badge.svg)](https://github.com/DrudgeCAS/drudge/actions/workflows/windows.yml)
+[![CI](https://github.com/DrudgeCAS/drudge/actions/workflows/ci.yml/badge.svg)](https://github.com/DrudgeCAS/drudge/actions/workflows/ci.yml)
 [![Coveralls](https://coveralls.io/repos/github/DrudgeCAS/drudge/badge.svg?branch=master)](https://coveralls.io/github/DrudgeCAS/drudge?branch=master)
 [![Cite this repo](https://img.shields.io/badge/Cite-this_repo-blue.svg)](./CITATION.cff)
 
