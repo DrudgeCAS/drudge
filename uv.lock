@@ -128,7 +128,7 @@ docs = [
 
 [package.metadata]
 requires-dist = [
-    { name = "dummyrdd", git = "https://github.com/tschijnmo/DummyRDD.git?rev=master" },
+    { name = "dummyrdd", git = "https://github.com/DrudgeCAS/DummyRDD.git?rev=master" },
     { name = "ipython", specifier = ">=9.0" },
     { name = "jinja2" },
     { name = "pyspark", specifier = ">=3.5,<3.6" },
@@ -140,7 +140,7 @@ requires-dist = [
 [[package]]
 name = "dummyrdd"
 version = "0.0.8.dev0"
-source = { git = "https://github.com/tschijnmo/DummyRDD.git?rev=master#aff7b0101ca557625bd560d41ada0fc8d72a849a" }
+source = { git = "https://github.com/DrudgeCAS/DummyRDD.git?rev=master#0f53b93b64ef5e9db38aa8d2dc3d5bf025a581d6" }
 
 [[package]]
 name = "executing"

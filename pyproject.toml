@@ -12,7 +12,7 @@ dependencies = [
   "jinja2",
   "pyspark>=3.5,<3.6",
   "ipython>=9.0",
-  "dummyrdd @ git+https://github.com/tschijnmo/DummyRDD.git@master"
+  "dummyrdd @ git+https://github.com/DrudgeCAS/DummyRDD.git@master"
 ]
 classifiers = [
   'Development Status :: 4 - Beta',
