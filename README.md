@@ -67,7 +67,7 @@ pip install git+https://github.com/DrudgeCAS/drudge.git
 ```
 
 > **Note:** Native Windows builds are currently not working. Please use WSL
-> (Windows Subsystem for Linux) to install and run Drudge on Windows.
+> (Windows Subsystem for Linux) to install and run Drudge on Windows for now.
 
 
 ## Citation
