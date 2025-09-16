@@ -70,6 +70,13 @@ pip install git+https://github.com/DrudgeCAS/drudge.git
 > (Windows Subsystem for Linux) to install and run Drudge on Windows for now.
 
 
+## Documentation
+
+Please refer to the documentation at
+[https://drudgecas.github.io/drudge/](https://drudgecas.github.io/drudge/).
+Additional examples can be found in the `./docs/examples` directory.
+
+
 ## Citation
 
 If you use Drudge in your work, please cite this repository and Jinmo Zhao's
