@@ -75,14 +75,10 @@ jobs:
           uv venv
           uv pip install pytest coverage coveralls
 
-      - name: Write constraints for URL dependencies
+      - name: Install package from built wheel (no rebuild, no dep resolution)
         run: |
-          cat > constraints.txt <<'EOF'
-          dummyrdd @ git+https://github.com/tschijnmo/DummyRDD.git@master
-          EOF
-
-      - name: Install package from built wheel (no rebuild)
-        run: uv pip install --no-index --find-links dist --constraint constraints.txt drudge
+          uv pip install "dummyrdd @ git+https://github.com/DrudgeCAS/DummyRDD.git@master"
+          uv pip install --no-index --find-links dist --no-deps drudge
 
       - name: Run tests with coverage
         env:
