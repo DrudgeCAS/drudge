@@ -3,8 +3,8 @@ name: CI (Ubuntu + macOS)
 on: [push]
 
 jobs:
-  build:
-    name: Build (${{ matrix.plat.name }})
+  ci:
+    name: ${{ matrix.plat.name }} Build + Test
     runs-on: ${{ matrix.plat.os }}
     strategy:
       fail-fast: false
@@ -28,57 +28,11 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v6
 
-      # Install dev deps once so the sdist/wheel can be built cleanly
-      - name: Sync env (dev)
+      - name: Build Drudge
         run: uv sync --locked --extra dev
 
-      - name: Build wheel and sdist
-        run: uv build  # outputs to dist/
-
-      - name: Upload dist artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: drudge-dist-${{ matrix.plat.name }}
-          path: dist/*
-
-  tests:
-    name: Tests (${{ matrix.plat.name }})
-    runs-on: ${{ matrix.plat.os }}
-    needs: build
-    strategy:
-      fail-fast: false
-      matrix:
-        plat:
-          - { os: ubuntu-latest, name: Ubuntu }
-          - { os: macos-latest,  name: macOS }
-
-    steps:
-      - uses: actions/checkout@v5  # to get the tests/ directory
-
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: drudge-dist-${{ matrix.plat.name }}
-          path: dist
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version-file: pyproject.toml
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v6
-
-      # Install only what we need to run tests + the built package from dist
-      - name: Install test tooling
-        run: |
-          uv venv
-          uv pip install pytest coverage coveralls
-
-      - name: Install package from built wheel (no rebuild, no dep resolution)
-        run: |
-          uv pip install "dummyrdd @ git+https://github.com/DrudgeCAS/DummyRDD.git@master"
-          uv pip install --no-index --find-links dist --no-deps drudge
+      - name: Install coverage tools
+        run: uv pip install coverage coveralls
 
       - name: Run tests with coverage
         env:
