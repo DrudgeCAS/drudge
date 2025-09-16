@@ -1,5 +1,4 @@
-# .github/workflows/ci.yml
-name: CI (Build once, test from wheel)
+name: CI (Ubuntu + macOS)
 
 on: [push]
 
