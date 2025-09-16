@@ -77,7 +77,11 @@ jobs:
           uv pip install pytest coverage coveralls
 
       - name: Install package from built wheel (no rebuild)
-        run: uv pip install --no-index --find-links dist drudge
+          run: |
+            uv pip install \
+              --no-index --find-links dist \
+              "dummyrdd @ git+https://github.com/DrudgeCAS/DummyRDD.git@master" \
+              drudge
 
       - name: Run tests with coverage
         env:
