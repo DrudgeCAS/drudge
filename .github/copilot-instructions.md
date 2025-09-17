@@ -101,18 +101,24 @@ drudge/
 
 ### Main Package Structure (`drudge/`)
 - `__init__.py` - Package exports and version (v0.11.0)
-- `drudge.py` - Core Drudge class and tensor data structure
-- `term.py` - Basic term and vector operations
-- `canon.py` - Canonicalization algorithms
-- `canonpy.cpp/.h` - C++ extension for permutation groups
-- `wickcore.cpp` - C++ extension for Wick contractions
-- `wick.py` - Wickian algebra implementation
-- `fock.py` - Implementation of fermionic/bosonic operator algebra on Fock spaces
-- `genquad.py` - General quadratic algebra implementation
+- `__main__.py` - Entry point for running drudge as module (`python -m drudge`)
+- `_tceparser.py` - Tensor Contraction Engine output parser for TCE integration
+- `bcs.py` - Reduced BCS (pairing) Hamiltonian drudge implementation
+- `canon.py` - Canonicalization algorithms for tensor expressions
+- `canonpy.cpp/.h` - C++ extension for permutation groups and canonicalization
 - `clifford.py` - Clifford algebra implementation
-- `su2.py` - su(2) algebra implementation
-- `drs.py` - Drudge script system
+- `drs.py` - Drudge script system (domain-specific language)
+- `drudge.py` - Core Drudge class and tensor framework
+- `fock.py` - Fermionic/bosonic operator algebra on Fock spaces
+- `genquad.py` - General quadratic algebra implementation
+- `nuclear.py` - Nuclear physics utilities and Bogoliubov transformations
+- `report.py` - HTML/LaTeX report generation for symbolic results
+- `su2.py` - SU(2) algebra implementation
 - `templates/` - Jinja2 templates for code generation
+- `term.py` - Basic term and vector operations
+- `utils.py` - Small utilities and helper functions
+- `wick.py` - Wickian algebra implementation and Wick's theorem
+- `wickcore.cpp` - C++ extension for Wick contraction computations
 
 ### Configuration Files
 - `pyproject.toml` - Modern Python packaging, dependencies, entry points
