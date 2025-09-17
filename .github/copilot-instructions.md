@@ -6,15 +6,16 @@
 
 ### Key Features
 - Symbolic tensor algebra with symmetry support
-- Canonical forms for mathematical expressions with complex symmetries
-- Noncommutative algebra frameworks (CCR/CAR, Clifford algebras, su(2))
-- C++ extensions for performance-critical canonicalization operations
+- Canonical forms for tensor expressions with permutational symmetries
+- Noncommutative algebras (CCR/CAR, Clifford algebras, su(2), and more)
+- C++ extensions for performance-critical Wick contractions and canonicalization operations
 - Integration with companion package [gristmill](https://github.com/DrudgeCAS/gristmill) for code generation
 
 ### Repository Statistics
-- **Languages**: Python (primary), C++ (extensions), DRS (Drudge Scripts)
-- **Size**: ~16K lines of Python code, 164 test cases
+- **Languages**: Python (primary), C++ (extensions), DRS (Drudge scripts, a domain-specific language based on Python)
+- **Size**: ~16K lines of Python code, >160 test cases
 - **Python Version**: 3.12+ (currently testing on 3.13)
+- **C++ Standard**: C++14
 - **Dependencies**: SymPy, PySpark/DummyRDD, Jinja2, C++ compiler
 
 ## Build and Development Instructions
@@ -41,7 +42,7 @@
    ```bash
    export DUMMY_SPARK=1
    ```
-   This environment variable is **required** for all test runs. Without it, tests may fail or behave unexpectedly as the project is migrating from pyspark to dask.
+   This environment variable is **required** for all test runs. Without it, tests may fail or behave unexpectedly as the pyspark version (v2.4) used in this package is outdated (The current pyspark version is v4.0). We are in the process of migrating from pyspark to dask.
 
 ### Build Commands
 
@@ -50,7 +51,6 @@
 | `uv sync --locked --extra dev` | Install all dependencies | ~7s | Always run after clone |
 | `uv build` | Build package distribution | ~30s | Creates wheel and source dist |
 | `uv run pytest tests/` | Run full test suite | ~24s | Requires DUMMY_SPARK=1 |
-| `uv run pytest tests/filename_test.py` | Run specific test file | ~2s | For targeted testing |
 
 ### Testing and Validation
 
@@ -61,22 +61,15 @@ export DUMMY_SPARK=1
 uv run pytest tests/ -v
 ```
 
-**Key Test Files by Functionality:**
-- `free_algebra_test.py` - Core tensor algebra
-- `genmb_test.py` - Many-body theory
-- `parthole_test.py` - Particle-hole formalism  
-- `drs_test.py` - Drudge script system
-- `term_test.py` - Basic term operations
-
 **Test Validation Steps:**
-1. All 164 tests should pass with only warnings about pdflatex (safe to ignore)
+1. All tests should pass with only warnings about pdflatex (safe to ignore)
 2. Test runtime should be under 30 seconds
 3. No errors about missing SparkContext when DUMMY_SPARK=1 is set
 
 ### Common Issues and Workarounds
 
 **Build Issues:**
-- **Missing submodules**: Always run `git submodule update --init --recursive` first
+- **Missing submodules**: Always run `git submodule update --init --recursive` after cloning the repo
 - **C++ compilation warnings**: Some warnings about uninitialized variables are expected and safe
 - **License deprecation warning**: Expected warning about pyproject.toml license format
 
@@ -89,34 +82,35 @@ uv run pytest tests/ -v
 ### Root Directory Structure
 ```
 drudge/
-├── .github/workflows/        # CI/CD pipelines
+├── .github/workflows/       # CI/CD pipelines
 │   ├── ci.yml               # Main CI (Ubuntu/macOS)
 │   ├── copilot-setup-steps.yml  # Setup reference  
 │   └── windows.yml          # Windows builds (experimental)
 ├── deps/libcanon/           # Git submodule for C++ canonicalization
 ├── docs/                    # Sphinx documentation
 │   ├── examples/            # Example scripts and notebooks
-│   ├── conf.py             # Sphinx configuration
-│   └── Makefile            # Documentation build
+│   ├── conf.py              # Sphinx configuration
+│   └── Makefile             # Documentation build
 ├── drudge/                  # Main Python package
 ├── tests/                   # Test suite (pytest)
-├── pyproject.toml          # Modern Python project config
-├── setup.py                # Legacy setup with C++ extensions
-├── MANIFEST.in             # Package data inclusion
-└── uv.lock                 # Locked dependencies
+├── pyproject.toml           # Modern Python project config
+├── setup.py                 # Legacy setup with C++ extensions
+├── MANIFEST.in              # Package data inclusion
+└── uv.lock                  # Locked dependencies
 ```
 
 ### Main Package Structure (`drudge/`)
 - `__init__.py` - Package exports and version (v0.11.0)
-- `drudge.py` - Core Drudge class and tensor framework
+- `drudge.py` - Core Drudge class and tensor data structure
 - `term.py` - Basic term and vector operations
 - `canon.py` - Canonicalization algorithms
 - `canonpy.cpp/.h` - C++ extension for permutation groups
-- `wickcore.cpp` - C++ extension for Wick's theorem
-- `fock.py` - Fock space and many-body operators
-- `genquad.py` - General quadratic algebras
+- `wickcore.cpp` - C++ extension for Wick contractions
+- `wick.py` - Wickian algebra implementation
+- `fock.py` - Implementation of fermionic/bosonic operator algebra on Fock spaces
+- `genquad.py` - General quadratic algebra implementation
 - `clifford.py` - Clifford algebra implementation
-- `su2.py` - SU(2) algebra implementation
+- `su2.py` - su(2) algebra implementation
 - `drs.py` - Drudge script system
 - `templates/` - Jinja2 templates for code generation
 
@@ -171,8 +165,8 @@ uv run pytest tests/
 
 ### Key Architectural Patterns
 - **Drudge objects**: Core computational context, typically created with SparkContext
-- **Tensor operations**: Use `einst()` for Einstein summation notation
-- **Canonicalization**: Automatic for expressions with symmetries
+- **Tensor operations**: Use `.sum` or `.einst()` construct tensors
+- **Canonicalization**: Need to first do `.set_symm()` for indexed quantities with symmetries
 - **DRS scripts**: Domain-specific language for symbolic computations
 
 ### File Locations for Common Tasks
