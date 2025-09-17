@@ -102,23 +102,23 @@ drudge/
 ### Main Package Structure (`drudge/`)
 - `__init__.py` - Package exports and version (v0.11.0)
 - `__main__.py` - Entry point for running drudge as module (`python -m drudge`)
-- `_tceparser.py` - Tensor Contraction Engine output parser for TCE integration
+- `_tceparser.py` - Tensor Contraction Engine (TCE) output parser for TCE integration
 - `bcs.py` - Reduced BCS (pairing) Hamiltonian drudge implementation
 - `canon.py` - Canonicalization algorithms for tensor expressions
 - `canonpy.cpp/.h` - C++ extension for permutation groups and canonicalization
 - `clifford.py` - Clifford algebra implementation
 - `drs.py` - Drudge script system (domain-specific language)
-- `drudge.py` - Core Drudge class and tensor framework
+- `drudge.py` - Core Drudge class and tensor data structure
 - `fock.py` - Fermionic/bosonic operator algebra on Fock spaces
 - `genquad.py` - General quadratic algebra implementation
-- `nuclear.py` - Nuclear physics utilities and Bogoliubov transformations
+- `nuclear.py` - Nuclear physics utilities
 - `report.py` - HTML/LaTeX report generation for symbolic results
-- `su2.py` - SU(2) algebra implementation
-- `templates/` - Jinja2 templates for code generation
-- `term.py` - Basic term and vector operations
-- `utils.py` - Small utilities and helper functions
-- `wick.py` - Wickian algebra implementation and Wick's theorem
-- `wickcore.cpp` - C++ extension for Wick contraction computations
+- `su2.py` - su(2) algebra implementation
+- `templates/` - Jinja2 templates for generating HTML/LaTeX reports
+- `term.py` - Tensor term and vector (operator) operations
+- `utils.py` - Utilities and helper functions
+- `wick.py` - Wickian algebra implementation
+- `wickcore.cpp` - C++ extension for Wick contractions
 
 ### Configuration Files
 - `pyproject.toml` - Modern Python packaging, dependencies, entry points
@@ -171,7 +171,7 @@ uv run pytest tests/
 
 ### Key Architectural Patterns
 - **Drudge objects**: Core computational context, typically created with SparkContext
-- **Tensor operations**: Use `.sum` or `.einst()` construct tensors
+- **Tensor operations**: Use `.sum()` or `.einst()` to construct tensors
 - **Canonicalization**: Need to first do `.set_symm()` for indexed quantities with symmetries
 - **DRS scripts**: Domain-specific language for symbolic computations
 
