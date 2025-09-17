@@ -1,0 +1,60 @@
+# Dependabot configuration for automatic dependency updates
+# See https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+
+version: 2
+updates:
+  # Update Python dependencies from pyproject.toml monthly
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+      day: "saturday"
+      time: "09:00"
+      timezone: "America/New_York"
+    commit-message:
+      prefix: "deps"
+      prefix-development: "deps-dev"
+      include: "scope"
+    # Reviewers will be assigned automatically by repository settings
+    labels:
+      - "dependencies"
+      - "python"
+    open-pull-requests-limit: 5
+    # Allow both direct and indirect dependency updates
+    allow:
+      - dependency-type: "direct"
+      - dependency-type: "indirect"
+
+  # Update GitHub Actions monthly
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+      day: "saturday"
+      time: "09:00"
+      timezone: "America/New_York"
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+    # Reviewers will be assigned automatically by repository settings
+    labels:
+      - "dependencies"
+      - "github-actions"
+    open-pull-requests-limit: 3
+
+  # Update Git submodules monthly
+  - package-ecosystem: "gitsubmodule"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+      day: "saturday"
+      time: "09:00"
+      timezone: "America/New_York"
+    commit-message:
+      prefix: "deps"
+      include: "scope"
+    # Reviewers will be assigned automatically by repository settings
+    labels:
+      - "dependencies"
+      - "submodule"
+    open-pull-requests-limit: 2
