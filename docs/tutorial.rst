@@ -506,11 +506,11 @@ drudge programmatically.  And we also have a `script for RCCSD theory`_ to
 demonstrate its usage in large-scale spin-explicit coupled-cluster theories.
 
 
-.. _sample notebook: https://github.com/tschijnmo/drudge/blob/master/docs/examples/ccsd.ipynb
+.. _sample notebook: https://github.com/DrudgeCAS/drudge/blob/master/docs/examples/ccsd.ipynb
 
-.. _general script: https://github.com/tschijnmo/drudge/blob/master/docs/examples/gencc.py
+.. _general script: https://github.com/DrudgeCAS/drudge/blob/master/docs/examples/gencc.py
 
-.. _script for RCCSD theory: https://github.com/tschijnmo/drudge/blob/master/docs/examples/rccsd.py
+.. _script for RCCSD theory: https://github.com/DrudgeCAS/drudge/blob/master/docs/examples/rccsd.py
 
 
 As drudge scripts
@@ -571,7 +571,7 @@ archive of the drudge.  By using :py:class:`TensorDef` objects, we also have a
 left-hand side, which enables the accompanying `gristmill`_ package to optimize
 the evaluation of the entire array by its advanced algorithms.
 
-.. _gristmill: https://github.com/tschijnmo/gristmill
+.. _gristmill: https://github.com/DrudgeCAS/gristmill
 
 For the result, here they are written into a very structured LaTeX output, which
 can be easily compiled into PDF files.  Note that by using the

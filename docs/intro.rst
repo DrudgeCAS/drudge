@@ -24,6 +24,6 @@ As an experimental project, the documentation can be outdated, incomplete,
 incorrect, or have a lot of bad formatting.  For any confusion, UTSL.
 
 
-.. _DummyRDD: https://github.com/tschijnmo/DummyRDD
-.. _spark-in-slurm: https://github.com/tschijnmo/spark-in-slurm
+.. _DummyRDD: https://github.com/DrudgeCAS/DummyRDD
+.. _spark-in-slurm: https://github.com/DrudgeCAS/spark-in-slurm
 
