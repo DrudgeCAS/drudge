@@ -11,8 +11,9 @@ dependencies = [
   "sympy>=1.14",
   "jinja2",
   "pyspark>=3.5,<3.6",
+  "dummyrdd @ git+https://github.com/DrudgeCAS/DummyRDD.git@master",
   "ipython>=9.0",
-  "dummyrdd @ git+https://github.com/DrudgeCAS/DummyRDD.git@master"
+  "ipykernel>=7.1.0"
 ]
 classifiers = [
   'Development Status :: 4 - Beta',
