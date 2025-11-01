@@ -23,7 +23,7 @@ jobs:
         uses: ilammy/msvc-dev-cmd@v1
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@v7
 
       - name: Build Drudge
         run: uv sync --locked --extra dev
