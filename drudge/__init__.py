@@ -22,7 +22,7 @@ from .nuclear import NuclearBogoliubovDrudge
 from .report import Report, ScalarLatexPrinter
 from .utils import sum_, prod_, Stopwatch, CallByIndex, InvariantIndexable
 
-__version__ = '0.11.0'
+__version__ = '0.12.0-alpha'
 
 __all__ = [
     # Canonpy.
