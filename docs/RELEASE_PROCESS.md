@@ -49,5 +49,5 @@ gh workflow run release-please.yml
 ## Notes
 
 - Previous commits before release-please setup did not follow conventional commits
-- Release-please is bootstrapped from commit `4efa218` (v0.11.0-alpha)
+- Release-please is bootstrapped from commit `7880318` (v0.11.0-alpha)
 - The action only runs on pushes to the `master` branch
