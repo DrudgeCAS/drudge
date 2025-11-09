@@ -93,8 +93,8 @@ drudge/
 │   └── Makefile             # Documentation build
 ├── drudge/                  # Main Python package
 ├── tests/                   # Test suite (pytest)
+├── CMakeLists.txt           # CMake configuration for C++ extensions
 ├── pyproject.toml           # Modern Python project config
-├── setup.py                 # Legacy setup with C++ extensions
 ├── MANIFEST.in              # Package data inclusion
 └── uv.lock                  # Locked dependencies
 ```
@@ -121,8 +121,8 @@ drudge/
 - `wickcore.cpp` - C++ extension for Wick contractions
 
 ### Configuration Files
-- `pyproject.toml` - Modern Python packaging, dependencies, entry points
-- `setup.py` - C++ extension compilation settings
+- `pyproject.toml` - Modern Python packaging, dependencies, entry points (uses scikit-build-core backend)
+- `CMakeLists.txt` - CMake configuration for C++ extension compilation
 - `MANIFEST.in` - Include C++ headers and templates in distributions
 - `.github/workflows/ci.yml` - CI pipeline with coverage reporting
 
