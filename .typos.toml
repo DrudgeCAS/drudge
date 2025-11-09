@@ -13,10 +13,6 @@ check-filename = true
 check-file = true
 unicode = true
 locale = "en"
-extend-ignore-re = []
-extend-ignore-identifiers-re = []
-extend-ignore-words = []
-
 
 [default.extend-words]
 Wholey = "Wholey"
