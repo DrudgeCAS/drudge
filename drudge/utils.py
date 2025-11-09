@@ -432,10 +432,9 @@ def prod_(obj):
 class Stopwatch:
     """Utility class for printing timing information.
 
-    This class helps to timing the progression of batch jobs.  It is capable of
-    getting and formatting the elapsed wall time between consecutive steps.
-    Note that the timing here might not be accurate to one second.
-
+    This class helps to time the progression of batch jobs. It uses
+    `time.perf_counter` for high-resolution wall time measurement between
+    consecutive steps.
     """
 
     def __init__(self, print_cb=print):

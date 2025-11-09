@@ -50,18 +50,18 @@ def test_stopwatch():
     stamper.tock('Nothing')
     res = res_holder[0]
     assert res.startswith('Nothing done')
-    assert float(res.split()[-2]) - 0.5 < 0.1
+    assert float(res.split()[-2]) - 0.5 < 0.001
 
     precise_sleep(0.5)
     stamper.tock('Tensor', tensor)
     res = res_holder[0]
     assert res.startswith('Tensor done, 2 terms')
-    assert float(res.split()[-2]) - 0.5 < 0.1
+    assert float(res.split()[-2]) - 0.5 < 0.001
     tensor.cache.assert_called_once_with()
 
     stamper.tock_total()
     res = res_holder[0]
-    assert float(res.split()[-2]) - 1.0 < 0.1
+    assert float(res.split()[-2]) - 1.0 < 0.001
 
 
 def test_invariant_indexable():
