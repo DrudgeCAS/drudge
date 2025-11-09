@@ -32,7 +32,7 @@ def ensure_sympify(obj, role='', expected_type=None):
     try:
         sympified = sympify(obj)
     except SympifyError as exc:
-        raise TypeError(header, obj, 'failed to be simpified', exc.args)
+        raise TypeError(header, obj, 'failed to be simplified', exc.args)
 
     if expected_type is None or isinstance(sympified, expected_type):
         return sympified

@@ -668,7 +668,7 @@ class Term(ATerms):
     def comm_term(self, other, dumms=None, excl=None):
         """Commute with another tensor term.
 
-        In ths same way as the multiplication operation, here the free symbols
+        In the same way as the multiplication operation, here the free symbols
         in the operands are not automatically excluded.
         """
         lhs, rhs = self.reconcile_dumms(other, dumms, excl)
@@ -1531,7 +1531,7 @@ def sum_term(sum_args, summand, predicate=None) -> typing.List[Term]:
 
             subst_dict = dict(subst_i)
 
-            # We alway assemble the call sequence here, since this part should
+            # We always assemble the call sequence here, since this part should
             # never be performance critical.
             call_seq = dict(sum_i)
             call_seq.update(subst_dict)
@@ -1818,7 +1818,7 @@ def compose_simplified_delta(amp, new_substs, substs, sums_dict, resolvers):
 
 
 def proc_delta(arg1, arg2, sums_dict, resolvers):
-    """Processs a delta.
+    """Process a delta.
 
     An amplitude and a substitution pair is going to be returned.  The given
     delta will be equivalent to the returned amplitude factor with the
@@ -2113,7 +2113,7 @@ def simplify_amp_sums_term(term: Term, simplifiers, excl_bases, resolvers):
                     if not if_simplified:
                         continue
 
-                    # Whe simplification happens.
+                    # Where simplification happens
                     new_factors = [
                         i for i in factors if id(i) not in curr_factors
                     ]

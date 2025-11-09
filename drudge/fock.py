@@ -137,7 +137,7 @@ class FockDrudge(WickDrudge):
         The result should be a callable taking an vector and return a triple of
         operator base, operator character, and the actual indices to the
         operator.  This can be helpful for cases where the interpretation of the
-        operators needs to be tweeked.
+        operators needs to be tweaked.
         """
         return parse_field_op
 
