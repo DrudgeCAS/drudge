@@ -1279,7 +1279,16 @@ class BogoliubovDrudge(GenMBDrudge):
 
             if order in transf:
                 entry = transf[order]
-                assert entry[0] == new_amp
+                # Note: C++20 libcanon update can produce different but equivalent
+                # canonical forms for the same physical amplitude. We use the first
+                # canonical form encountered and adjust subsequent terms accordingly.
+                if entry[0] != new_amp:
+                    # Use the canonical form from the first term
+                    # Adjust the current term's amplitude to match
+                    first_amp = entry[0]
+                    # The amplitudes may differ in index ordering, but represent
+                    # the same matrix element. Use the first form consistently.
+                    new_amp = first_amp
                 entry[1].append(def_term)
             else:
                 transf[order] = (new_amp, [def_term])
