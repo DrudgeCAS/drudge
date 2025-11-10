@@ -11,7 +11,7 @@ sdist.include = ["drudge/templates/*", "drudge/*.h", "deps/libcanon/include/**/*
 
 [project]
 name = "drudge"
-version = "0.11.0"
+version = "0.11.1"
 description = "A symbolic algebra system for tensorial and noncommutative algebras"
 requires-python = ">=3.12"
 dependencies = [

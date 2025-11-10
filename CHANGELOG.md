@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.11.1](https://github.com/DrudgeCAS/drudge/compare/drudge-v0.11.0...drudge-v0.11.1) (2025-11-10)
+
+
+### Miscellaneous Chores
+
+* manual release v0.11.1 ([a9f4e3d](https://github.com/DrudgeCAS/drudge/commit/a9f4e3d14d1484fe125729122aa1265475bee49f))
+
 ## [0.11.0](https://github.com/DrudgeCAS/drudge/compare/v0.11.0-alpha...v0.11.0) (2025-11-03)
 
 ### Features
