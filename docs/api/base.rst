@@ -44,7 +44,7 @@ bitwise or operator ``|``.
 
 .. data:: IDENT
 
-    The identitiy action.  Nothing is performed for the permutation.
+    The identity action.  Nothing is performed for the permutation.
 
 .. data:: NEG
 

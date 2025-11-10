@@ -666,7 +666,7 @@ def _simpl_one_pono(
 
     No idea if it works in general cases...
 
-    TODO: Find and implement a mathematically rigourous canonicalization with
+    TODO: Find and implement a mathematically rigorous canonicalization with
     simultaneous consideration of relations and modular arithmetic.
     """
 

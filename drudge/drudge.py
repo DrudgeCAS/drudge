@@ -1027,7 +1027,7 @@ class Tensor:
             The left-hand side of the substitution.
 
         rhs
-            The right-hand side of the substituion.
+            The right-hand side of the substitution.
 
         wilds
             Since we do not commonly define tensors with wild symbols, an option
@@ -2585,7 +2585,7 @@ class Drudge:
         """
 
         if len(args) == 0:
-            raise ValueError('Expecing summand!')
+            raise ValueError('Expecting summand!')
 
         summand = args[-1]
         sum_args = args[:-1]

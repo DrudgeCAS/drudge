@@ -15,7 +15,7 @@ symbolic manipulation and simplification of mathematical expressions requires a
 lot of context-dependent information, like the specific commutation rules and
 things like the dummy symbols to be used for different ranges.  So the primary
 entry point for using the library is the :py:class:`Drudge` class, which serves
-as a central repository of all kinds of domain-specific informations.  To
+as a central repository of all kinds of domain-specific information.  To
 create a drudge instance, we need to give it a Spark context so that it is
 capable of parallelize things.  For instance, to run things locally with all
 available cores, we can do

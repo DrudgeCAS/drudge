@@ -186,7 +186,7 @@ class DrsIndexed(_Definable, Indexed):
 
         # Keep the SymPy invariant for func(*args) == self.
         def func(*args, **kwargs):
-            """Creater for indexed objects in drudge scripts."""
+            """Creator for indexed objects in drudge scripts."""
             return DrsIndexed(drudge, *args, **kwargs)
 
         self._func = func

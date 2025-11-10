@@ -10,7 +10,7 @@ algebraic system in the problem can be given.  Inside drudge, we have some
 algebraic systems that is already built in.
 
 
-Abstract Wick alegbra
+Abstract Wick algebra
 ~~~~~~~~~~~~~~~~~~~~~
 
 .. autoclass:: WickDrudge

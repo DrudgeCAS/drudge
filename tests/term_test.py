@@ -81,10 +81,11 @@ def test_terms_has_basic_operations(mprod):
 
 
 def test_terms_pickle_well(mprod):
-    """Test terms to work well with pickle.
+    """Ensure that term objects can be serialized and deserialized using pickle.
 
-    This is an important test, since the terms are going to be trasmitted a
-    lot during the parallel processing.
+    This test is important because term objects are frequently transmitted
+    between processes during parallel computation. Pickling must preserve both
+    equality and hash consistency for correct operation.
     """
 
     prod, _ = mprod
