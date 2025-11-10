@@ -5,7 +5,9 @@
 
 ### Miscellaneous Chores
 
-* manual release v0.11.1 ([a9f4e3d](https://github.com/DrudgeCAS/drudge/commit/a9f4e3d14d1484fe125729122aa1265475bee49f))
+* Migrate build backend from setuptools to scikit-build ([#42](https://github.com/DrudgeCAS/drudge/issues/42))
+* Bump libcanon ([#44](https://github.com/DrudgeCAS/drudge/issues/44))
+* Use typos-cli for spell check ([#45](https://github.com/DrudgeCAS/drudge/issues/45))
 
 ## [0.11.0](https://github.com/DrudgeCAS/drudge/compare/v0.11.0-alpha...v0.11.0) (2025-11-03)
 
