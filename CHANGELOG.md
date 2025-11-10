@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.11.1](https://github.com/DrudgeCAS/drudge/compare/drudge-v0.11.0...drudge-v0.11.1) (2025-11-10)
+
+
+### Miscellaneous Chores
+
+* Migrate build backend from setuptools to scikit-build ([#42](https://github.com/DrudgeCAS/drudge/issues/42))
+* Bump libcanon ([#44](https://github.com/DrudgeCAS/drudge/issues/44))
+* Use typos-cli for spell check ([#45](https://github.com/DrudgeCAS/drudge/issues/45))
+
 ## [0.11.0](https://github.com/DrudgeCAS/drudge/compare/v0.11.0-alpha...v0.11.0) (2025-11-03)
 
 ### Features
