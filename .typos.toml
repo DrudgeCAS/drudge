@@ -16,6 +16,7 @@ locale = "en"
 
 [default.extend-words]
 Wholey = "Wholey"
+comput = "comput"
 strat = "strat"
 numer = "numer"
 

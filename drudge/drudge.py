@@ -2585,7 +2585,7 @@ class Drudge:
         """
 
         if len(args) == 0:
-            raise ValueError('Expecing summand!')
+            raise ValueError('Expecting summand!')
 
         summand = args[-1]
         sum_args = args[:-1]

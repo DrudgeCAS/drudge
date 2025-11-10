@@ -971,13 +971,13 @@ def test_batch_vector_substitutions(
     assert res == expected_sequential
 
     # Simultaneously apply the definitions of the substitutions
-    expected_simutaneous = dr.sum(
+    expected_simultaneous = dr.sum(
         (i, p.R), (j, p.R), a[i, j] * v[i, DOWN] * v[j, UP]
     )
     res = orig1.subst_all(
         defs1, simult_all=True, full_balance=full_balance, simplify=simplify
     )
-    assert res == expected_simutaneous
+    assert res == expected_simultaneous
 
     #
     # In-place BCS transformation
@@ -1005,7 +1005,7 @@ def test_batch_vector_substitutions(
     assert res == expected_sequential
 
     # Simultaneously apply the definitions of the substitutions
-    expected_simutaneous = dr.sum(
+    expected_simultaneous = dr.sum(
         (i, p.R), (j, p.R), a[i, j] * (
             (x[i] * v_dag[i, UP] - y[i] * v[i, DOWN])
             * (x[j] * v[j, UP] - y[j] * v_dag[j, DOWN])
@@ -1016,7 +1016,7 @@ def test_batch_vector_substitutions(
     res = orig2.subst_all(
         defs2, simult_all=True, full_balance=full_balance, simplify=simplify
     ).simplify()
-    assert res == expected_simutaneous
+    assert res == expected_simultaneous
 
 
 @pytest.mark.parametrize('full_balance', [True, False])
@@ -1049,13 +1049,13 @@ def test_batch_amp_substitutions(free_alg, full_balance):
     assert res == expected_sequential
 
     # Simultaneously apply the definitions of the substitutions
-    expected_simutaneous = dr.sum(
+    expected_simultaneous = dr.sum(
         (i, r), sin(b) * (a[i] + b) * v[i]
     ).simplify()
     res = orig.subst_all(
         defs, simult_all=True, full_balance=full_balance, simplify=True
     )
-    assert res == expected_simutaneous
+    assert res == expected_simultaneous
 
 
 def test_special_substitution_of_identity(free_alg):
