@@ -1,6 +1,5 @@
 """Tests for the general quadratic algebra drudge."""
 
-import pytest
 from sympy import Integer
 from drudge import Vec, GenQuadLatticeDrudge
 

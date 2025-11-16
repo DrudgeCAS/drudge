@@ -92,7 +92,6 @@ def test_spin_one_half_particle_hole_drudge_has_basic_properties(parthole):
     """Test basic properties of spin one-half particle-hole drudge."""
 
     dr = parthole
-    p = dr.names
 
     assert dr.orig_ham.n_terms == 8 + 4 * 2 ** 4
 

@@ -1412,11 +1412,11 @@ def _sum_2_3j_to_delta(expr: Sum, resolvers, sums_dict):
 
     indices0 = wigner_3js[0].indices
     indices1 = wigner_3js[1].indices
-    j1, m1 = indices0[0].j, indices0[0].m
-    j2, m2 = indices0[1].j, indices0[1].m
-    j3, m3 = indices0[2].j, indices0[2].m
+    m1 = indices0[0].m
+    m2 = indices0[1].m
     assert m1 == indices1[0].m
     assert m2 == indices1[1].m
+    j3, m3 = indices0[2].j, indices0[2].m
     j4, m4 = indices1[2].j, indices1[2].m
 
     return KroneckerDelta(j3, j4) * KroneckerDelta(

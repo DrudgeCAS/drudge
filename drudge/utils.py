@@ -11,7 +11,6 @@ from sympy import (
     sympify, Symbol, Expr, SympifyError, count_ops, default_sort_key,
     AtomicExpr, Integer, S
 )
-from sympy.core.assumptions import ManagedProperties
 from sympy.core.sympify import CantSympify
 
 

@@ -1,0 +1,5 @@
+[lint]
+ignore = ["E741"]
+
+[format]
+docstring-code-format = true

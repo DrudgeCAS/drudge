@@ -17,5 +17,5 @@ def test_drudge_injects_names():
 
     dr.inject_names(suffix='_')
 
-    assert string_name_ == string_name
-    assert one_ == 1
+    assert string_name_ == string_name # noqa: F821
+    assert one_ == 1 # noqa: F821

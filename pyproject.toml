@@ -51,3 +51,10 @@ Homepage = "https://github.com/DrudgeCAS/drudge"
 
 [project.scripts]
 drudge = "drudge.drs:main"
+
+[dependency-groups]
+dev = [
+  "pytest",
+  "ruff>=0.14.5",
+  "pre-commit",
+]

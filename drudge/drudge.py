@@ -15,7 +15,7 @@ from collections.abc import Iterable, Sequence
 from IPython.display import Math, display
 from pyspark import RDD, SparkContext
 from sympy import (
-    IndexedBase, Symbol, Indexed, Wild, symbols, sympify, Expr, Add, Matrix, Mul
+    IndexedBase, Symbol, Indexed, Wild, sympify, Expr, Add, Matrix, Mul
 )
 from sympy.concrete.summations import eval_sum_symbolic
 
@@ -967,7 +967,7 @@ class Tensor:
     @staticmethod
     def _restore(term: Term, decr_vars=None):
 
-        if decr_vars != None:
+        if decr_vars is not None:
             restore_vars = {decr_var: var for var, decr_var in decr_vars.items()}
         else:
             suffix_index = -len(_DECR_SUFFIX)
@@ -987,7 +987,8 @@ class Tensor:
                         name[:suffix_index], **var._assumptions
                     )
 
-        func = lambda x: x.xreplace(restore_vars)
+        def func(x):
+            return x.xreplace(restore_vars)
 
         new_vecs = tuple(
             Vec(label=vec.label[0], indices=vec.indices)
@@ -1066,6 +1067,7 @@ class Tensor:
 
         .. doctest::
 
+            >>> from sympy import symbols
             >>> dr = Drudge(SparkContext())
             >>> r = Range('R')
             >>> a, b = dr.set_dumms(r, symbols('a b c d e f'))[:2]
