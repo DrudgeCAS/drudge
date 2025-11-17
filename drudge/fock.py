@@ -87,7 +87,7 @@ class FockDrudge(WickDrudge):
             self._exch = exch
         else:
             raise ValueError(
-                "Invalid exchange", exch, "expecting plus/minus 1"
+                f"Invalid exchange: {exch}, expecting plus/minus 1"
             )
 
         self.set_tensor_method("eval_vev", self.eval_vev)
