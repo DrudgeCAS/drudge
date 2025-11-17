@@ -53,7 +53,7 @@ class WickDrudge(Drudge, abc.ABC):
 
         if level not in {0, 1, 2}:
             raise ValueError(
-                "Invalid parallel level for Wick expansion", level
+                f"Invalid parallel level for Wick expansion: {level}"
             )
         self._wick_parallel = level
 
