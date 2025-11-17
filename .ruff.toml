@@ -1,3 +1,5 @@
+target-version = "py312"
+line-length = 79
 exclude = ["deps"]
 
 [lint]
