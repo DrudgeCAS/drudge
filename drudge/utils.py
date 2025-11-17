@@ -44,7 +44,7 @@ def ensure_sympify(obj, role="", expected_type=None):
     if expected_type is None or isinstance(sympified, expected_type):
         return sympified
     else:
-        raise TypeError(header, sympified, "expecting", expected_type)
+        raise TypeError(f"{header}{sympified}, expecting {expected_type}")
 
 
 def ensure_symb(obj, role=""):
