@@ -1,5 +1,10 @@
+exclude = ["deps"]
+
 [lint]
 ignore = ["E741"]
 
 [format]
 docstring-code-format = true
+
+[lint.per-file-ignores]
+"*.ipynb" = ["F403", "F405"]

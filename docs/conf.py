@@ -62,7 +62,7 @@ author = 'Jinmo Zhao and Gustavo E Scuseria'
 # built documents.
 #
 # The short X.Y version.
-from drudge import __version__
+from drudge import __version__ # noqa: E402
 version = __version__
 # The full version, including alpha/beta/rc tags.
 release = __version__
