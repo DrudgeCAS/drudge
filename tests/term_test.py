@@ -18,21 +18,19 @@ def mprod():
     This can be used to test some basic operations on terms.
     """
 
-    i, j, k = sympify('i, j, k')
-    n = sympify('n')
-    l = Range('L', 1, n)
-    a = IndexedBase('a', shape=(n, n))
-    b = IndexedBase('b', shape=(n, n))
-    v = Vec('v')
+    i, j, k = sympify("i, j, k")
+    n = sympify("n")
+    l = Range("L", 1, n)
+    a = IndexedBase("a", shape=(n, n))
+    b = IndexedBase("b", shape=(n, n))
+    v = Vec("v")
 
-    prod = sum_term(
-        [(i, l), (j, l), (k, l)],
-        a[i, j] * b[j, k] * v[i] * v[k]
-    )
+    prod = sum_term([(i, l), (j, l), (k, l)], a[i, j] * b[j, k] * v[i] * v[k])
 
     assert len(prod) == 1
-    return prod[0], types.SimpleNamespace(i=i, j=j, k=k, l=l, a=a, b=b, v=v,
-                                          n=n)
+    return prod[0], types.SimpleNamespace(
+        i=i, j=j, k=k, l=l, a=a, b=b, v=v, n=n
+    )
 
 
 def test_terms_has_basic_operations(mprod):
@@ -58,7 +56,7 @@ def test_terms_has_basic_operations(mprod):
     ref_prod = Term(
         tuple((i, p.l) for i in [p.i, p.j, p.k]),
         p.a[p.i, p.j] * p.b[p.j, p.k],
-        (p.v[p.i], p.v[p.k])
+        (p.v[p.i], p.v[p.k]),
     )
     assert prod == ref_prod
     assert hash(prod) == hash(ref_prod)
@@ -71,7 +69,7 @@ def test_terms_has_basic_operations(mprod):
         assert prod != i
         assert hash(prod) != hash(i)
 
-    assert str(prod) == 'sum_{i, j, k} a[i, j]*b[j, k] * v[i] * v[k]'
+    assert str(prod) == "sum_{i, j, k} a[i, j]*b[j, k] * v[i] * v[k]"
     assert repr(prod) == (
         "Term(sums="
         "[(i, Range('L', 1, n)), (j, Range('L', 1, n)), (k, Range('L', 1, n))],"
@@ -110,7 +108,7 @@ def test_terms_can_be_reset_dummies(mprod):
 
     prod, p = mprod
 
-    w = sympify('w')
+    w = sympify("w")
     excl = {w}
 
     dumms = {p.l: [w, p.i, p.j, p.k]}
@@ -128,7 +126,7 @@ def test_terms_can_be_reset_dummies(mprod):
     res, dummbegs = prod.reset_dumms(dumms)
     expected = sum_term(
         [(p.k, p.l), (p.j, p.l), (p.i, p.l)],
-        p.a[p.k, p.j] * p.b[p.j, p.i] * p.v[p.k] * p.v[p.i]
+        p.a[p.k, p.j] * p.b[p.j, p.i] * p.v[p.k] * p.v[p.i],
     )[0]
     assert res == expected
     assert len(dummbegs) == 1
@@ -145,8 +143,7 @@ def test_delta_can_be_simplified(mprod):
     dumms = {l: [i, j, k]}
 
     term = sum_term(
-        [(i, l), (j, l)],
-        KroneckerDelta(i, j) * KroneckerDelta(j, k) * p.v[i]
+        [(i, l), (j, l)], KroneckerDelta(i, j) * KroneckerDelta(j, k) * p.v[i]
     )[0]
 
     # If we do not tell which range k belongs, a delta should be kept.
@@ -171,9 +168,9 @@ def test_simple_terms_can_be_canonicalized():
     that we expect.
     """
 
-    l = Range('L')
-    x = IndexedBase('x')
-    i, j = sympify('i, j')
+    l = Range("L")
+    x = IndexedBase("x")
+    i, j = sympify("i, j")
 
     # A term without the vector part, canonicalization without symmetry.
     term = sum_term([(j, l), (i, l)], x[i, j])[0]
@@ -182,7 +179,7 @@ def test_simple_terms_can_be_canonicalized():
     assert res == expected
 
     # A term without the vector part, canonicalization with symmetry.
-    m = Range('M')
+    m = Range("M")
     term = sum_term([(j, m), (i, l)], x[j, i])[0]
     for neg, conj in itertools.product([IDENT, NEG], [IDENT, CONJ]):
         acc = neg | conj
@@ -203,7 +200,7 @@ def test_simple_terms_can_be_canonicalized():
     assert res == expected
 
     # Now we add vectors to the terms.
-    v = Vec('v')
+    v = Vec("v")
     term = sum_term([(i, l), (j, l)], v[i] * v[j])[0]
 
     # Without anything added, it should already be in the canonical form.

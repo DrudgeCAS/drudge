@@ -10,7 +10,7 @@ from sympy import IndexedBase, conjugate, Symbol, symbols, I, exp, pi, sqrt
 from drudge import GenMBDrudge, CR, AN, Range
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope="module")
 def genmb(spark_ctx):
     """Initialize the environment for a free algebra."""
 
@@ -25,8 +25,8 @@ def test_genmb_has_basic_properties(genmb):
     assert len(dr.orb_ranges) == 1
     assert dr.spin_vals is None
 
-    assert dr.one_body == dr.names.t == IndexedBase('t')
-    assert dr.two_body == dr.names.u == IndexedBase('u')
+    assert dr.one_body == dr.names.t == IndexedBase("t")
+    assert dr.two_body == dr.names.u == IndexedBase("u")
 
     # The Hamiltonian should already be simplified for this simple model.
     assert dr.ham.n_terms == 2
@@ -40,8 +40,8 @@ def test_einstein_summation(genmb):
     p = dr.names
     l = p.L
     a, b, c = p.L_dumms[:3]
-    o = IndexedBase('o')
-    v = IndexedBase('v')
+    o = IndexedBase("o")
+    v = IndexedBase("v")
     c_dag = p.c_dag
 
     summand = o[a, b] * v[b] * c_dag[a]
@@ -53,11 +53,11 @@ def test_einstein_summation(genmb):
     assert tensor == dr.sum((a, l), (b, l), summand)
 
 
-@pytest.mark.parametrize('par_level', [0, 1, 2])
-@pytest.mark.parametrize('full_simplify', [True, False])
-@pytest.mark.parametrize('simple_merge', [True, False])
+@pytest.mark.parametrize("par_level", [0, 1, 2])
+@pytest.mark.parametrize("full_simplify", [True, False])
+@pytest.mark.parametrize("simple_merge", [True, False])
 def test_genmb_simplify_simple_expressions(
-        genmb, par_level, full_simplify, simple_merge
+    genmb, par_level, full_simplify, simple_merge
 ):
     """Test the basic Wick expansion facility on a single Fermion expression."""
 
@@ -68,12 +68,15 @@ def test_genmb_simplify_simple_expressions(
     r = dr.names.L
     a, b, c, d = dr.names.L_dumms[:4]
 
-    t = IndexedBase('t')
-    u = IndexedBase('u')
+    t = IndexedBase("t")
+    u = IndexedBase("u")
 
     inp = dr.sum(
-        (a, r), (b, r), (c, r), (d, r),
-        t[a, b] * u[c, d] * c_dag[a] * c_[b] * c_dag[c] * c_[d]
+        (a, r),
+        (b, r),
+        (c, r),
+        (d, r),
+        t[a, b] * u[c, d] * c_dag[a] * c_[b] * c_dag[c] * c_[d],
     )
 
     dr.wick_parallel = par_level
@@ -95,8 +98,8 @@ def test_genmb_simplify_simple_expressions(
     assert res.n_terms == 2
 
     expected = dr.einst(
-        t[a, c] * u[b, d] * c_dag[a] * c_dag[b] * c_[d] * c_[c] +
-        t[a, c] * u[c, b] * c_dag[a] * c_[b]
+        t[a, c] * u[b, d] * c_dag[a] * c_dag[b] * c_[d] * c_[c]
+        + t[a, c] * u[c, b] * c_dag[a] * c_[b]
     ).simplify()
 
     assert res == expected
@@ -117,8 +120,7 @@ def test_genmb_simplifies_nilpotent_operators(genmb):
 
 
 def test_genmb_gives_conventional_dummies(genmb):
-    """Test dummy placement in canonicalization facility on many-body drudge.
-    """
+    """Test dummy placement in canonicalization facility on many-body drudge."""
 
     dr = genmb
     p = dr.names
@@ -126,15 +128,14 @@ def test_genmb_gives_conventional_dummies(genmb):
     c_ = p.c_
     a, b, c, d = p.a, p.b, p.c, p.d
 
-    x = IndexedBase('x')
+    x = IndexedBase("x")
     tensor = dr.einst(x[a, b, c, d] * c_dag[a] * c_dag[b] * c_[d] * c_[c])
     res = tensor.simplify()
     assert res == tensor
 
 
 def test_genmb_derives_spin_orbit_hartree_fock(genmb):
-    """Test general many-body model can derive HF theory in spin-orbital basis.
-    """
+    """Test general many-body model can derive HF theory in spin-orbital basis."""
 
     dr = genmb
     p = genmb.names
@@ -147,24 +148,31 @@ def test_genmb_derives_spin_orbit_hartree_fock(genmb):
     comm = (dr.ham | rot).simplify()
     assert comm.n_terms == 4
 
-    rho = IndexedBase('rho')
+    rho = IndexedBase("rho")
     # Following Ring and Schuck, here all creation comes before the
     # annihilation.
-    res = comm.eval_vev(lambda op1, op2, _: (
-        rho[op2.indices[1], op1.indices[1]]
-        if op1.indices[0] == CR and op2.indices[0] == AN
-        else 0
-    )).simplify()
+    res = comm.eval_vev(
+        lambda op1, op2, _: (
+            rho[op2.indices[1], op1.indices[1]]
+            if op1.indices[0] == CR and op2.indices[0] == AN
+            else 0
+        )
+    ).simplify()
     assert res.n_terms == 6
 
     # The correct result: [\rho, f]^b_a
 
-    f = IndexedBase('f')
+    f = IndexedBase("f")
     expected = dr.sum((c, r), rho[b, c] * f[c, a] - f[b, c] * rho[c, a])
-    expected = expected.subst(f[a, b], p.t[a, b] + dr.sum(
-        (c, r), (d, r),
-        p.u[a, c, b, d] * rho[d, c] - p.u[a, c, d, b] * rho[d, c]
-    ))
+    expected = expected.subst(
+        f[a, b],
+        p.t[a, b]
+        + dr.sum(
+            (c, r),
+            (d, r),
+            p.u[a, c, b, d] * rho[d, c] - p.u[a, c, d, b] * rho[d, c],
+        ),
+    )
     expected = expected.simplify()
 
     assert res == expected
@@ -180,12 +188,12 @@ def test_fock_drudge_prints_operators(genmb):
     dr = genmb
     p = dr.names
 
-    x = IndexedBase('x')
+    x = IndexedBase("x")
     a, b = p.L_dumms[:2]
 
-    tensor = dr.einst(- x[a, b] * p.c_dag[a] * p.c_[b])
+    tensor = dr.einst(-x[a, b] * p.c_dag[a] * p.c_[b])
     assert tensor.latex() == (
-        r'- \sum_{a \in L} \sum_{b \in L} x_{a,b}    c^{\dagger}_{a} c^{}_{b}'
+        r"- \sum_{a \in L} \sum_{b \in L} x_{a,b}    c^{\dagger}_{a} c^{}_{b}"
     )
 
 
@@ -194,7 +202,7 @@ def test_dagger_of_field_operators(genmb):
 
     dr = genmb
     p = dr.names
-    x = IndexedBase('x')
+    x = IndexedBase("x")
     c_dag = p.c_dag
     c_ = p.c_
     a, b = p.L_dumms[:2]
@@ -215,18 +223,19 @@ def test_diag_tight_binding_hamiltonian(spark_ctx):
     summations.
     """
 
-    n = Symbol('N', integer=True)
-    dr = GenMBDrudge(spark_ctx, orb=(
-        (Range('L', 0, n), symbols('x y z x1 x2', integer=True)),
-    ))
+    n = Symbol("N", integer=True)
+    dr = GenMBDrudge(
+        spark_ctx,
+        orb=((Range("L", 0, n), symbols("x y z x1 x2", integer=True)),),
+    )
 
     # The reciprocal space range and dummies.
-    k, q = symbols('k q', integer=True)
-    dr.set_dumms(Range('R', 0, n), [k, q])
+    k, q = symbols("k q", integer=True)
+    dr.set_dumms(Range("R", 0, n), [k, q])
 
     p = dr.names
-    h = Symbol('h')  # Hopping neighbours.
-    delta = Symbol('Delta')
+    h = Symbol("h")  # Hopping neighbours.
+    delta = Symbol("Delta")
     c_dag = p.c_dag
     c_ = p.c_
     a = p.L_dumms[0]
@@ -238,12 +247,16 @@ def test_diag_tight_binding_hamiltonian(spark_ctx):
     assert real_ham.n_terms == 2
 
     # Unitary fourier transform.
-    cr_def = (c_dag[a], dr.sum(
-        (k, p.R), (1 / sqrt(n)) * exp(-I * 2 * pi * k * a / n) * c_dag[k]
-    ))
-    an_def = (c_[a], dr.sum(
-        (k, p.R), (1 / sqrt(n)) * exp(I * 2 * pi * k * a / n) * c_[k]
-    ))
+    cr_def = (
+        c_dag[a],
+        dr.sum(
+            (k, p.R), (1 / sqrt(n)) * exp(-I * 2 * pi * k * a / n) * c_dag[k]
+        ),
+    )
+    an_def = (
+        c_[a],
+        dr.sum((k, p.R), (1 / sqrt(n)) * exp(I * 2 * pi * k * a / n) * c_[k]),
+    )
     rec_ham = real_ham.subst_all([cr_def, an_def])
     res = rec_ham.simplify()
 

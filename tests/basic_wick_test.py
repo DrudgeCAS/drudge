@@ -1,5 +1,4 @@
-"""Test basic Wick expansion of simple things.
-"""
+"""Test basic Wick expansion of simple things."""
 
 import pickle
 
@@ -22,12 +21,12 @@ def test_ancr_character_has_basic_properties():
     # We test both the original value and the deserialized values.
     for cr, an in [(CR, AN), (n_cr, n_an)]:
         # Printing, all kinds of printing.
-        assert str(cr) == 'CR'
-        assert str(an) == 'AN'
-        assert repr(cr) == 'CranChar.CR'
-        assert repr(an) == 'CranChar.AN'
-        assert latex(cr) == r'\dagger'
-        assert latex(an) == ''
+        assert str(cr) == "CR"
+        assert str(an) == "AN"
+        assert repr(cr) == "CranChar.CR"
+        assert repr(an) == "CranChar.AN"
+        assert latex(cr) == r"\dagger"
+        assert latex(an) == ""
 
         # Ordering, in its original form and as SymPy key.
         assert cr == cr

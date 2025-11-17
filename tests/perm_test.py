@@ -1,5 +1,4 @@
-"""Tests for the basic permutation facility.
-"""
+"""Tests for the basic permutation facility."""
 
 import pickle
 
@@ -18,11 +17,11 @@ def test_perm_has_basic_functionality():
     pre_images = [1, 2, 0]
     perm = Perm(pre_images, 1)
 
-    assert (len(perm) == len(pre_images))
+    assert len(perm) == len(pre_images)
     for i, v in enumerate(pre_images):
-        assert (perm[i] == v)
+        assert perm[i] == v
 
-    assert (perm.acc == 1)
+    assert perm.acc == 1
 
     return
 
@@ -34,9 +33,9 @@ def test_perm_pickles():
     perm = Perm(pre_images, 1)
 
     new_args = perm.__getnewargs__()
-    assert (len(new_args) == 2)
-    assert (new_args[0] == pre_images)
-    assert (new_args[1] == 1)
+    assert len(new_args) == 2
+    assert new_args[0] == pre_images
+    assert new_args[1] == 1
     new_perm = Perm(*new_args)
 
     pickled = pickle.dumps(perm)
@@ -44,10 +43,10 @@ def test_perm_pickles():
 
     for form in [new_perm, unpickled_perm]:
         # Maybe equality comparison should be added to Perms.
-        assert (len(form) == len(perm))
+        assert len(form) == len(perm)
         for i in range(len(perm)):
-            assert (form[i] == perm[i])
-        assert (form.acc == perm.acc)
+            assert form[i] == perm[i]
+        assert form.acc == perm.acc
 
     return
 
@@ -62,7 +61,7 @@ def test_perm_reports_error():
         Perm([1, 2])
 
     with pytest.raises(TypeError):
-        Perm('aaa')
+        Perm("aaa")
 
     with pytest.raises(TypeError):
         Perm([0, 1], 0.5)

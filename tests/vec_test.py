@@ -10,14 +10,14 @@ from drudge import Vec
 def test_vecs_has_basic_properties():
     """Tests the basic properties of vector instances."""
 
-    base = Vec('v')
-    v_ab = Vec('v', indices=['a', 'b'])
-    v_ab_1 = base['a', 'b']
-    v_ab_2 = (base['a'])['b']
+    base = Vec("v")
+    v_ab = Vec("v", indices=["a", "b"])
+    v_ab_1 = base["a", "b"]
+    v_ab_2 = (base["a"])["b"]
 
-    indices_ref = (sympify('a'), sympify('b'))
+    indices_ref = (sympify("a"), sympify("b"))
     hash_ref = hash(v_ab)
-    str_ref = 'v[a, b]'
+    str_ref = "v[a, b]"
     repr_ref = "Vec('v', (a, b))"
 
     for i in [v_ab, v_ab_1, v_ab_2]:
