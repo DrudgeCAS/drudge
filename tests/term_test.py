@@ -192,7 +192,6 @@ def test_simple_terms_can_be_canonicalized():
             expected_amp = conjugate(expected_amp)
         expected = sum_term([(i, l), (j, m)], expected_amp)[0]
         assert res == expected
-        continue
 
     # In the absence of symmetry, the two indices should not be permuted.
     res = term.canon()

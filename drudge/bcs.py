@@ -211,6 +211,4 @@ def _nonzero_by_cartan(term: Term, raise_, cartan, lower):
             if indices in cartan_indices:
                 return False
 
-        continue
-
     return True

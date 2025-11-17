@@ -30,7 +30,6 @@ def test_su2_without_symbolic_index(spark_ctx):
         j_sq = dr.sum(j_z * j_z + half * j_p * j_m + half * j_m * j_p)
         for i in [j_x, j_y, j_z]:
             assert (j_sq | i).simplify() == 0
-        continue
 
 
 def test_su2_on_1d_heisenberg_model(spark_ctx):

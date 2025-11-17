@@ -33,7 +33,6 @@ def parse_tce_out(tce_out, range_cb, base_cb):
         stripped = line.strip()
         if len(stripped) > 0:
             lines.append(stripped)
-        continue
 
     free_vars = collections.defaultdict(set)
     return list(
@@ -98,11 +97,9 @@ def _parse_term(term_str, range_cb, base_cb, free_vars):
         for i, j in zip(indices_symbs, indices):
             if i not in dumms:
                 free_vars[range_cb(j)].add(i)
-            continue
 
         base_symb = base_cb(base, indices_symbs)
         amp *= base_symb[indices_symbs]
-        continue
 
     return Term(sums=sums, amp=amp, vecs=())
 

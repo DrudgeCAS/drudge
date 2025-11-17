@@ -38,7 +38,6 @@ def test_bogoliubov_has_hamiltonian(bogoliubov: BogoliubovDrudge):
                 an_indices.append(index)
             else:
                 assert False
-            continue
 
         an_indices.reverse()
         indices = tuple(itertools.chain(cr_indices, an_indices))
@@ -58,8 +57,6 @@ def test_bogoliubov_has_hamiltonian(bogoliubov: BogoliubovDrudge):
             assert isinstance(amp, Indexed)
             assert amp.indices == indices
             orders[order] = amp.base
-
-        continue
 
     # Right now we do not test the bases.
     assert set(orders.keys()) == {

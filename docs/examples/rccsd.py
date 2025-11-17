@@ -53,7 +53,6 @@ for order in range(4):
     curr = (curr | cluster).simplify() * Rational(1, order + 1)
     stopwatch.tock("Commutator order {}".format(order + 1), curr)
     h_bar += curr
-    continue
 
 h_bar = h_bar.simplify()
 h_bar.repartition(cache=True)
@@ -76,7 +75,6 @@ for order, proj in enumerate(projs):
     eqn = (proj * h_bar).eval_fermi_vev().simplify()
     stopwatch.tock("T{} equation".format(order + 1), eqn)
     amp_eqns.append(eqn)
-    continue
 
 stopwatch.tock_total()
 

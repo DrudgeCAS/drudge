@@ -277,7 +277,6 @@ def test_basic_handling_range_with_variable_bounds(spark_ctx):
             assert i.lower == 0
             assert i.upper == 10
             checked = True
-        continue
     assert checked
 
 
@@ -1327,7 +1326,6 @@ def test_einstein_convention(free_alg):
             elif idx == 1:
                 assert term.amp == raw_amp_2
             assert len(term.vecs) == 0
-            continue
 
     # Test the automatic definition formation.
     tensor_def = dr.define_einst("r", raw_amp, auto_exts=True)
@@ -1603,6 +1601,5 @@ def test_inverse_of_linear_vector_transforms(free_alg: Drudge):
             v_checked = True
         else:
             assert False
-        continue
 
     assert one_checked and v_checked

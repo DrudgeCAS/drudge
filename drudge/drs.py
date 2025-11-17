@@ -304,7 +304,6 @@ def compile_drs(src, filename):
 
     for i in _FIXERS:
         root = i.visit(root)
-        continue
 
     return compile(root, filename, mode="exec")
 
@@ -364,8 +363,6 @@ class DrsEnv(dict):
             if hasattr(entry, key) and key not in excl:
                 resolv = getattr(entry, key)
                 break
-            else:
-                continue
         else:
             resolv = DrsSymbol(self._drudge, key)
         return resolv

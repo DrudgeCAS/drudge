@@ -70,8 +70,6 @@ class Eldag:
             _, g = v
             for _, idx in g:
                 int_colour[idx] = i
-                continue
-            continue
 
         return int_colour
 
@@ -173,7 +171,6 @@ def canon_factors(sums, factors, symms):
                 factor_res = conjugate(factor_res)
 
         factors_res.append(factor_res)
-        continue
 
     return sums_res, factors_res, coeff
 
@@ -230,7 +227,6 @@ def _build_eldag(sums, factors, symms):
         eldag.add_node(
             edges, None, (_SUM, i.label, bounded, with_dummy, free_var_keys)
         )
-        continue
 
     # Real work, factors.
     #
@@ -259,8 +255,6 @@ def _build_eldag(sums, factors, symms):
                 if i in symms:
                     factor_symms = symms[i]
                     break
-                else:
-                    continue
             else:
                 factor_symms = None
 
@@ -268,7 +262,6 @@ def _build_eldag(sums, factors, symms):
         idx = eldag.add_node(index_nodes, factor_symms, (_FACTOR, colour))
 
         factor_idxes.append(idx)
-        continue
 
     return eldag, factor_idxes
 
@@ -297,7 +290,6 @@ def _proc_indices(indices, dumms, eldag):
         for i in expr.atoms(Symbol):
             if i in dumms:
                 involved[dumms[i]] = i
-            continue
 
         sum_nodes = list(involved.keys())
 
@@ -327,7 +319,6 @@ def _proc_indices(indices, dumms, eldag):
                 curr_symms = []
             elif form == curr_form:
                 curr_symms.append(_find_perm(curr_edges, edges))
-            continue
 
         # Now the order of the edges are determined.
 
@@ -338,7 +329,6 @@ def _proc_indices(indices, dumms, eldag):
         )
 
         nodes.append(idx)
-        continue
 
     return nodes
 

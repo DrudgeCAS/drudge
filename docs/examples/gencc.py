@@ -84,7 +84,6 @@ for i in range(4):
     curr = (curr | corr).simplify() / (i + 1)
     stopwatch.tock("Commutator order {}".format(i + 1), curr)
     h_bar += curr
-    continue
 
 h_bar = h_bar.simplify()
 h_bar.repartition(cache=True)
@@ -106,8 +105,6 @@ for order in orders:
     eqn = (proj * h_bar).eval_fermi_vev().simplify()
     stopwatch.tock("T{} equation".format(order), eqn)
     amp_eqns[order] = eqn
-
-    continue
 
 stopwatch.tock_total()
 

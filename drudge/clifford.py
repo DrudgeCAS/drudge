@@ -138,6 +138,4 @@ def _collapse4clifford(term: Term, *, inner):
         if n_rem > 0:
             vecs.append(k)
 
-        continue
-
     return Term(term.sums, amp, tuple(vecs))
