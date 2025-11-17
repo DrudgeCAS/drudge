@@ -33,13 +33,14 @@ def parse_tce_out(tce_out, range_cb, base_cb):
         stripped = line.strip()
         if len(stripped) > 0:
             lines.append(stripped)
-        continue
 
     free_vars = collections.defaultdict(set)
-    return list(itertools.chain.from_iterable(
-        _parse_tce_line(line, range_cb, base_cb, free_vars)
-        for line in lines
-    )), free_vars
+    return list(
+        itertools.chain.from_iterable(
+            _parse_tce_line(line, range_cb, base_cb, free_vars)
+            for line in lines
+        )
+    ), free_vars
 
 
 #
@@ -49,20 +50,16 @@ def parse_tce_out(tce_out, range_cb, base_cb):
 
 
 def _parse_tce_line(line, range_cb, base_cb, free_vars):
-    """Parse a TCE output line into a list of terms.
-    """
+    """Parse a TCE output line into a list of terms."""
 
     # Get the initial part in the bracket and the actual term specification
     # part after it.
-    match_res = re.match(
-        r'^\s*\[(?P<factors>.*)\](?P<term>[^\[\]]+)$',
-        line
-    )
+    match_res = re.match(r"^\s*\[(?P<factors>.*)\](?P<term>[^\[\]]+)$", line)
     if match_res is None:
-        raise ValueError('Invalid TCE output line', line)
+        raise ValueError("Invalid TCE output line", line)
 
-    factors_str = match_res.group('factors').strip()
-    term_str = match_res.group('term').strip()
+    factors_str = match_res.group("factors").strip()
+    term_str = match_res.group("term").strip()
 
     # Get the actual term in its raw form.
     raw_term = _parse_term(term_str, range_cb, base_cb, free_vars)
@@ -77,7 +74,7 @@ def _parse_tce_line(line, range_cb, base_cb, free_vars):
 #
 
 
-_SUM_BASE = 'Sum'
+_SUM_BASE = "Sum"
 
 
 #
@@ -86,26 +83,23 @@ _SUM_BASE = 'Sum'
 
 
 def _parse_term(term_str, range_cb, base_cb, free_vars):
-    """Parse the term string after the square bracket into a Term.
-    """
+    """Parse the term string after the square bracket into a Term."""
 
     # First break the string into indexed values.
     summed_vars, idxed_vals = _break_into_idxed(term_str)
 
     sums = tuple((Symbol(i), range_cb(i)) for i in summed_vars)
     dumms = {i[0] for i in sums}
-    amp = sympify('1')
+    amp = sympify("1")
 
     for base, indices in idxed_vals:
         indices_symbs = tuple(Symbol(i) for i in indices)
         for i, j in zip(indices_symbs, indices):
             if i not in dumms:
                 free_vars[range_cb(j)].add(i)
-            continue
 
         base_symb = base_cb(base, indices_symbs)
         amp *= base_symb[indices_symbs]
-        continue
 
     return Term(sums=sums, amp=amp, vecs=())
 
@@ -118,24 +112,23 @@ def _break_into_idxed(term_str):
     """
 
     # First break it into fields separated by the multiplication asterisk.
-    fields = (i for i in re.split(r'\s*\*\s*', term_str) if len(i) > 0)
+    fields = (i for i in re.split(r"\s*\*\s*", term_str) if len(i) > 0)
 
     # Parse the fields one-by-one.
     idxed_vals = []
     for field in fields:
-
         # Break the field into the base part and the indices part.
-        match_res = re.match(
-            r'(?P<base>\w+)\s*\((?P<indices>.*)\)', field
-        )
+        match_res = re.match(r"(?P<base>\w+)\s*\((?P<indices>.*)\)", field)
         if match_res is None:
-            raise ValueError('Invalid indexed value', field)
+            raise ValueError("Invalid indexed value", field)
 
         # Generate the final result.
-        idxed_vals.append((
-            match_res.group('base'),
-            tuple(match_res.group('indices').split())
-        ))
+        idxed_vals.append(
+            (
+                match_res.group("base"),
+                tuple(match_res.group("indices").split()),
+            )
+        )
 
         continue
 
@@ -162,37 +155,41 @@ def _gen_terms(factors_str, raw_term):
     """
 
     # The regular expression for a factor.
-    factor_regex = r'\s*'.join([
-        r'(?P<sign>[+-])',
-        r'(?P<factor_number>[0-9.]+)',
-        r'(?:\*\s*P\((?P<perm_from>[^=>]*)=>(?P<perm_to>[^)]*)\))?',
-    ]) + r'\s*'
-    mismatch_regex = r'.'
-    regex = '(?P<factor>{})|(?P<mismatch>{})'.format(
+    factor_regex = (
+        r"\s*".join(
+            [
+                r"(?P<sign>[+-])",
+                r"(?P<factor_number>[0-9.]+)",
+                r"(?:\*\s*P\((?P<perm_from>[^=>]*)=>(?P<perm_to>[^)]*)\))?",
+            ]
+        )
+        + r"\s*"
+    )
+    mismatch_regex = r"."
+    regex = "(?P<factor>{})|(?P<mismatch>{})".format(
         factor_regex, mismatch_regex
     )
 
     # Iterate over the factors.
     terms = []
     for match_res in re.finditer(regex, factors_str):
-
         # Test if the result matches a factor.
-        if match_res.group('factor') is None:
-            raise ValueError('Invalid factor string', factors_str)
+        if match_res.group("factor") is None:
+            raise ValueError("Invalid factor string", factors_str)
 
         # The value of the factor.
-        factor_value = nsimplify(''.join(
-            match_res.group('sign', 'factor_number')
-        ), rational=True)
+        factor_value = nsimplify(
+            "".join(match_res.group("sign", "factor_number")), rational=True
+        )
 
         # Get the substitution for the permutation of the indices.
-        if match_res.group('perm_from') is not None:
-            from_vars = match_res.group('perm_from').split()
-            to_vars = match_res.group('perm_to').split()
+        if match_res.group("perm_from") is not None:
+            from_vars = match_res.group("perm_from").split()
+            to_vars = match_res.group("perm_to").split()
             subs = {
                 Symbol(from_var): Symbol(to_var)
                 for from_var, to_var in zip(from_vars, to_vars)
-                }
+            }
         else:
             subs = {}
 

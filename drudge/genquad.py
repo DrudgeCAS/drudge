@@ -46,8 +46,7 @@ class GenQuadDrudge(Drudge, abc.ABC):
 
     @property
     def full_balance(self) -> bool:
-        """If full load-balancing is to be performed during normal-ordering.
-        """
+        """If full load-balancing is to be performed during normal-ordering."""
         return self._full_balance
 
     @full_balance.setter
@@ -56,7 +55,7 @@ class GenQuadDrudge(Drudge, abc.ABC):
 
         if not isinstance(val, bool):
             raise TypeError(
-                'Invalid option for full balancing', val, 'expecting boolean'
+                "Invalid option for full balancing", val, "expecting boolean"
             )
         self._full_balance = val
 
@@ -83,19 +82,23 @@ class GenQuadDrudge(Drudge, abc.ABC):
         """Normal order the terms in the RDD."""
 
         if len(kwargs) > 0:
-            raise ValueError('Invalid keyword arguments', kwargs)
+            raise ValueError("Invalid keyword arguments", kwargs)
 
         symms = self.symms
         swapper = self.swapper
         resolvers = self.resolvers
 
-        init = terms.map(lambda term: _NOState(
-            pivot=1, front=2, term=term.canon4normal(symms.value)
-        ))
+        init = terms.map(
+            lambda term: _NOState(
+                pivot=1, front=2, term=term.canon4normal(symms.value)
+            )
+        )
 
-        res = nest_bind(init, lambda x: _sort_vec(
-            x, swapper=swapper, resolvers=resolvers.value
-        ), full_balance=self.full_balance)
+        res = nest_bind(
+            init,
+            lambda x: _sort_vec(x, swapper=swapper, resolvers=resolvers.value),
+            full_balance=self.full_balance,
+        )
 
         return res.map(lambda x: x.term)
 
@@ -107,11 +110,7 @@ class GenQuadDrudge(Drudge, abc.ABC):
 # the vector to swap, possibly.  Front is the index for the next pivot.
 #
 
-_NOState = collections.namedtuple('_NOState', [
-    'pivot',
-    'front',
-    'term'
-])
+_NOState = collections.namedtuple("_NOState", ["pivot", "front", "term"])
 
 
 def _sort_vec(no_state: _NOState, swapper: GenQuadDrudge.Swapper, resolvers):
@@ -130,9 +129,11 @@ def _sort_vec(no_state: _NOState, swapper: GenQuadDrudge.Swapper, resolvers):
         return None
 
     # To be used by the end of the inner loop.
-    move2front = [_NOState(
-        pivot=no_state.front, front=no_state.front + 1, term=no_state.term
-    )]
+    move2front = [
+        _NOState(
+            pivot=no_state.front, front=no_state.front + 1, term=no_state.term
+        )
+    ]
 
     if pivot == 0:
         return move2front
@@ -149,27 +150,27 @@ def _sort_vec(no_state: _NOState, swapper: GenQuadDrudge.Swapper, resolvers):
 
     # Now we need to do a swap.
     head = vecs[:prev]
-    tail = vecs[pivot + 1:]
+    tail = vecs[pivot + 1 :]
     res_states = []
 
     swapped_vecs = head + (vecs[pivot], vecs[prev]) + tail
     swapped_amp = phase * orig_term.amp
     if swapped_amp != 0:
-        swapped_term = Term(
-            orig_term.sums, swapped_amp, swapped_vecs
+        swapped_term = Term(orig_term.sums, swapped_amp, swapped_vecs)
+        res_states.append(
+            _NOState(pivot=prev, front=no_state.front, term=swapped_term)
         )
-        res_states.append(_NOState(
-            pivot=prev, front=no_state.front, term=swapped_term
-        ))
 
     for comm_term in comm_terms:
         if comm_term.amp == 0:
             continue
 
         comm_vecs = comm_term.vecs
-        res_term = Term(orig_term.sums, comm_term.amp * orig_term.amp, tuple(
-            itertools.chain(head, comm_vecs, tail)
-        )).simplify_deltas(resolvers)
+        res_term = Term(
+            orig_term.sums,
+            comm_term.amp * orig_term.amp,
+            tuple(itertools.chain(head, comm_vecs, tail)),
+        ).simplify_deltas(resolvers)
         if res_term.amp == 0:
             continue
 
@@ -180,9 +181,9 @@ def _sort_vec(no_state: _NOState, swapper: GenQuadDrudge.Swapper, resolvers):
             # Index of the first newly inserted vector.
             res_pivot = prev
 
-        res_states.append(_NOState(
-            pivot=res_pivot, front=res_pivot + 1, term=res_term
-        ))
+        res_states.append(
+            _NOState(pivot=res_pivot, front=res_pivot + 1, term=res_term)
+        )
         continue
 
     return res_states
@@ -191,6 +192,7 @@ def _sort_vec(no_state: _NOState, swapper: GenQuadDrudge.Swapper, resolvers):
 #
 # Utility class for common problems.
 #
+
 
 class GenQuadLatticeDrudge(GenQuadDrudge):
     r"""Drudge for general quadratic algebra with concentration on the bases.
@@ -249,10 +251,16 @@ class GenQuadLatticeDrudge(GenQuadDrudge):
     """
 
     def __init__(
-            self, ctx, order: typing.Iterable[Vec],
-            comms: typing.Mapping[typing.Tuple[Vec, Vec], typing.Union[
-                ATerms, typing.Tuple[ATerms, Expr]
-            ]], assume_comm=False, **kwargs):
+        self,
+        ctx,
+        order: typing.Iterable[Vec],
+        comms: typing.Mapping[
+            typing.Tuple[Vec, Vec],
+            typing.Union[ATerms, typing.Tuple[ATerms, Expr]],
+        ],
+        assume_comm=False,
+        **kwargs,
+    ):
         """Initialize the drudge object."""
         super().__init__(ctx, **kwargs)
         self._swapper = self._form_swapper(order, comms, assume_comm)
@@ -272,27 +280,26 @@ class GenQuadLatticeDrudge(GenQuadDrudge):
         base_ranks = {}
         for i, v in enumerate(order):
             if v in base_ranks:
-                raise ValueError(
-                    'Duplicated generator in the normal order', v
-                )
+                raise ValueError("Duplicated generator in the normal order", v)
             base_ranks[v] = i
             continue
 
         comms = {}
         for k, v in comms_inp.items():
             invalid_key = (
-                    not isinstance(k, typing.Sequence) or len(k) != 2
-                    or any(not isinstance(i, Vec) for i in k)
+                not isinstance(k, typing.Sequence)
+                or len(k) != 2
+                or any(not isinstance(i, Vec) for i in k)
             )
             if invalid_key:
                 raise ValueError(
-                    'Invalid bases to commute, expecting two vectors', k
+                    "Invalid bases to commute, expecting two vectors", k
                 )
 
             if isinstance(v, typing.Sequence):
                 if len(v) != 2:
                     raise ValueError(
-                        'Invalid commutator, commutator and phase expected', v
+                        "Invalid commutator, commutator and phase expected", v
                     )
                 comm, phase = v
             else:
@@ -303,15 +310,13 @@ class GenQuadLatticeDrudge(GenQuadDrudge):
                 phase = sympify(phase)
             except SympifyError as exc:
                 raise ValueError(
-                    'Nonsympifiable phase of commutation', phase, exc
+                    "Nonsympifiable phase of commutation", phase, exc
                 )
 
             try:
                 comm = parse_terms(comm)
             except Exception as exc:
-                raise ValueError(
-                    'Invalid commutator result', comm, exc
-                )
+                raise ValueError("Invalid commutator result", comm, exc)
 
             if len(k[0].indices) == 0 and len(k[1].indices) == 0:
                 key = (k[0], k[1])
@@ -321,7 +326,7 @@ class GenQuadLatticeDrudge(GenQuadDrudge):
             else:
                 if k[0].indices != k[1].indices:
                     raise ValueError(
-                        'Unmatching indices for lattice operators.'
+                        "Unmatching indices for lattice operators."
                     )
                 comms[k[0].base, k[1].base] = (k[0].indices, comm, phase)
 
@@ -338,11 +343,9 @@ class GenQuadLatticeDrudge(GenQuadDrudge):
         )
 
 
-_SwapInfo = collections.namedtuple('_SwapInfo', [
-    'base_ranks',
-    'comms',
-    'assume_comm'
-])
+_SwapInfo = collections.namedtuple(
+    "_SwapInfo", ["base_ranks", "comms", "assume_comm"]
+)
 
 
 def _swap_lattice_gens(vec1: Vec, vec2: Vec, bcast_swap_info):
@@ -355,16 +358,14 @@ def _swap_lattice_gens(vec1: Vec, vec2: Vec, bcast_swap_info):
 
     indices1, indices2 = [i.indices for i in vecs]
     if len(indices1) != len(indices2):
-        raise ValueError('Unmatching lattice indices for', vec1, vec2)
+        raise ValueError("Unmatching lattice indices for", vec1, vec2)
 
     base1, base2 = [vec.base for vec in vecs]
     try:
         rank1 = base_ranks[base1]
         rank2 = base_ranks[base2]
     except KeyError as exc:
-        raise ValueError(
-            'Vector with unspecified normal order', exc.args
-        )
+        raise ValueError("Vector with unspecified normal order", exc.args)
 
     if rank1 < rank2:
         return None
@@ -395,19 +396,23 @@ def _swap_lattice_gens(vec1: Vec, vec2: Vec, bcast_swap_info):
             phase = _UNITY
             comm_factor = _UNITY
         else:
-            raise ValueError(
-                'Commutation rules unspecified', vec1, vec2
-            )
+            raise ValueError("Commutation rules unspecified", vec1, vec2)
 
-        delta = functools.reduce(operator.mul, (
-            KroneckerDelta(i, j) for i, j in zip(indices1, indices2)
-        ), _UNITY)
+        delta = functools.reduce(
+            operator.mul,
+            (KroneckerDelta(i, j) for i, j in zip(indices1, indices2)),
+            _UNITY,
+        )
 
         terms = Terms(
-            Term(term.sums, delta * comm_factor * term.amp, tuple(
-                i[indices1] if len(i.indices) == 0 else i
-                for i in term.vecs
-            ))
+            Term(
+                term.sums,
+                delta * comm_factor * term.amp,
+                tuple(
+                    i[indices1] if len(i.indices) == 0 else i
+                    for i in term.vecs
+                ),
+            )
             for term in comm
         )
         return phase, terms
@@ -425,15 +430,15 @@ def _get_comm_phase(comms, vecs, indices):
         dumms, comm, phase = entry
         if len(indices) != len(dumms):
             raise ValueError(
-                'Indices in vectors', indices,
-                'cannot be matched for the rules of commuting', vecs
+                "Indices in vectors",
+                indices,
+                "cannot be matched for the rules of commuting",
+                vecs,
             )
-        substs = {
-            i: j for i, j in zip(dumms, indices)
-        }
+        substs = {i: j for i, j in zip(dumms, indices)}
         return (
             tuple(i.map(lambda x: x.xreplace(substs)) for i in comm),
-            phase.xreplace(substs)
+            phase.xreplace(substs),
         )
     else:
         assert False

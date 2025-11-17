@@ -8,7 +8,13 @@ from unittest.mock import MagicMock
 from sympy import IndexedBase, symbols, Symbol
 
 from drudge import (
-    Vec, sum_, prod_, Stopwatch, ScalarLatexPrinter, InvariantIndexable, Range
+    Vec,
+    sum_,
+    prod_,
+    Stopwatch,
+    ScalarLatexPrinter,
+    InvariantIndexable,
+    Range,
 )
 from drudge.term import parse_terms, try_resolve_range
 from drudge.utils import extract_alnum, SymbResolver
@@ -17,7 +23,7 @@ from drudge.utils import extract_alnum, SymbResolver
 def test_sum_prod_utility():
     """Test the summation and product utility."""
 
-    v = Vec('v')
+    v = Vec("v")
     vecs = [v[i] for i in range(3)]
     v0, v1, v2 = vecs
 
@@ -47,15 +53,15 @@ def test_stopwatch():
 
     stamper = Stopwatch(print_cb)
     precise_sleep(0.5)
-    stamper.tock('Nothing')
+    stamper.tock("Nothing")
     res = res_holder[0]
-    assert res.startswith('Nothing done')
+    assert res.startswith("Nothing done")
     assert float(res.split()[-2]) - 0.5 < 0.001
 
     precise_sleep(0.5)
-    stamper.tock('Tensor', tensor)
+    stamper.tock("Tensor", tensor)
     res = res_holder[0]
-    assert res.startswith('Tensor done, 2 terms')
+    assert res.startswith("Tensor done, 2 terms")
     assert float(res.split()[-2]) - 0.5 < 0.001
     tensor.cache.assert_called_once_with()
 
@@ -67,36 +73,39 @@ def test_stopwatch():
 def test_invariant_indexable():
     """Test the utility for invariant indexables."""
 
-    val = Symbol('G')
+    val = Symbol("G")
     tensor = InvariantIndexable(val)
     assert tensor[1] == val
-    assert tensor[1, Symbol('i')] == val
+    assert tensor[1, Symbol("i")] == val
 
 
 def test_scalar_latex_printing():
     """Test the printing of scalars into LaTeX form."""
 
-    x1 = IndexedBase('x1')
-    i, j = symbols('i j')
+    x1 = IndexedBase("x1")
+    i, j = symbols("i j")
     expr = x1[i, j]
-    assert ScalarLatexPrinter().doprint(expr) == 'x^{(1)}_{i,j}'
+    assert ScalarLatexPrinter().doprint(expr) == "x^{(1)}_{i,j}"
 
 
 def test_extracting_alnum_substring():
     """Test the utility to extract alphanumeric part of a string."""
-    assert extract_alnum('x_{1, 2}') == 'x12'
+    assert extract_alnum("x_{1, 2}") == "x12"
 
 
 def test_symb_resolvers():
     """Test the functionality of symbol resolvers in strict mode."""
-    r = Range('R')
-    a, b = symbols('a b')
+    r = Range("R")
+    a, b = symbols("a b")
 
-    strict, normal = [functools.partial(
-        try_resolve_range, sums_dict={}, resolvers=[SymbResolver(
-            [(r, [a])], strict=i
-        )]
-    ) for i in [True, False]]
+    strict, normal = [
+        functools.partial(
+            try_resolve_range,
+            sums_dict={},
+            resolvers=[SymbResolver([(r, [a])], strict=i)],
+        )
+        for i in [True, False]
+    ]
 
     # Strict mode.
     assert strict(a) == r

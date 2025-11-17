@@ -71,21 +71,26 @@ class SU2LatticeDrudge(GenQuadLatticeDrudge):
 
     """
 
-    DEFAULT_CARTAN = Vec('J^z')
-    DEFAULT_RAISE = Vec('J^+')
-    DEFAULT_LOWER = Vec('J^-')
+    DEFAULT_CARTAN = Vec("J^z")
+    DEFAULT_RAISE = Vec("J^+")
+    DEFAULT_LOWER = Vec("J^-")
 
     def __init__(
-            self, ctx, cartan=DEFAULT_CARTAN, raise_=DEFAULT_RAISE,
-            lower=DEFAULT_LOWER, root=Integer(1), norm=Integer(2), shift=0,
-            order=None, specials=None, **kwargs
+        self,
+        ctx,
+        cartan=DEFAULT_CARTAN,
+        raise_=DEFAULT_RAISE,
+        lower=DEFAULT_LOWER,
+        root=Integer(1),
+        norm=Integer(2),
+        shift=0,
+        order=None,
+        specials=None,
+        **kwargs,
     ):
-        r"""Initialize the drudge.
-        """
+        r"""Initialize the drudge."""
 
-        order = order if order is not None else (
-            raise_, cartan, lower
-        )
+        order = order if order is not None else (raise_, cartan, lower)
 
         raise_lower_comm = norm * cartan
         if shift != 0:
@@ -94,7 +99,7 @@ class SU2LatticeDrudge(GenQuadLatticeDrudge):
         comms = {
             (cartan, raise_): root * raise_,
             (cartan, lower): -root * lower,
-            (raise_, lower): raise_lower_comm
+            (raise_, lower): raise_lower_comm,
         }
 
         if specials is not None:
@@ -105,10 +110,12 @@ class SU2LatticeDrudge(GenQuadLatticeDrudge):
         self.cartan = cartan
         self.raise_ = raise_
         self.lower = lower
-        self.set_name(**{
-            cartan.label[0] + '_': cartan,
-            raise_.label[0] + '_p': raise_,
-            lower.label[0] + '_m': lower
-        })
+        self.set_name(
+            **{
+                cartan.label[0] + "_": cartan,
+                raise_.label[0] + "_p": raise_,
+                lower.label[0] + "_m": lower,
+            }
+        )
 
-    _latex_vec_mul = ' '
+    _latex_vec_mul = " "

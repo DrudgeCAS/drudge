@@ -1,0 +1,14 @@
+target-version = "py312"
+line-length = 79
+exclude = ["deps"]
+extend-include = ["*.drs"]
+
+[lint]
+ignore = ["E741"]
+
+[format]
+docstring-code-format = true
+
+[lint.per-file-ignores]
+"*.ipynb" = ["F403", "F405"]
+"*.drs" = ["F403", "F405", "F821"]

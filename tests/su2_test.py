@@ -15,10 +15,7 @@ def test_su2_without_symbolic_index(spark_ctx):
 
     # Test the basic commutation rules without explicit site or on the same
     # site.
-    for ops in [
-        (p.J_, p.J_p, p.J_m),
-        (p.J_[0], p.J_p[0], p.J_m[0])
-    ]:
+    for ops in [(p.J_, p.J_p, p.J_m), (p.J_[0], p.J_p[0], p.J_m[0])]:
         j_z, j_p, j_m = [dr.sum(i) for i in ops]
         assert (j_z | j_p).simplify() == j_p
         assert (j_z | j_m).simplify() == -1 * j_m
@@ -30,12 +27,9 @@ def test_su2_without_symbolic_index(spark_ctx):
         assert (j_y | j_z).simplify() == I * j_x
         assert (j_z | j_x).simplify() == I * j_y
 
-        j_sq = dr.sum(
-            j_z * j_z + half * j_p * j_m + half * j_m * j_p
-        )
+        j_sq = dr.sum(j_z * j_z + half * j_p * j_m + half * j_m * j_p)
         for i in [j_x, j_y, j_z]:
             assert (j_sq | i).simplify() == 0
-        continue
 
 
 def test_su2_on_1d_heisenberg_model(spark_ctx):
@@ -45,8 +39,8 @@ def test_su2_on_1d_heisenberg_model(spark_ctx):
     """
 
     dr = SU2LatticeDrudge(spark_ctx)
-    l = Range('L')
-    dr.set_dumms(l, symbols('i j k l m n'))
+    l = Range("L")
+    dr.set_dumms(l, symbols("i j k l m n"))
     dr.add_default_resolver(l)
 
     p = dr.names
@@ -56,16 +50,20 @@ def test_su2_on_1d_heisenberg_model(spark_ctx):
     i = p.i
     half = Rational(1, 2)
 
-    coupling = Symbol('J')
-    ham = dr.sum(
-        (i, l),
-        j_z[i] * j_z[i + 1] +
-        j_p[i] * j_m[i + 1] / 2 + j_m[i] * j_p[i + 1] / 2
-    ) * coupling
+    coupling = Symbol("J")
+    ham = (
+        dr.sum(
+            (i, l),
+            j_z[i] * j_z[i + 1]
+            + j_p[i] * j_m[i + 1] / 2
+            + j_m[i] * j_p[i + 1] / 2,
+        )
+        * coupling
+    )
 
     s_sq = dr.sum(
         (i, l),
-        j_z[i] * j_z[i] + half * j_p[i] * j_m[i] + half * j_m[i] * j_p[i]
+        j_z[i] * j_z[i] + half * j_p[i] * j_m[i] + half * j_m[i] * j_p[i],
     )
 
     comm = (ham | s_sq).simplify()
@@ -78,20 +76,22 @@ def test_su2_with_deformed_commutation(spark_ctx):
     raise_ = SU2LatticeDrudge.DEFAULT_RAISE
     lower = SU2LatticeDrudge.DEFAULT_LOWER
     cartan = SU2LatticeDrudge.DEFAULT_CARTAN
-    alpha = IndexedBase('alpha')
-    a = Symbol('a')
+    alpha = IndexedBase("alpha")
+    a = Symbol("a")
 
-    dr = SU2LatticeDrudge(spark_ctx, specials={
-        (raise_[a], lower[a]): alpha[a] * cartan[a] - 1
-    })
+    dr = SU2LatticeDrudge(
+        spark_ctx, specials={(raise_[a], lower[a]): alpha[a] * cartan[a] - 1}
+    )
 
     assert dr.simplify(cartan[a] | raise_[a]) == dr.sum(raise_[a])
     assert dr.simplify(cartan[a] | lower[a]) == dr.sum(-lower[a])
 
-    assert dr.simplify(raise_[a] | lower[a]) == dr.sum(
-        alpha[a] * cartan[a] - 1
-    ).simplify()
-    assert dr.simplify(lower[a] | raise_[a]) == dr.sum(
-        1 - alpha[a] * cartan[a]
-    ).simplify()
+    assert (
+        dr.simplify(raise_[a] | lower[a])
+        == dr.sum(alpha[a] * cartan[a] - 1).simplify()
+    )
+    assert (
+        dr.simplify(lower[a] | raise_[a])
+        == dr.sum(1 - alpha[a] * cartan[a]).simplify()
+    )
     assert dr.simplify(raise_[1] | lower[2]) == 0

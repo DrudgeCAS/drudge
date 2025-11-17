@@ -11,15 +11,39 @@ import warnings
 from collections.abc import Iterable, Mapping, Callable, Sequence
 
 from sympy import (
-    sympify, Symbol, KroneckerDelta, Eq, solveset, S, Integer, Add, Mul, Number,
-    Indexed, IndexedBase, Expr, Basic, Pow, Wild, conjugate, Sum, Piecewise,
-    Intersection, expand_power_base, expand_power_exp
+    sympify,
+    Symbol,
+    KroneckerDelta,
+    Eq,
+    solveset,
+    S,
+    Integer,
+    Add,
+    Mul,
+    Number,
+    Indexed,
+    IndexedBase,
+    Expr,
+    Basic,
+    Pow,
+    Wild,
+    conjugate,
+    Sum,
+    Piecewise,
+    Intersection,
+    expand_power_base,
+    expand_power_exp,
 )
 from sympy.core.sympify import CantSympify
 
 from .canon import canon_factors
 from .utils import (
-    ensure_symb, ensure_expr, sympy_key, is_higher, NonsympifiableFunc, prod_
+    ensure_symb,
+    ensure_expr,
+    sympy_key,
+    is_higher,
+    NonsympifiableFunc,
+    prod_,
 )
 
 #
@@ -64,30 +88,25 @@ class Range:
 
     """
 
-    __slots__ = [
-        '_label',
-        '_lower',
-        '_upper'
-    ]
+    __slots__ = ["_label", "_lower", "_upper"]
 
     def __init__(self, label, lower=None, upper=None):
-        """Initialize the symbolic range.
-        """
+        """Initialize the symbolic range."""
         self._label = label
         self._lower = (
-            ensure_expr(lower, 'lower bound') if lower is not None else lower
+            ensure_expr(lower, "lower bound") if lower is not None else lower
         )
 
         if self._lower is None:
             if upper is not None:
-                raise ValueError('lower range has not been given.')
+                raise ValueError("lower range has not been given.")
             else:
                 self._upper = None
         else:
             if upper is None:
-                raise ValueError('upper range has not been given.')
+                raise ValueError("upper range has not been given.")
             else:
-                self._upper = ensure_expr(upper, 'upper bound')
+                self._upper = ensure_expr(upper, "upper bound")
 
     @property
     def label(self):
@@ -133,30 +152,22 @@ class Range:
         if self.bounded:
             return self._label, self._lower, self._upper
         else:
-            return self._label,
+            return (self._label,)
 
     def __hash__(self):
-        """Hash the symbolic range.
-        """
+        """Hash the symbolic range."""
         return hash(self._label)
 
     def __eq__(self, other):
-        """Compare equality of two ranges.
-        """
-        return isinstance(other, type(self)) and (
-                self._label == other.label
-        )
+        """Compare equality of two ranges."""
+        return isinstance(other, type(self)) and (self._label == other.label)
 
     def __repr__(self):
-        """Form the representative string.
-        """
-        return ''.join([
-            'Range(', ', '.join(repr(i) for i in self.args), ')'
-        ])
+        """Form the representative string."""
+        return "".join(["Range(", ", ".join(repr(i) for i in self.args), ")"])
 
     def __str__(self):
-        """Form readable string representation.
-        """
+        """Form readable string representation."""
         return str(self._label)
 
     @property
@@ -183,7 +194,7 @@ class Range:
         """
 
         if not isinstance(other, Range):
-            raise TypeError('Invalid range to compare', other)
+            raise TypeError("Invalid range to compare", other)
 
         return self.sort_key < other.sort_key
 
@@ -195,8 +206,8 @@ class Range:
         """
         if not isinstance(item, tuple) or len(item) != 2:
             raise TypeError(
-                'Invalid bounds for range, expecting upper and lower range',
-                item
+                "Invalid bounds for range, expecting upper and lower range",
+                item,
             )
 
         lower, upper = [sympify(i) for i in item]
@@ -223,9 +234,8 @@ class ATerms(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def terms(self) -> typing.List['Term']:
-        """Get an list for the terms.
-        """
+    def terms(self) -> typing.List["Term"]:
+        """Get an list for the terms."""
         pass
 
     #
@@ -266,7 +276,6 @@ class ATerms(abc.ABC):
             vecs = i.vecs + j.vecs
 
             prod_terms.append(Term(sums, amp, vecs))
-            continue
 
         return Terms(prod_terms)
 
@@ -306,35 +315,28 @@ class ATerms(abc.ABC):
 
     @staticmethod
     def _add(left_terms, right_terms):
-        """Add the terms together.
-        """
+        """Add the terms together."""
         return Terms(itertools.chain(left_terms, right_terms))
 
     @staticmethod
-    def _neg_terms(terms: typing.Iterable['Term']):
+    def _neg_terms(terms: typing.Iterable["Term"]):
         """Negate the given terms.
 
         The resulted terms are lazily evaluated.
         """
-        return (
-            Term(i.sums, i.amp * _NEG_UNITY, i.vecs)
-            for i in terms
-        )
+        return (Term(i.sums, i.amp * _NEG_UNITY, i.vecs) for i in terms)
 
     def __truediv__(self, other):
         """Make division with another object."""
         other = sympify(other)
-        return Terms([
-            i.scale(1 / other) for i in self.terms
-        ])
+        return Terms([i.scale(1 / other) for i in self.terms])
 
     def __rtruediv__(self, other):
         """Being divided over by other object."""
-        raise NotImplementedError('General tensors cannot inversed')
+        raise NotImplementedError("General tensors cannot inversed")
 
     def __or__(self, other):
-        """Compute the commutator with another object.
-        """
+        """Compute the commutator with another object."""
         if is_higher(other, self._op_priority):
             return NotImplemented
         return self * other - other * self
@@ -353,9 +355,9 @@ class Terms(ATerms):
     the abstract terms objects will be elevated to instances of this class.
     """
 
-    __slots__ = ['_terms']
+    __slots__ = ["_terms"]
 
-    def __init__(self, terms: typing.Iterable['Term']):
+    def __init__(self, terms: typing.Iterable["Term"]):
         """Initialize the terms object.
 
         The possibly lazy iterable of terms will be instantiated here.  And zero
@@ -369,7 +371,7 @@ class Terms(ATerms):
         return self._terms
 
 
-def parse_terms(obj) -> typing.List['Term']:
+def parse_terms(obj) -> typing.List["Term"]:
     """Parse the object into a list of terms."""
 
     if isinstance(obj, ATerms):
@@ -401,7 +403,7 @@ class Vec(ATerms, CantSympify):
 
     """
 
-    __slots__ = ['_label', '_indices']
+    __slots__ = ["_label", "_indices"]
 
     def __init__(self, label, indices=()):
         """Initialize a vector.
@@ -412,12 +414,11 @@ class Vec(ATerms, CantSympify):
         self._label = label
         if not isinstance(indices, Iterable):
             indices = (indices,)
-        self._indices = tuple(ensure_expr(i, 'vector index') for i in indices)
+        self._indices = tuple(ensure_expr(i, "vector index") for i in indices)
 
     @property
     def label(self):
-        """The label for the base of the vector.
-        """
+        """The label for the base of the vector."""
         return self._label
 
     @property
@@ -430,8 +431,7 @@ class Vec(ATerms, CantSympify):
 
     @property
     def indices(self):
-        """The indices to the vector.
-        """
+        """The indices to the vector."""
         return self._indices
 
     def __getitem__(self, item):
@@ -449,22 +449,27 @@ class Vec(ATerms, CantSympify):
 
     def __repr__(self):
         """Form repr string form the vector."""
-        return ''.join([
-            type(self).__name__, '(', repr(self._label), ', (',
-            ', '.join(repr(i) for i in self._indices),
-            '))'
-        ])
+        return "".join(
+            [
+                type(self).__name__,
+                "(",
+                repr(self._label),
+                ", (",
+                ", ".join(repr(i) for i in self._indices),
+                "))",
+            ]
+        )
 
     def __str__(self):
         """Form a more readable string representation."""
 
         label = str(self._label)
         if len(self._indices) > 0:
-            indices = ''.join([
-                '[', ', '.join(str(i) for i in self._indices), ']'
-            ])
+            indices = "".join(
+                ["[", ", ".join(str(i) for i in self._indices), "]"]
+            )
         else:
-            indices = ''
+            indices = ""
 
         return label + indices
 
@@ -475,9 +480,9 @@ class Vec(ATerms, CantSympify):
     def __eq__(self, other):
         """Compares the equality of two vectors."""
         return (
-                (isinstance(self, type(other)) or
-                 isinstance(other, type(self))) and
-                self._label == other.label and self._indices == other.indices
+            (isinstance(self, type(other)) or isinstance(other, type(self)))
+            and self._label == other.label
+            and self._indices == other.indices
         )
 
     @property
@@ -521,19 +526,15 @@ class Term(ATerms):
     vectors.
     """
 
-    __slots__ = [
-        '_sums',
-        '_amp',
-        '_vecs',
-        '_free_vars',
-        '_dumms'
-    ]
+    __slots__ = ["_sums", "_amp", "_vecs", "_free_vars", "_dumms"]
 
     def __init__(
-            self, sums: typing.Tuple[typing.Tuple[Symbol, Range], ...],
-            amp: Expr, vecs: typing.Tuple[Vec, ...],
-            free_vars: typing.FrozenSet[Symbol] = None,
-            dumms: typing.Mapping[Symbol, Range] = None,
+        self,
+        sums: typing.Tuple[typing.Tuple[Symbol, Range], ...],
+        amp: Expr,
+        vecs: typing.Tuple[Vec, ...],
+        free_vars: typing.FrozenSet[Symbol] = None,
+        dumms: typing.Mapping[Symbol, Range] = None,
     ):
         """Initialize the tensor term.
 
@@ -601,22 +602,23 @@ class Term(ATerms):
 
     def __repr__(self):
         """Form the representative string of a term."""
-        return 'Term(sums=[{}], amp={}, vecs=[{}])'.format(
-            ', '.join(repr(i) for i in self._sums),
+        return "Term(sums=[{}], amp={}, vecs=[{}])".format(
+            ", ".join(repr(i) for i in self._sums),
             repr(self._amp),
-            ', '.join(repr(i) for i in self._vecs)
+            ", ".join(repr(i) for i in self._vecs),
         )
 
     def __str__(self):
         """Form the readable string representation of a term."""
         if len(self._sums) > 0:
-            header = 'sum_{{{}}} '.format(
-                ', '.join(str(i[0]) for i in self._sums))
+            header = "sum_{{{}}} ".format(
+                ", ".join(str(i[0]) for i in self._sums)
+            )
         else:
-            header = ''
+            header = ""
         factors = [str(self._amp)]
         factors.extend(str(i) for i in self._vecs)
-        return header + ' * '.join(factors)
+        return header + " * ".join(factors)
 
     @property
     def sort_key(self):
@@ -635,9 +637,11 @@ class Term(ATerms):
         sum_keys = [(i[1].sort_key, sympy_key(i[0])) for i in self._sums]
 
         return (
-            len(vec_keys), vec_keys,
-            len(sum_keys), sum_keys,
-            sympy_key(self._amp)
+            len(vec_keys),
+            vec_keys,
+            len(sum_keys),
+            sum_keys,
+            sympy_key(self._amp),
         )
 
     @property
@@ -650,8 +654,7 @@ class Term(ATerms):
         return [self]
 
     def scale(self, factor):
-        """Scale the term by a factor.
-        """
+        """Scale the term by a factor."""
         return Term(self._sums, self._amp * factor, self._vecs)
 
     def mul_term(self, other, dumms=None, excl=None):
@@ -676,7 +679,7 @@ class Term(ATerms):
         amp0 = lhs.amp * rhs.amp
         return [
             Term(sums, amp0, lhs.vecs + rhs.vecs),
-            Term(sums, -amp0, rhs.vecs + lhs.vecs)
+            Term(sums, -amp0, rhs.vecs + lhs.vecs),
         ]
 
     def reconcile_dumms(self, other, dumms, excl):
@@ -699,31 +702,29 @@ class Term(ATerms):
             if range_.bounded:
                 yield range_.lower
                 yield range_.upper
-            continue
 
         yield self._amp
 
         for vec in self._vecs:
             yield from vec.indices
-            continue
 
     @property
     def free_vars(self):
-        """The free symbols used in the term.
-        """
+        """The free symbols used in the term."""
 
         if self._free_vars is None:
             dumms = self.dumms
             self._free_vars = set(
-                i for expr in self.exprs for i in expr.atoms(Symbol)
+                i
+                for expr in self.exprs
+                for i in expr.atoms(Symbol)
                 if i not in dumms
             )
         return self._free_vars
 
     @property
     def dumms(self):
-        """Get the mapping from dummies to their range.
-        """
+        """Get the mapping from dummies to their range."""
 
         if self._dumms is None:
             self._dumms = dict(self._sums)
@@ -753,7 +754,7 @@ class Term(ATerms):
         amp = self._amp
 
         if monom_only and isinstance(amp, Add):
-            raise ValueError('Invalid amplitude: ', amp, 'expecting monomial')
+            raise ValueError(f"Invalid amplitude: {amp}, expecting monomial")
 
         if isinstance(amp, Mul):
             all_factors = amp.args
@@ -773,13 +774,17 @@ class Term(ATerms):
                 factors.append(factor)
             else:
                 coeff *= factor
-            continue
 
         return factors, coeff
 
     def map(
-            self, func=lambda x: x, sums=None, amp=None, vecs=None,
-            skip_vecs=False, skip_ranges=False
+        self,
+        func=lambda x: x,
+        sums=None,
+        amp=None,
+        vecs=None,
+        skip_vecs=False,
+        skip_ranges=False,
     ):
         """Map the given function to the SymPy expressions in the term.
 
@@ -823,8 +828,11 @@ class Term(ATerms):
             sums = tuple(sum_ for sum_ in sums if sum_[0] not in substs)
 
         return self.map(
-            lambda x: x.xreplace(substs), sums=sums, amp=amp, vecs=vecs,
-            skip_ranges=False
+            lambda x: x.xreplace(substs),
+            sums=sums,
+            amp=amp,
+            vecs=vecs,
+            skip_ranges=False,
         )
 
     def reset_dumms(self, dumms, dummbegs=None, excl=None, add_substs=None):
@@ -859,34 +867,31 @@ class Term(ATerms):
         new_sums = []
         substs = {}
         for dumm_i, range_i in sums:
-
             # For linter.
             new_dumm = None
             new_beg = None
 
             beg = dummbegs[range_i] if range_i in dummbegs else 0
             for i in itertools.count(beg):
-
                 try:
                     tentative = dumms[range_i][i]
                 except KeyError:
-                    raise ValueError('Dummies for range', range_i,
-                                     'is not given')
+                    raise ValueError(
+                        "Dummies for range", range_i, "is not given"
+                    )
                 except IndexError:
-                    raise ValueError('Dummies for range', range_i, 'is used up')
+                    raise ValueError(
+                        "Dummies for range", range_i, "is used up"
+                    )
 
                 if excl is None or tentative not in excl:
                     new_dumm = tentative
                     new_beg = i + 1
                     break
-                else:
-                    continue
 
             new_sums.append((new_dumm, range_i))
             substs[dumm_i] = new_dumm
             dummbegs[range_i] = new_beg
-
-            continue
 
         return tuple(new_sums), substs, dummbegs
 
@@ -911,9 +916,7 @@ class Term(ATerms):
         involvement at all.
         """
 
-        involved = {
-            i for expr in self.exprs for i in expr.atoms(Symbol)
-        }
+        involved = {i for expr in self.exprs for i in expr.atoms(Symbol)}
 
         new_sums = []
         factor = _UNITY
@@ -925,7 +928,6 @@ class Term(ATerms):
                 factor *= range_.size
             else:
                 new_sums.append((symb, range_))
-            continue
 
         if dirty:
             return Term(tuple(new_sums), factor * self._amp, self._vecs)
@@ -1003,9 +1005,14 @@ class Term(ATerms):
                 if expr.func in symms or (expr.func, len(expr.args)) in symms:
                     if_treat = True
                 else:
-                    if_treat = sum(1 for arg in expr.args if any(
-                        arg.has(dumm) for dumm, _ in self.sums
-                    )) > 1
+                    if_treat = (
+                        sum(
+                            1
+                            for arg in expr.args
+                            if any(arg.has(dumm) for dumm, _ in self.sums)
+                        )
+                        > 1
+                    )
 
             if if_treat:
                 to_treats.append(expr)
@@ -1015,55 +1022,49 @@ class Term(ATerms):
 
         amp_factors, coeff = self.amp_factors
         for i in amp_factors:
-
             amp_no_treated = i.replace(
                 lambda _: True, NonsympifiableFunc(replace_to_treats)
             )
 
             n_to_treats = len(to_treats)
             if n_to_treats > 1:
-                raise ValueError(
-                    'Overly complex factor', i
-                )
+                raise ValueError("Overly complex factor", i)
             elif n_to_treats == 1:
                 to_treat = to_treats[0]
                 to_treats.clear()  # Clean the container for the next factor.
 
-                factors.append((
-                    to_treat, (
-                        _COMMUTATIVE,
-                        sympy_key(to_treat.base.label)
-                        if isinstance(to_treat, Indexed)
-                        else sympy_key(to_treat.func),
-                        sympy_key(amp_no_treated)
+                factors.append(
+                    (
+                        to_treat,
+                        (
+                            _COMMUTATIVE,
+                            sympy_key(to_treat.base.label)
+                            if isinstance(to_treat, Indexed)
+                            else sympy_key(to_treat.func),
+                            sympy_key(amp_no_treated),
+                        ),
                     )
-                ))
+                )
                 factors_info.append(amp_no_treated)
 
             else:  # No part needing explicit treatment.
-
                 # When the factor never has an indexed base, we treat it as
                 # indexing a uni-valence internal indexed base.
-                factors.append((
-                    wrapper_base[i], (_COMMUTATIVE,)
-                ))
+                factors.append((wrapper_base[i], (_COMMUTATIVE,)))
                 factors_info.append(unindexed_factor)
-
-            continue
 
         #
         # Get the factors in the vectors.
         #
 
         for i, v in enumerate(self._vecs):
-            colour = i if vec_colour is None else vec_colour(
-                idx=i, vec=v, term=self
+            colour = (
+                i
+                if vec_colour is None
+                else vec_colour(idx=i, vec=v, term=self)
             )
-            factors.append((
-                v, (_NON_COMMUTATIVE, colour)
-            ))
+            factors.append((v, (_NON_COMMUTATIVE, colour)))
             factors_info.append(vec_factor)
-            continue
 
         #
         # Invoke the core simplification.
@@ -1080,7 +1081,6 @@ class Term(ATerms):
         res_amp = coeff * canon_coeff
         res_vecs = []
         for i, j in zip(canoned_factors, factors_info):
-
             if j == vec_factor:
                 # When we have a vector.
                 res_vecs.append(i)
@@ -1088,7 +1088,6 @@ class Term(ATerms):
                 res_amp *= i.indices[0]
             else:
                 res_amp *= j.xreplace({treated_placeholder: i})
-            continue
 
         return Term(tuple(res_sums), res_amp, tuple(res_vecs))
 
@@ -1109,10 +1108,9 @@ class Term(ATerms):
             # normal ordering.
             i.sort(key=sympy_key)
 
-        canon_term = (
-            self.canon(symms=symms, vec_colour=lambda idx, vec, term: 0)
-                .reset_dumms(dumms)[0]
-        )
+        canon_term = self.canon(
+            symms=symms, vec_colour=lambda idx, vec, term: 0
+        ).reset_dumms(dumms)[0]
 
         return canon_term
 
@@ -1123,17 +1121,13 @@ class Term(ATerms):
             return self._amp.has(base)
         elif isinstance(base, Vec):
             label = base.label
-            return any(
-                i.label == label for i in self._vecs
-            )
+            return any(i.label == label for i in self._vecs)
         else:
-            raise TypeError('Invalid base to test presence', base)
+            raise TypeError("Invalid base to test presence", base)
 
 
-_WRAPPER_BASE = IndexedBase(
-    'internalWrapper', shape=('internalShape',)
-)
-_TREATED_PLACEHOLDER = Symbol('internalTreatedPlaceholder')
+_WRAPPER_BASE = IndexedBase("internalWrapper", shape=("internalShape",))
+_TREATED_PLACEHOLDER = Symbol("internalTreatedPlaceholder")
 
 # For colour of factors in a term.
 
@@ -1146,12 +1140,16 @@ _NON_COMMUTATIVE = 0
 # ---------------------------------
 #
 
+
 def subst_vec_term(
-        term: Term, lhs: typing.Tuple[Vec], rhs_terms: typing.List[Term],
-        dumms, dummbegs, excl
+    term: Term,
+    lhs: typing.Tuple[Vec],
+    rhs_terms: typing.List[Term],
+    dumms,
+    dummbegs,
+    excl,
 ):
-    """Substitute a matching vector in the given term.
-    """
+    """Substitute a matching vector in the given term."""
 
     sums = term.sums
     vecs = term.vecs
@@ -1167,13 +1165,9 @@ def subst_vec_term(
             new = _match_indices(target, pattern)
             if new is None or not _update_substs(substs, new):
                 break
-            else:
-                continue
         else:
             start_idx = i
             break
-
-        continue
     else:
         return None  # Based on nest bind protocol.
 
@@ -1184,18 +1178,20 @@ def subst_vec_term(
     res = []
     for i, j in subst_states:
         new_vecs = list(vecs)
-        new_vecs[start_idx:start_idx + n_new_vecs] = i.vecs
-        res.append((
-            Term(sums + i.sums, amp * i.amp, tuple(new_vecs)), j
-        ))
-        continue
+        new_vecs[start_idx : start_idx + n_new_vecs] = i.vecs
+        res.append((Term(sums + i.sums, amp * i.amp, tuple(new_vecs)), j))
 
     return res
 
 
 def subst_factor_term(
-        term: Term, lhs, rhs_terms: typing.List[Term], dumms, dummbegs, excl,
-        full_simplify=True
+    term: Term,
+    lhs,
+    rhs_terms: typing.List[Term],
+    dumms,
+    dummbegs,
+    excl,
+    full_simplify=True,
 ):
     """Substitute a scalar factor in the term.
 
@@ -1207,8 +1203,8 @@ def subst_factor_term(
 
     amp = term.amp
 
-    placeholder1 = Symbol('internalSubstPlaceholder1')
-    placeholder2 = Symbol('internalSubstPlaceholder2')
+    placeholder1 = Symbol("internalSubstPlaceholder1")
+    placeholder2 = Symbol("internalSubstPlaceholder2")
     found = [False]
     substs = {}
 
@@ -1246,12 +1242,13 @@ def subst_factor_term(
 
     else:
         raise TypeError(
-            'Invalid LHS for substitution', lhs,
-            'expecting symbol or indexed quantity'
+            "Invalid LHS for substitution",
+            lhs,
+            "expecting symbol or indexed quantity",
         )
 
     # Some special treatment is needed for powers.
-    pow_placeholder = Symbol('internalSubstPowPlaceholder')
+    pow_placeholder = Symbol("internalSubstPowPlaceholder")
     pow_val = [None]
 
     def decouple_pow(base, e):
@@ -1270,14 +1267,12 @@ def subst_factor_term(
 
     if pow_val[0] is not None:
         amp = amp.xreplace({pow_placeholder: pow_val[0]})
-    amp = (
-        amp.simplify() if full_simplify else amp
-    ).expand()
+    amp = (amp.simplify() if full_simplify else amp).expand()
 
     # It is called nonlinear error, but some nonlinear forms, like conjugation,
     # can be handled.
     nonlinear_err = ValueError(
-        'Invalid amplitude', term.amp, 'not expandable in', lhs
+        "Invalid amplitude", term.amp, "not expandable in", lhs
     )
 
     if not isinstance(amp, Add) or len(amp.args) != 2:
@@ -1301,10 +1296,9 @@ def subst_factor_term(
     vecs = term.vecs
     res = []
     for i, j in subst_states:
-        res.append((
-            Term(sums + i.sums, amp.xreplace({placeholder1: i.amp}), vecs), j
-        ))
-        continue
+        res.append(
+            (Term(sums + i.sums, amp.xreplace({placeholder1: i.amp}), vecs), j)
+        )
 
     return res
 
@@ -1327,7 +1321,6 @@ def _match_indices(target, expr):
         else:
             if not _update_substs(substs, res):
                 return None
-            continue
 
     return substs
 
@@ -1344,7 +1337,6 @@ def _update_substs(substs, new):
             substs[k] = v
         elif v != substs[k]:
             return False
-        continue
 
     return True
 
@@ -1362,7 +1354,6 @@ def _prepare_subst_states(rhs_terms, substs, dumms, dummbegs, excl):
 
     subst_states = []
     for i, v in enumerate(rhs_terms):
-
         # Reuse existing dummy begins only for the first term.
         if i == 0:
             curr_dummbegs = dummbegs
@@ -1370,16 +1361,13 @@ def _prepare_subst_states(rhs_terms, substs, dumms, dummbegs, excl):
             curr_dummbegs = dict(dummbegs)
 
         curr_term, curr_dummbegs = v.reset_dumms(dumms, curr_dummbegs, excl)
-        subst_states.append((
-            curr_term.subst(substs), curr_dummbegs
-        ))
-        continue
+        subst_states.append((curr_term.subst(substs), curr_dummbegs))
 
     return subst_states
 
 
 def rewrite_term(
-        term: Term, vecs: typing.Sequence[Vec], new_amp: Expr
+    term: Term, vecs: typing.Sequence[Vec], new_amp: Expr
 ) -> typing.Tuple[typing.Optional[Term], Term]:
     """Rewrite the given term.
 
@@ -1408,24 +1396,24 @@ def rewrite_term(
         res_symbs = res_amp.atoms(Symbol)
         res_sums = tuple(i for i in term.sums if i[0] in res_symbs)
         def_sums = tuple(i for i in term.sums if i[0] not in res_symbs)
-        return Term(res_sums, res_amp, term.vecs), Term(
-            def_sums, term.amp, ()
-        )
+        return Term(res_sums, res_amp, term.vecs), Term(def_sums, term.amp, ())
 
     return None, term
 
 
-Sum_expander = typing.Callable[[Symbol], typing.Iterable[typing.Tuple[
-    Symbol, Range, Expr
-]]]
+Sum_expander = typing.Callable[
+    [Symbol], typing.Iterable[typing.Tuple[Symbol, Range, Expr]]
+]
 
 
 def expand_sums_term(
-        term: Term, range_: Range, expander: Sum_expander,
-        exts=None, conv_accs=None
+    term: Term,
+    range_: Range,
+    expander: Sum_expander,
+    exts=None,
+    conv_accs=None,
 ):
-    """Expand the given summations in the term.
-    """
+    """Expand the given summations in the term."""
 
     res_sums = []
 
@@ -1439,7 +1427,6 @@ def expand_sums_term(
             dumms_to_expand.append((i[0], True))
         else:
             res_sums.append(i)
-        continue
 
     repl = {}
     first_new = {}
@@ -1449,16 +1436,16 @@ def expand_sums_term(
             # Cleanse results from user callback.
             if not isinstance(new_dumm, Symbol):
                 raise TypeError(
-                    'Invalid dummy for the new summation', new_dumm
+                    "Invalid dummy for the new summation", new_dumm
                 )
             if not isinstance(new_range, Range):
                 raise TypeError(
-                    'Invalid range for the new summation', new_range
+                    "Invalid range for the new summation", new_range
                 )
             if not isinstance(prev_form, Expr):
                 raise TypeError(
-                    'Invalid previous form of the new summation dummy',
-                    prev_form
+                    "Invalid previous form of the new summation dummy",
+                    prev_form,
                 )
 
             if is_sum:
@@ -1468,15 +1455,11 @@ def expand_sums_term(
             if not first_new_added:
                 first_new[dumm] = new_dumm
                 first_new_added = True
-            continue
-        continue
 
     if conv_accs:
         for k, v in first_new.items():
             for i in conv_accs:
                 repl[i(k)] = i(v)
-                continue
-            continue
 
     res_term = term.map(
         lambda x: x.xreplace(repl), sums=tuple(res_sums), skip_ranges=False
@@ -1486,10 +1469,7 @@ def expand_sums_term(
         """Check if the given expression still has the expanded dummies."""
         for i in dumms_to_expand:
             if expr.has(i):
-                raise ValueError(
-                    'Scalar', expr, 'with original dummy', i
-                )
-            continue
+                raise ValueError("Scalar", expr, "with original dummy", i)
         return expr
 
     res_term.map(check_expr)  # Discard result.
@@ -1528,7 +1508,6 @@ def sum_term(sum_args, summand, predicate=None) -> typing.List[Term]:
     res = []
     for sum_i in itertools.product(*sums):
         for subst_i in itertools.product(*substs):
-
             subst_dict = dict(subst_i)
 
             # We always assemble the call sequence here, since this part should
@@ -1544,14 +1523,12 @@ def sum_term(sum_args, summand, predicate=None) -> typing.List[Term]:
             else:
                 curr_inp_terms = parse_terms(inp_func(call_seq))
 
-            curr_terms = [i.subst(
-                subst_dict, sums=_cat_sums(i.sums, sum_i)
-            ) for i in curr_inp_terms]
+            curr_terms = [
+                i.subst(subst_dict, sums=_cat_sums(i.sums, sum_i))
+                for i in curr_inp_terms
+            ]
 
             res.extend(curr_terms)
-
-            continue
-        continue
 
     return res
 
@@ -1568,14 +1545,14 @@ def _parse_sums(args):
     substs = []
 
     for arg in args:
-
         if not isinstance(arg, Sequence):
-            raise TypeError('Invalid summation', arg, 'expecting a sequence')
+            raise TypeError("Invalid summation", arg, "expecting a sequence")
         if len(arg) < 2:
-            raise ValueError('Invalid summation', arg,
-                             'expecting dummy and range')
+            raise ValueError(
+                "Invalid summation", arg, "expecting dummy and range"
+            )
 
-        dumm = ensure_symb(arg[0], 'dummy')
+        dumm = ensure_symb(arg[0], "dummy")
 
         flattened = []
         for i in arg[1:]:
@@ -1583,7 +1560,6 @@ def _parse_sums(args):
                 flattened.extend(i)
             else:
                 flattened.append(i)
-            continue
 
         contents = []
         expecting_range = None
@@ -1592,15 +1568,17 @@ def _parse_sums(args):
                 if expecting_range is None:
                     expecting_range = True
                 elif not expecting_range:
-                    raise ValueError('Invalid summation on', i,
-                                     'expecting expression')
+                    raise ValueError(
+                        "Invalid summation on", i, "expecting expression"
+                    )
                 contents.append((dumm, i))
             else:
                 if expecting_range is None:
                     expecting_range = False
                 elif expecting_range:
-                    raise ValueError('Invalid summation on', i,
-                                     'expecting a range')
+                    raise ValueError(
+                        "Invalid summation on", i, "expecting a range"
+                    )
                 expr = ensure_expr(i)
                 contents.append((dumm, expr))
 
@@ -1628,16 +1606,17 @@ def _cat_sums(sums1, sums2):
     dumm_counts.update(i[0] for i in sums)
     if any(i > 1 for i in dumm_counts.values()):
         raise ValueError(
-            'Invalid summations to be concatenated', (sums1, sums2),
-            'expecting no conflict in dummies'
+            "Invalid summations to be concatenated",
+            (sums1, sums2),
+            "expecting no conflict in dummies",
         )
 
     return sums
 
 
-def einst_term(term: Term, resolvers) -> typing.Tuple[
-    typing.List[Term], typing.AbstractSet[Symbol]
-]:
+def einst_term(
+    term: Term, resolvers
+) -> typing.Tuple[typing.List[Term], typing.AbstractSet[Symbol]]:
     """Add summations according to the Einstein convention to a term.
 
     The likely external indices for the term is also returned.
@@ -1665,14 +1644,11 @@ def einst_term(term: Term, resolvers) -> typing.Tuple[
         else:
             for i in index.atoms(Symbol):
                 use_tally[i][1] += 1
-                continue
-        continue
 
     existing_dumms = term.dumms
     new_sums = []
     exts = set()
     for symb, use in use_tally.items():
-
         if symb in existing_dumms:
             continue
 
@@ -1688,23 +1664,24 @@ def einst_term(term: Term, resolvers) -> typing.Tuple[
             range_ = try_resolve_range(symb, {}, resolvers)
             if range_ is None:
                 warnings.warn(
-                    'Symbol {} is not summed for the incapability to resolve '
-                    'range'
-                        .format(symb)
+                    "Symbol {} is not summed for the incapability to resolve "
+                    "range".format(symb)
                 )
                 continue
 
             # Now we have an Einstein summation.
             new_sums.append((symb, range_))
-        continue
 
     # Make summation from Einstein convention deterministic.
-    new_sums.sort(key=lambda x: (
-        tuple(i.sort_key for i in (
-            [x[1]] if isinstance(x[1], Range) else x[1]
-        )),
-        x[0].name
-    ))
+    new_sums.sort(
+        key=lambda x: (
+            tuple(
+                i.sort_key
+                for i in ([x[1]] if isinstance(x[1], Range) else x[1])
+            ),
+            x[0].name,
+        )
+    )
 
     return sum_term(new_sums, term), exts
 
@@ -1748,17 +1725,20 @@ def simplify_deltas_in_expr(sums_dict, amp, resolvers):
         return amp, substs
 
     # Preprocess some expressions equivalent to deltas into explicit delta form.
-    arg0 = Wild('arg0')
-    arg1 = Wild('arg1')
-    value = Wild('value')
+    arg0 = Wild("arg0")
+    arg1 = Wild("arg1")
+    value = Wild("value")
     amp = amp.replace(
         Piecewise((value, Eq(arg0, arg1)), (0, True)),
-        KroneckerDelta(arg0, arg1) * value
+        KroneckerDelta(arg0, arg1) * value,
     )
 
-    new_amp = amp.replace(KroneckerDelta, NonsympifiableFunc(functools.partial(
-        _proc_delta_in_amp, sums_dict, resolvers, substs
-    )))
+    new_amp = amp.replace(
+        KroneckerDelta,
+        NonsympifiableFunc(
+            functools.partial(_proc_delta_in_amp, sums_dict, resolvers, substs)
+        ),
+    )
 
     # Attempt some simple simplifications on simple unresolved deltas.
     new_amp = _try_simpl_unresolved_deltas(new_amp)
@@ -1812,8 +1792,6 @@ def compose_simplified_delta(amp, new_substs, substs, sums_dict, resolvers):
                 substs[i] = substs[i].xreplace(to_add)
             substs.update(to_add)
 
-        continue
-
     return amp, substs
 
 
@@ -1827,7 +1805,8 @@ def proc_delta(arg1, arg2, sums_dict, resolvers):
     """
 
     dumms = [
-        i for i in set.union(arg1.atoms(Symbol), arg2.atoms(Symbol))
+        i
+        for i in set.union(arg1.atoms(Symbol), arg2.atoms(Symbol))
         if i in sums_dict
     ]
 
@@ -1863,7 +1842,7 @@ def proc_delta(arg1, arg2, sums_dict, resolvers):
         if sol == domain:
             # Now we can be sure that we got an identity.
             return _UNITY, None
-        elif hasattr(sol, '__len__'):
+        elif hasattr(sol, "__len__"):
             # Concrete solutions.
             if len(sol) > 0:
                 for i in sol:
@@ -2033,13 +2012,10 @@ def simplify_amp_sums_term(term: Term, simplifiers, excl_bases, resolvers):
             res_amp *= factor
             continue
         factors.append((factor, symbs))
-        continue
 
     for vec in term.vecs:
         for i in vec.indices:
             imposs_symbs |= i.atoms(Symbol)
-            continue
-        continue
 
     # Summations in the result to be incrementally built.
     res_sums = []
@@ -2057,9 +2033,7 @@ def simplify_amp_sums_term(term: Term, simplifiers, excl_bases, resolvers):
             res_sums.append(sum_)
             continue
 
-        involving_factors = [
-            i for i in factors if dumm in i[1]
-        ]
+        involving_factors = [i for i in factors if dumm in i[1]]
 
         # Trivial summations leaked here must have involvement in other sum
         # bounds.
@@ -2067,8 +2041,9 @@ def simplify_amp_sums_term(term: Term, simplifiers, excl_bases, resolvers):
             res_sums.append(sum_)
         else:
             to_proc[dumm] = types.SimpleNamespace(
-                factors=involving_factors, range=range_,
-                triple=(dumm, range_.lower, range_.upper - 1)
+                factors=involving_factors,
+                range=range_,
+                triple=(dumm, range_.lower, range_.upper - 1),
             )
 
         # TODO: Make simplification considering dummies' involvement in the
@@ -2078,7 +2053,6 @@ def simplify_amp_sums_term(term: Term, simplifiers, excl_bases, resolvers):
     # Main loop, apply the rules until none of them can be applied.
     has_simplified = True
     while has_simplified:
-
         has_simplified = False  # Toppled to true only after simplification.
 
         # Apply the rules in increasing order of their complexity.  Simpler
@@ -2093,22 +2067,21 @@ def simplify_amp_sums_term(term: Term, simplifiers, excl_bases, resolvers):
                 curr_sums = [i.triple for i in curr_infos]
                 # Factors come and go, here they are tracked by their address.
                 curr_factors = {
-                    id(j): j
-                    for i in curr_infos for j in i.factors
+                    id(j): j for i in curr_infos for j in i.factors
                 }
                 curr_expr = prod_(i[0] for i in curr_factors.values())
 
                 orig = Sum(curr_expr, *curr_sums)
                 for simplify in simplifiers[n_sums]:
-
                     # Call user-provided simplifier.
                     simplified = simplify(
                         orig, resolvers=resolvers, sums_dict=sums_dict
                     )
 
                     if_simplified = (
-                            simplified is not None and simplified != orig and
-                            not isinstance(simplified, Sum)
+                        simplified is not None
+                        and simplified != orig
+                        and not isinstance(simplified, Sum)
                     )
                     if not if_simplified:
                         continue
@@ -2118,21 +2091,17 @@ def simplify_amp_sums_term(term: Term, simplifiers, excl_bases, resolvers):
                         i for i in factors if id(i) not in curr_factors
                     ]
                     for i in (
-                            simplified.args if isinstance(simplified, Mul)
-                            else (simplified,)
+                        simplified.args
+                        if isinstance(simplified, Mul)
+                        else (simplified,)
                     ):
-                        new_factors.append((
-                            i, i.atoms(Symbol)
-                        ))
-                        continue
+                        new_factors.append((i, i.atoms(Symbol)))
                     factors = new_factors
 
                     for i in sums:
                         del to_proc[i]
                     for k, v in to_proc.items():
-                        v.factors = [
-                            i for i in factors if k in i[1]
-                        ]
+                        v.factors = [i for i in factors if k in i[1]]
                     has_simplified = True
                     break
 
@@ -2145,7 +2114,6 @@ def simplify_amp_sums_term(term: Term, simplifiers, excl_bases, resolvers):
     # Place the unprocessed factors back.
     for i in factors:
         res_amp *= i[0]
-        continue
     for k, v in to_proc.items():
         res_sums.append((k, v.range))
 
@@ -2157,19 +2125,17 @@ def simplify_amp_sums_term(term: Term, simplifiers, excl_bases, resolvers):
 # --------------------
 #
 
+
 def diff_term(term: Term, variable, real, wirtinger_conj):
-    """Differentiate a term.
-    """
+    """Differentiate a term."""
 
     symb = _GRAD_REAL_SYMB if real else _GRAD_SYMB
 
     if isinstance(variable, Symbol):
-
         lhs = variable
         rhs = lhs + symb
 
     elif isinstance(variable, Indexed):
-
         indices = variable.indices
         wilds = tuple(
             Wild(_GRAD_WILD_FMT.format(i)) for i, _ in enumerate(indices)
@@ -2178,11 +2144,12 @@ def diff_term(term: Term, variable, real, wirtinger_conj):
         lhs = variable.base[wilds]
         rhs = lhs + functools.reduce(
             operator.mul,
-            (KroneckerDelta(i, j) for i, j in zip(wilds, indices)), symb
+            (KroneckerDelta(i, j) for i, j in zip(wilds, indices)),
+            symb,
         )
 
     else:
-        raise ValueError('Invalid differentiation variable', variable)
+        raise ValueError("Invalid differentiation variable", variable)
 
     if real:
         orig_amp = term.amp.replace(conjugate(lhs), lhs)
@@ -2193,9 +2160,7 @@ def diff_term(term: Term, variable, real, wirtinger_conj):
     if real:
         eval_substs = {symb: 0}
     else:
-        replaced_amp = replaced_amp.replace(
-            conjugate(symb), _GRAD_CONJ_SYMB
-        )
+        replaced_amp = replaced_amp.replace(conjugate(symb), _GRAD_CONJ_SYMB)
         eval_substs = {_GRAD_CONJ_SYMB: 0, symb: 0}
 
     if wirtinger_conj:
@@ -2211,20 +2176,19 @@ def diff_term(term: Term, variable, real, wirtinger_conj):
 
 
 # Internal symbols for gradients.
-_GRAD_SYMB_FMT = 'internalGradient{tag}Placeholder'
-_GRAD_SYMB = Symbol(_GRAD_SYMB_FMT.format(tag=''))
-_GRAD_CONJ_SYMB = Symbol(_GRAD_SYMB_FMT.format(tag='Conj'))
-_GRAD_REAL_SYMB = Symbol(
-    _GRAD_SYMB_FMT.format(tag='Real'), real=True
-)
+_GRAD_SYMB_FMT = "internalGradient{tag}Placeholder"
+_GRAD_SYMB = Symbol(_GRAD_SYMB_FMT.format(tag=""))
+_GRAD_CONJ_SYMB = Symbol(_GRAD_SYMB_FMT.format(tag="Conj"))
+_GRAD_REAL_SYMB = Symbol(_GRAD_SYMB_FMT.format(tag="Real"), real=True)
 
-_GRAD_WILD_FMT = 'InternalWildSymbol{}'
+_GRAD_WILD_FMT = "InternalWildSymbol{}"
 
 
 #
 # Misc public functions
 # ---------------------
 #
+
 
 def try_resolve_range(i, sums_dict, resolvers):
     """Attempt to resolve the range of an expression.
@@ -2233,7 +2197,6 @@ def try_resolve_range(i, sums_dict, resolvers):
     """
 
     for resolver in itertools.chain([sums_dict], resolvers):
-
         if isinstance(resolver, Mapping):
             if i in resolver:
                 return resolver[i]
@@ -2247,12 +2210,17 @@ def try_resolve_range(i, sums_dict, resolvers):
                 if isinstance(range_, Range):
                     return range_
                 else:
-                    raise TypeError('Invalid range: ', range_,
-                                    'from resolver', resolver,
-                                    'expecting range or None')
+                    raise TypeError(
+                        "Invalid range: ",
+                        range_,
+                        "from resolver",
+                        resolver,
+                        "expecting range or None",
+                    )
         else:
-            raise TypeError('Invalid resolver: ', resolver,
-                            'expecting callable or mapping')
+            raise TypeError(
+                "Invalid resolver: ", resolver, "expecting callable or mapping"
+            )
 
     # Never resolved nor error found.
     return None

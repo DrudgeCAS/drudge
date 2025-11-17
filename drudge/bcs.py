@@ -43,28 +43,40 @@ class ReducedBCSDrudge(SU2LatticeDrudge):
 
     """
 
-    DEFAULT_CARTAN = Vec('N')
-    DEFAULT_RAISE = Vec(r'P^\dagger')
-    DEFAULT_LOWER = Vec('P')
+    DEFAULT_CARTAN = Vec("N")
+    DEFAULT_RAISE = Vec(r"P^\dagger")
+    DEFAULT_LOWER = Vec("P")
 
     def __init__(
-            self, ctx,
-            part_range=Range('V', 0, Symbol('nv')),
-            part_dumms=PartHoleDrudge.DEFAULT_PART_DUMMS,
-            hole_range=Range('O', 0, Symbol('no')),
-            hole_dumms=PartHoleDrudge.DEFAULT_HOLE_DUMMS,
-            all_orb_dumms=PartHoleDrudge.DEFAULT_ORB_DUMMS,
-            energies=IndexedBase('epsilon'), interact=IndexedBase('G'),
-            cartan=DEFAULT_CARTAN, raise_=DEFAULT_RAISE, lower=DEFAULT_LOWER,
-            root=Integer(2), norm=Integer(1), shift=Integer(-1),
-            **kwargs
+        self,
+        ctx,
+        part_range=Range("V", 0, Symbol("nv")),
+        part_dumms=PartHoleDrudge.DEFAULT_PART_DUMMS,
+        hole_range=Range("O", 0, Symbol("no")),
+        hole_dumms=PartHoleDrudge.DEFAULT_HOLE_DUMMS,
+        all_orb_dumms=PartHoleDrudge.DEFAULT_ORB_DUMMS,
+        energies=IndexedBase("epsilon"),
+        interact=IndexedBase("G"),
+        cartan=DEFAULT_CARTAN,
+        raise_=DEFAULT_RAISE,
+        lower=DEFAULT_LOWER,
+        root=Integer(2),
+        norm=Integer(1),
+        shift=Integer(-1),
+        **kwargs,
     ):
         """Initialize the drudge object."""
 
         # Initialize the base su2 problem.
         super().__init__(
-            ctx, cartan=cartan, raise_=raise_, lower=lower, root=root,
-            norm=norm, shift=shift, **kwargs
+            ctx,
+            cartan=cartan,
+            raise_=raise_,
+            lower=lower,
+            root=root,
+            norm=norm,
+            shift=shift,
+            **kwargs,
         )
 
         # Set the range and dummies.
@@ -76,9 +88,9 @@ class ReducedBCSDrudge(SU2LatticeDrudge):
 
         self.all_orb_dumms = tuple(all_orb_dumms)
         self.set_name(*self.all_orb_dumms)
-        self.add_resolver({
-            i: (self.part_range, self.hole_range) for i in all_orb_dumms
-        })
+        self.add_resolver(
+            {i: (self.part_range, self.hole_range) for i in all_orb_dumms}
+        )
 
         # Make additional name definition for the operators.
         self.set_name(cartan, lower, Pdag=raise_)
@@ -86,8 +98,9 @@ class ReducedBCSDrudge(SU2LatticeDrudge):
         # Create the underlying particle-hole drudge with spin.  Note that this
         # drudge is only use internally for VEV evaluation.
         ph_dr = SpinOneHalfPartHoleDrudge(
-            ctx, part_orb=(part_range, part_dumms),
-            hole_orb=(hole_range, hole_dumms)
+            ctx,
+            part_orb=(part_range, part_dumms),
+            hole_orb=(hole_range, hole_dumms),
         )
         self._ph_dr = ph_dr
 
@@ -98,9 +111,10 @@ class ReducedBCSDrudge(SU2LatticeDrudge):
 
         gen_idx, gen_idx2 = self.all_orb_dumms[:2]
         cartan_def = self.define(
-            cartan, gen_idx,
-            cr[gen_idx, up] * an[gen_idx, up] +
-            cr[gen_idx, down] * an[gen_idx, down]
+            cartan,
+            gen_idx,
+            cr[gen_idx, up] * an[gen_idx, up]
+            + cr[gen_idx, down] * an[gen_idx, down],
         )
         raise_def = self.define(
             raise_, gen_idx, cr[gen_idx, up] * cr[gen_idx, down]
@@ -108,19 +122,17 @@ class ReducedBCSDrudge(SU2LatticeDrudge):
         lower_def = self.define(
             lower, gen_idx, an[gen_idx, down] * an[gen_idx, up]
         )
-        self._defs = [
-            cartan_def, raise_def, lower_def
-        ]
+        self._defs = [cartan_def, raise_def, lower_def]
 
         # Define the Hamiltonian.
         ham = self.einst(
-            energies[gen_idx] * cartan[gen_idx] +
-            interact[gen_idx, gen_idx2] * raise_[gen_idx] * lower[gen_idx2]
+            energies[gen_idx] * cartan[gen_idx]
+            + interact[gen_idx, gen_idx2] * raise_[gen_idx] * lower[gen_idx2]
         )
         self.ham = ham.simplify()
 
         # Set additional tensor methods.
-        self.set_tensor_method('eval_vev', self.eval_vev)
+        self.set_tensor_method("eval_vev", self.eval_vev)
 
     #
     # Additional customization of the simplification
@@ -137,10 +149,14 @@ class ReducedBCSDrudge(SU2LatticeDrudge):
         """
 
         noed = super().normal_order(terms, **kwargs)
-        return noed.filter(functools.partial(
-            _nonzero_by_cartan,
-            raise_=self.raise_, cartan=self.cartan, lower=self.lower
-        ))
+        return noed.filter(
+            functools.partial(
+                _nonzero_by_cartan,
+                raise_=self.raise_,
+                cartan=self.cartan,
+                lower=self.lower,
+            )
+        )
 
     #
     # Vacuum expectation value
@@ -152,10 +168,7 @@ class ReducedBCSDrudge(SU2LatticeDrudge):
         This is an internally utility.  The resulted tensor has the internal
         fermion drudge object as its owner.
         """
-        return Tensor(
-            self._ph_dr,
-            tensor.subst_all(self._defs).terms
-        )
+        return Tensor(self._ph_dr, tensor.subst_all(self._defs).terms)
 
     def eval_vev(self, tensor: Tensor):
         r"""Evaluate the vacuum expectation value.
@@ -197,7 +210,5 @@ def _nonzero_by_cartan(term: Term, raise_, cartan, lower):
         elif base == lower:
             if indices in cartan_indices:
                 return False
-
-        continue
 
     return True

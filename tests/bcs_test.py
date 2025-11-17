@@ -6,7 +6,7 @@ from sympy import KroneckerDelta
 from drudge import ReducedBCSDrudge
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope="module")
 def rbcs(spark_ctx):
     """Initialize the environment for a reduced BCS problem."""
     return ReducedBCSDrudge(spark_ctx)

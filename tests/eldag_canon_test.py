@@ -37,7 +37,6 @@ def test_eldag_can_be_canonicalized():
         assert node_order[1] == 1
         for i in [0, 2, 3]:
             assert perms[i] is None
-            continue
 
         # The ordering of the two terminals.
         if if_same:
@@ -55,7 +54,5 @@ def test_eldag_can_be_canonicalized():
             assert perm[0] == 1
             assert perm[1] == 0
             assert perm.acc == 1
-
-        continue
 
     return

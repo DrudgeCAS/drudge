@@ -15,7 +15,15 @@ from collections.abc import Iterable, Sequence
 from IPython.display import Math, display
 from pyspark import RDD, SparkContext
 from sympy import (
-    IndexedBase, Symbol, Indexed, Wild, symbols, sympify, Expr, Add, Matrix, Mul
+    Indexed,
+    IndexedBase,
+    Symbol,
+    Wild,
+    Expr,
+    Add,
+    Mul,
+    Matrix,
+    sympify,
 )
 from sympy.concrete.summations import eval_sum_symbolic
 
@@ -23,17 +31,27 @@ from .canonpy import Perm, Group
 from .drs import compile_drs, DrsEnv, DrsSymbol
 from .report import Report, ScalarLatexPrinter
 from .term import (
-    Range, sum_term, Term, Vec, subst_factor_term, subst_vec_term, parse_terms,
-    einst_term, diff_term, try_resolve_range, rewrite_term, Sum_expander,
-    expand_sums_term, ATerms, simplify_amp_sums_term
+    Range,
+    Sum_expander,
+    ATerms,
+    Term,
+    Vec,
+    try_resolve_range,
+    sum_term,
+    subst_factor_term,
+    subst_vec_term,
+    parse_terms,
+    einst_term,
+    diff_term,
+    rewrite_term,
+    expand_sums_term,
+    simplify_amp_sums_term,
 )
-from .utils import (
-    ensure_symb, BCastVar, nest_bind, sympy_key, SymbResolver
-)
+from .utils import ensure_symb, BCastVar, nest_bind, sympy_key, SymbResolver
 
 
 # To be used by Tensor.subst and Tensor.subst_all
-_DECR_SUFFIX = '_InternalProxy'
+_DECR_SUFFIX = "_InternalProxy"
 
 
 class Tensor:
@@ -48,21 +66,26 @@ class Tensor:
     """
 
     __slots__ = [
-        '_drudge',
-        '_terms',
-        '_local_terms',
-        '_free_vars',
-        '_expanded',
-        '_repartitioned'
+        "_drudge",
+        "_terms",
+        "_local_terms",
+        "_free_vars",
+        "_expanded",
+        "_repartitioned",
     ]
 
     #
     # Term creation
     #
 
-    def __init__(self, drudge: 'Drudge', terms: RDD,
-                 free_vars: typing.Set[Symbol] = None,
-                 expanded=False, repartitioned=False):
+    def __init__(
+        self,
+        drudge: "Drudge",
+        terms: RDD,
+        free_vars: typing.Set[Symbol] = None,
+        expanded=False,
+        repartitioned=False,
+    ):
         """Initialize the tensor.
 
         This function is not designed to be called by users directly.  Tensor
@@ -85,9 +108,9 @@ class Tensor:
 
     # To be used by the apply method.
     _INIT_ARGS = {
-        'free_vars': '_free_vars',
-        'expanded': '_expanded',
-        'repartitioned': '_repartitioned'
+        "free_vars": "_free_vars",
+        "expanded": "_expanded",
+        "repartitioned": "_repartitioned",
     }
 
     #
@@ -173,13 +196,13 @@ class Tensor:
         """
 
         if not self._repartitioned:
-
             num_partitions = (
-                self._drudge.num_partitions if num_partitions is None else
-                num_partitions
+                self._drudge.num_partitions
+                if num_partitions is None
+                else num_partitions
             )
             if num_partitions is None:
-                raise ValueError('No default number of partitions available')
+                raise ValueError("No default number of partitions available")
 
             self._terms = self._terms.repartition(num_partitions)
             self._repartitioned = True
@@ -199,14 +222,11 @@ class Tensor:
         self.cache()
 
         # Work around a pyspark bug by doing the reduction locally.
-        return all(
-            self._terms.map(lambda x: x.is_scalar).collect()
-        )
+        return all(self._terms.map(lambda x: x.is_scalar).collect())
 
     @property
     def free_vars(self) -> typing.Set[Symbol]:
-        """The free variables in the tensor.
-        """
+        """The free variables in the tensor."""
         if self._free_vars is None:
             self._free_vars = self._get_free_vars(self._terms)
 
@@ -219,9 +239,9 @@ class Tensor:
         # The terms are definitely going to be used for other purposes.
         terms.cache()
 
-        return terms.map(
-            lambda term: term.free_vars
-        ).aggregate(set(), _union, _union)
+        return terms.map(lambda term: term.free_vars).aggregate(
+            set(), _union, _union
+        )
         # TODO: investigate performance characteristic with treeAggregate.
 
     @property
@@ -252,8 +272,9 @@ class Tensor:
 
         # Work around a possible pyspark bug in reduce.
         return any(
-            self._terms.map(functools.partial(Term.has_base, base=base))
-                .collect()
+            self._terms.map(
+                functools.partial(Term.has_base, base=base)
+            ).collect()
         )
 
     #
@@ -280,9 +301,9 @@ class Tensor:
 
         """
         if self.n_terms == 0:
-            return '0'
+            return "0"
         else:
-            return '\n + '.join(str(i) for i in self.local_terms)
+            return "\n + ".join(str(i) for i in self.local_terms)
 
     def latex(self, **kwargs):
         r"""Get the latex form for the tensor.
@@ -343,8 +364,8 @@ class Tensor:
         drudge = current_drudge
         if drudge is None:
             raise ValueError(
-                'Tensor objects cannot be unpickled, '
-                'need to be inside Drudge.pickle_env'
+                "Tensor objects cannot be unpickled, "
+                "need to be inside Drudge.pickle_env"
             )
 
         assert isinstance(drudge, Drudge)
@@ -445,10 +466,9 @@ class Tensor:
 
         # Some free variables might be canceled.
         return self.apply(
-            functools.partial(
-                self._simplify_amps, **kwargs
-            ),
-            free_vars=None, repartitioned=False
+            functools.partial(self._simplify_amps, **kwargs),
+            free_vars=None,
+            repartitioned=False,
         )
 
     @staticmethod
@@ -456,8 +476,9 @@ class Tensor:
         """Get the terms with amplitude simplified by SymPy."""
 
         simplified_terms = terms.map(
-            lambda term: term.map(lambda x: x.simplify(**kwargs),
-                                  skip_vecs=True)
+            lambda term: term.map(
+                lambda x: x.simplify(**kwargs), skip_vecs=True
+            )
         ).filter(_is_nonzero)
 
         return simplified_terms
@@ -486,9 +507,9 @@ class Tensor:
 
         resolvers = self._drudge.resolvers
 
-        return terms.map(
-            lambda x: x.simplify_deltas(resolvers.value)
-        ).filter(_is_nonzero)
+        return terms.map(lambda x: x.simplify_deltas(resolvers.value)).filter(
+            _is_nonzero
+        )
 
     def simplify_sums(self, simplifiers=True, excl_bases=True):
         """Simplify the summations within the amplitude in the tensor.
@@ -536,13 +557,14 @@ class Tensor:
 
         """
 
-        return Tensor(self._drudge, self._simplify_sums(
-            self._terms, simplifiers=simplifiers, excl_bases=excl_bases
-        ))
+        return Tensor(
+            self._drudge,
+            self._simplify_sums(
+                self._terms, simplifiers=simplifiers, excl_bases=excl_bases
+            ),
+        )
 
-    def _simplify_sums(
-            self, terms: RDD, simplifiers=True, excl_bases=True
-    ):
+    def _simplify_sums(self, terms: RDD, simplifiers=True, excl_bases=True):
         """Simplify the summations in the given terms."""
 
         if simplifiers is True:
@@ -552,11 +574,14 @@ class Tensor:
         terms = terms.map(lambda x: x.simplify_trivial_sums())
 
         if simplifiers:
-            terms = terms.map(functools.partial(
-                simplify_amp_sums_term,
-                simplifiers=simplifiers, excl_bases=excl_bases,
-                resolvers=self._drudge.resolvers
-            ))
+            terms = terms.map(
+                functools.partial(
+                    simplify_amp_sums_term,
+                    simplifiers=simplifiers,
+                    excl_bases=excl_bases,
+                    resolvers=self._drudge.resolvers,
+                )
+            )
 
         return terms
 
@@ -633,9 +658,7 @@ class Tensor:
         """
 
         # All the traits could be invalidated by merging.
-        return Tensor(
-            self._drudge, self._merge(self._terms, consts, gens)
-        )
+        return Tensor(self._drudge, self._merge(self._terms, consts, gens))
 
     def _merge(self, terms, consts, gens):
         """Get the term when they are attempted to be merged."""
@@ -644,9 +667,11 @@ class Tensor:
         else:
             specials = _DecomposeSpecials(consts, gens)
 
-        return terms.map(
-            functools.partial(_decompose_term, specials=specials)
-        ).reduceByKey(operator.add).map(_recover_term)
+        return (
+            terms.map(functools.partial(_decompose_term, specials=specials))
+            .reduceByKey(operator.add)
+            .map(_recover_term)
+        )
 
     #
     # Canonicalization
@@ -661,7 +686,8 @@ class Tensor:
         """
         return self.apply(
             functools.partial(self._canon, expanded=self._expanded),
-            expanded=True, repartitioned=self._expanded and self._repartitioned
+            expanded=True,
+            repartitioned=self._expanded and self._repartitioned,
         )
 
     def _canon(self, terms, expanded):
@@ -690,9 +716,7 @@ class Tensor:
         """
 
         # Free variables, expanded, and repartitioned can all be invalidated.
-        return Tensor(
-            self._drudge, self._drudge.normal_order(self.terms)
-        )
+        return Tensor(self._drudge, self._drudge.normal_order(self.terms))
 
     #
     # The driver simplification.
@@ -819,14 +843,14 @@ class Tensor:
             free_vars = None
 
         return Tensor(
-            self._drudge, self._terms.union(other.terms),
+            self._drudge,
+            self._terms.union(other.terms),
             free_vars=free_vars,
-            expanded=self._expanded and other.expanded
+            expanded=self._expanded and other.expanded,
         )
 
     def __sub__(self, other):
-        """Subtract another tensor from this tensor.
-        """
+        """Subtract another tensor from this tensor."""
         return self._add(-other)
 
     def __rsub__(self, other):
@@ -838,11 +862,9 @@ class Tensor:
 
         The result will be equivalent to multiplication with :math:`-1`.
         """
-        return self.apply(
-            lambda terms: terms.map(lambda x: x.scale(-1))
-        )
+        return self.apply(lambda terms: terms.map(lambda x: x.scale(-1)))
 
-    def __mul__(self, other) -> 'Tensor':
+    def __mul__(self, other) -> "Tensor":
         """Multiply the tensor.
 
         This multiplication operation is done completely within the framework of
@@ -856,8 +878,7 @@ class Tensor:
         return self._mul(other)
 
     def __rmul__(self, other):
-        """Multiply the tensor on the right.
-        """
+        """Multiply the tensor on the right."""
         return self._mul(other, right=True)
 
     def _mul(self, other, right=False):
@@ -865,9 +886,16 @@ class Tensor:
         prod, free_vars, expanded = self._cartesian_terms(other, right)
 
         dumms = self._drudge.dumms
-        return Tensor(self._drudge, prod.map(
-            lambda x: x[0].mul_term(x[1], dumms=dumms.value, excl=free_vars)
-        ), free_vars=free_vars, expanded=expanded)
+        return Tensor(
+            self._drudge,
+            prod.map(
+                lambda x: x[0].mul_term(
+                    x[1], dumms=dumms.value, excl=free_vars
+                )
+            ),
+            free_vars=free_vars,
+            expanded=expanded,
+        )
 
     def __or__(self, other):
         """Compute the commutator with another tensor.
@@ -885,7 +913,7 @@ class Tensor:
         """Compute the commutator."""
 
         if isinstance(other, Expr):
-            msg = 'Taking commutator with commutative expression `{}`'.format(
+            msg = "Taking commutator with commutative expression `{}`".format(
                 other
             )
             warnings.warn(msg)
@@ -893,9 +921,16 @@ class Tensor:
         prod, free_vars, expanded = self._cartesian_terms(other, right)
 
         dumms = self._drudge.dumms
-        return Tensor(self._drudge, prod.flatMap(
-            lambda x: x[0].comm_term(x[1], dumms=dumms.value, excl=free_vars)
-        ), free_vars=free_vars, expanded=expanded)
+        return Tensor(
+            self._drudge,
+            prod.flatMap(
+                lambda x: x[0].comm_term(
+                    x[1], dumms=dumms.value, excl=free_vars
+                )
+            ),
+            free_vars=free_vars,
+            expanded=expanded,
+        )
 
     def _cartesian_terms(self, other, right):
         """Cartesian the terms with the terms in another tensor.
@@ -906,7 +941,6 @@ class Tensor:
         """
 
         if isinstance(other, Tensor):
-
             if right:
                 prod = other.terms.cartesian(self._terms)
             else:
@@ -920,21 +954,21 @@ class Tensor:
 
             other_terms = parse_terms(other)
             if len(other_terms) > 1:
-                prod = self._terms.flatMap(lambda term: [
-                    (i, term) if right else (term, i)
-                    for i in other_terms
-                ])
+                prod = self._terms.flatMap(
+                    lambda term: [
+                        (i, term) if right else (term, i) for i in other_terms
+                    ]
+                )
             else:
                 # Special optimization when we just have one term.
                 other_term = other_terms[0]
                 prod = self._terms.map(
-                    lambda term:
-                    (other_term, term) if right else (term, other_term)
+                    lambda term: (other_term, term)
+                    if right
+                    else (term, other_term)
                 )
 
-            free_vars = set.union(*[
-                i.free_vars for i in other_terms
-            ])
+            free_vars = set.union(*[i.free_vars for i in other_terms])
             free_vars |= self.free_vars
             expanded = False
 
@@ -946,12 +980,12 @@ class Tensor:
         other = sympify(other)
         return self.apply(
             lambda terms: terms.map(lambda x: x.scale(1 / other)),
-            free_vars=None
+            free_vars=None,
         )
 
     def __rtruediv__(self, other):
         """Make division over a tensor."""
-        raise NotImplementedError('General tensors cannot be divided over.')
+        raise NotImplementedError("General tensors cannot be divided over.")
 
     #
     # Substitution
@@ -966,9 +1000,10 @@ class Tensor:
 
     @staticmethod
     def _restore(term: Term, decr_vars=None):
-
-        if decr_vars != None:
-            restore_vars = {decr_var: var for var, decr_var in decr_vars.items()}
+        if decr_vars is not None:
+            restore_vars = {
+                decr_var: var for var, decr_var in decr_vars.items()
+            }
         else:
             suffix_index = -len(_DECR_SUFFIX)
             restore_vars = {}
@@ -980,19 +1015,21 @@ class Tensor:
                     name = var.label.name
                     Ref = IndexedBase
                 else:
-                    raise TypeError('Expecting Symbol or IndexedBase')
+                    raise TypeError("Expecting Symbol or IndexedBase")
 
                 if name.endswith(_DECR_SUFFIX):
                     restore_vars[var] = Ref(
                         name[:suffix_index], **var._assumptions
                     )
 
-        func = lambda x: x.xreplace(restore_vars)
+        def func(x):
+            return x.xreplace(restore_vars)
 
         new_vecs = tuple(
             Vec(label=vec.label[0], indices=vec.indices)
-            if isinstance(vec.label, tuple) and len(vec.label) == 2
-                and isinstance(vec.label[1], _Decred)
+            if isinstance(vec.label, tuple)
+            and len(vec.label) == 2
+            and isinstance(vec.label[1], _Decred)
             else vec
             for vec in term.vecs
         )
@@ -1000,8 +1037,14 @@ class Tensor:
         return term.map(func, vecs=new_vecs, skip_vecs=True)
 
     def subst(
-            self, lhs, rhs, wilds=None, full_balance=False, excl=None,
-            simult=True, keep_decorated=False
+        self,
+        lhs,
+        rhs,
+        wilds=None,
+        full_balance=False,
+        excl=None,
+        simult=True,
+        keep_decorated=False,
     ):
         """Substitute the all appearance of the defined tensor.
 
@@ -1066,12 +1109,13 @@ class Tensor:
 
         .. doctest::
 
+            >>> from sympy import symbols
             >>> dr = Drudge(SparkContext())
-            >>> r = Range('R')
-            >>> a, b = dr.set_dumms(r, symbols('a b c d e f'))[:2]
+            >>> r = Range("R")
+            >>> a, b = dr.set_dumms(r, symbols("a b c d e f"))[:2]
             >>> dr.add_default_resolver(r)
-            >>> x = IndexedBase('x')
-            >>> v = Vec('v')
+            >>> x = IndexedBase("x")
+            >>> v = Vec("v")
             >>> tensor = dr.einst(x[a] * x[b] * v[a] * v[b])
             >>> str(tensor)
             'sum_{a, b} x[a]*x[b] * v[a] * v[b]'
@@ -1081,8 +1125,8 @@ class Tensor:
 
         .. doctest::
 
-            >>> o = IndexedBase('o')
-            >>> y = IndexedBase('y')
+            >>> o = IndexedBase("o")
+            >>> y = IndexedBase("y")
             >>> res = tensor.subst(x[a], dr.einst(o[a, b] * y[b]))
             >>> str(res)
             'sum_{a, b, c, d} y[c]*y[d]*o[a, c]*o[b, d] * v[a] * v[b]'
@@ -1091,7 +1135,7 @@ class Tensor:
 
         .. doctest::
 
-            >>> w = Vec('w')
+            >>> w = Vec("w")
             >>> res = tensor.subst(v[a], dr.einst(o[a, b] * w[b]))
             >>> str(res)
             'sum_{a, b, c, d} x[a]*x[b]*o[a, c]*o[b, d] * w[c] * w[d]'
@@ -1131,10 +1175,10 @@ class Tensor:
             if_indexed = True
 
             if len(lhs.terms) != 1:
-                raise ValueError('Invalid LHS to substitute', lhs.terms)
+                raise ValueError("Invalid LHS to substitute", lhs.terms)
             term = lhs.terms[0]
             if len(term.sums) != 0 or term.amp != 1:
-                raise ValueError('Invalid LHS to substitute', term)
+                raise ValueError("Invalid LHS to substitute", term)
             vecs = term.vecs
             bases = {vec.base for vec in vecs}
 
@@ -1143,8 +1187,9 @@ class Tensor:
             lhs = vecs
         else:
             raise TypeError(
-                'Invalid LHS for substitution', lhs,
-                'expecting vector, indexed, or symbol'
+                "Invalid LHS for substitution",
+                lhs,
+                "expecting vector, indexed, or symbol",
             )
 
         if not all(self.has_base(base) for base in bases):
@@ -1161,10 +1206,8 @@ class Tensor:
             rhs_terms = parse_terms(rhs)
             free_vars = set.union(*[term.free_vars for term in rhs_terms])
 
-        if if_scalar and not all(
-                term.is_scalar for term in rhs_terms
-        ):
-            raise ValueError('Invalid RHS for substituting a scalar', rhs)
+        if if_scalar and not all(term.is_scalar for term in rhs_terms):
+            raise ValueError("Invalid RHS for substituting a scalar", rhs)
 
         # Handling of the wilds
         if wilds is None:
@@ -1177,29 +1220,29 @@ class Tensor:
                 for indices in index_bunches:
                     wilds.update(
                         (index, Wild(index.name))
-                        for index in indices if isinstance(index, Symbol)
+                        for index in indices
+                        if isinstance(index, Symbol)
                     )
 
         if if_scalar:
             lhs = lhs.xreplace(wilds)
         else:
-            lhs = tuple(
-                vec.map(lambda x: x.xreplace(wilds)) for vec in lhs
-            )
+            lhs = tuple(vec.map(lambda x: x.xreplace(wilds)) for vec in lhs)
 
         # XXX: Why is it necessary to expand the terms?
         # Expansion is probably only necessary for complex matching patterns,
         # which has not been implemented for now.
         rhs_terms = [
             expanded_term.subst(wilds)
-            for term in rhs_terms for expanded_term in term.expand()
+            for term in rhs_terms
+            for expanded_term in term.expand()
         ]
 
         # "Decorate" the RHS to ensure simultaneous substitution
         decr_vars = {}
         if simult:
             # for symbols and indexedBases
-            # (Note that free_vars have been defined before the handling of the 
+            # (Note that free_vars have been defined before the handling of the
             # wilds            for var in free_vars:
             for var in free_vars:
                 if isinstance(var, Symbol):
@@ -1211,7 +1254,7 @@ class Tensor:
                         var.label.name + _DECR_SUFFIX, **var._assumptions
                     )
                 else:
-                    raise TypeError('Expecting Symbol or IndexedBase')
+                    raise TypeError("Expecting Symbol or IndexedBase")
 
             rhs_terms = [term.subst(decr_vars) for term in rhs_terms]
 
@@ -1232,8 +1275,11 @@ class Tensor:
             return res.map(restore)
 
     def _subst(
-            self, lhs: typing.Union[typing.Tuple[Vec], Indexed, Symbol],
-            rhs_terms, full_balance, excl=None
+        self,
+        lhs: typing.Union[typing.Tuple[Vec], Indexed, Symbol],
+        rhs_terms,
+        full_balance,
+        excl=None,
     ):
         """Core substitution function.
 
@@ -1248,7 +1294,7 @@ class Tensor:
         else:
             rhs_free_vars = set()
 
-        free_vars_local = (self.free_vars | rhs_free_vars)
+        free_vars_local = self.free_vars | rhs_free_vars
         if excl is not None:
             free_vars_local |= excl
 
@@ -1259,23 +1305,39 @@ class Tensor:
         # We keep the dummbegs dictionary for each term and substitute all
         # appearances of the lhs one-by-one.
 
-        subs_states = self._terms.map(lambda x: x.reset_dumms(
-            dumms=dumms.value, excl=free_vars.value
-        ))
+        subs_states = self._terms.map(
+            lambda x: x.reset_dumms(dumms=dumms.value, excl=free_vars.value)
+        )
 
         rhs_terms = self._drudge.ctx.broadcast(rhs_terms)
 
         if isinstance(lhs, (Indexed, Symbol)):
-            res = nest_bind(subs_states, lambda x: subst_factor_term(
-                x[0], lhs, rhs_terms.value,
-                dumms=dumms.value, dummbegs=x[1], excl=free_vars.value,
-                full_simplify=full_simplify
-            ), full_balance=full_balance)
+            res = nest_bind(
+                subs_states,
+                lambda x: subst_factor_term(
+                    x[0],
+                    lhs,
+                    rhs_terms.value,
+                    dumms=dumms.value,
+                    dummbegs=x[1],
+                    excl=free_vars.value,
+                    full_simplify=full_simplify,
+                ),
+                full_balance=full_balance,
+            )
         else:
-            res = nest_bind(subs_states, lambda x: subst_vec_term(
-                x[0], lhs, rhs_terms.value,
-                dumms=dumms.value, dummbegs=x[1], excl=free_vars.value
-            ), full_balance=full_balance)
+            res = nest_bind(
+                subs_states,
+                lambda x: subst_vec_term(
+                    x[0],
+                    lhs,
+                    rhs_terms.value,
+                    dumms=dumms.value,
+                    dummbegs=x[1],
+                    excl=free_vars.value,
+                ),
+                full_balance=full_balance,
+            )
 
         res_terms = res.map(operator.itemgetter(0))
         return Tensor(
@@ -1283,8 +1345,13 @@ class Tensor:
         )
 
     def subst_all(
-            self, defs, simplify=False, full_balance=False, excl=None,
-            simult=True, simult_all=False
+        self,
+        defs,
+        simplify=False,
+        full_balance=False,
+        excl=None,
+        simult=True,
+        simult_all=False,
     ):
         """Substitute all given definitions.
 
@@ -1312,13 +1379,18 @@ class Tensor:
                 lhs, rhs = i
             else:
                 raise TypeError(
-                    'Invalid substitution', i,
-                    'expecting definition or LHS/RHS pair'
+                    "Invalid substitution",
+                    i,
+                    "expecting definition or LHS/RHS pair",
                 )
 
             res = res.subst(
-                lhs, rhs, full_balance=full_balance, excl=excl, 
-                simult=simult, keep_decorated=simult_all
+                lhs,
+                rhs,
+                full_balance=full_balance,
+                excl=excl,
+                simult=simult,
+                keep_decorated=simult_all,
             )
             if sequentially_simplify:
                 res = res.simplify().repartition()
@@ -1369,8 +1441,7 @@ class Tensor:
 
         vecs_terms = parse_terms(vecs)
         invalid_vecs = ValueError(
-            'Invalid vectors to rewrite', vecs,
-            'expecting just vectors'
+            "Invalid vectors to rewrite", vecs, "expecting just vectors"
         )
         if len(vecs_terms) != 1:
             raise invalid_vecs
@@ -1382,14 +1453,12 @@ class Tensor:
         rewritten = self._terms.map(
             lambda term: rewrite_term(term, vecs, new_amp)
         ).cache()
-        new_terms = [
-            i for i in rewritten.countByKey().keys() if i is not None
-        ]
+        new_terms = [i for i in rewritten.countByKey().keys() if i is not None]
 
         get_term = operator.itemgetter(1)
-        untouched_terms = rewritten.filter(
-            lambda x: x[0] is None
-        ).map(get_term)
+        untouched_terms = rewritten.filter(lambda x: x[0] is None).map(
+            get_term
+        )
         new_defs = {}
         for i in new_terms:
             def_terms = rewritten.filter(lambda x: x[0] == i).map(get_term)
@@ -1397,15 +1466,14 @@ class Tensor:
             def_terms.cache()
             def_terms.count()
             new_defs[i.amp] = Tensor(self._drudge, def_terms)
-            continue
 
-        return Tensor(self._drudge, untouched_terms.union(
-            self._drudge.ctx.parallelize(new_terms)
-        )), new_defs
+        return Tensor(
+            self._drudge,
+            untouched_terms.union(self._drudge.ctx.parallelize(new_terms)),
+        ), new_defs
 
     def expand_sums(
-            self, range_: Range, expander: Sum_expander,
-            exts=None, conv_accs=None
+        self, range_: Range, expander: Sum_expander, exts=None, conv_accs=None
     ):
         """Expand some symbolic summations.
 
@@ -1447,10 +1515,15 @@ class Tensor:
             where we just strip one (some) component(s) from a symbolic bundle.
 
         """
-        return self.map(functools.partial(
-            expand_sums_term, range_=range_, expander=expander,
-            exts=exts, conv_accs=conv_accs
-        ))
+        return self.map(
+            functools.partial(
+                expand_sums_term,
+                range_=range_,
+                expander=expander,
+                exts=exts,
+                conv_accs=conv_accs,
+            )
+        )
 
     #
     # Analytic gradient
@@ -1500,20 +1573,19 @@ class Tensor:
 
         if real and wirtinger_conj:
             raise ValueError(
-                'Wittinger conjugate derivative vanishes for real variables'
+                "Wittinger conjugate derivative vanishes for real variables"
             )
 
         if isinstance(variable, Indexed):
-
             symms = self._drudge.symms.value
             if_symm = (
-                    variable.base in symms or
-                    (variable.base, len(variable.indices)) in symms
+                variable.base in symms
+                or (variable.base, len(variable.indices)) in symms
             )
             if if_symm:
                 warnings.warn(
-                    'Gradient wrt to symmetric tensor {} '.format(variable) +
-                    'might need further symmetrization'
+                    "Gradient wrt to symmetric tensor {} ".format(variable)
+                    + "might need further symmetrization"
                 )
 
             # We need a copy.
@@ -1522,26 +1594,30 @@ class Tensor:
             for i in variable.indices:
                 if not isinstance(i, Symbol):
                     raise ValueError(
-                        'Invalid index', i, 'expecting plain symbol'
+                        "Invalid index", i, "expecting plain symbol"
                     )
                 if i in excl:
                     raise ValueError(
-                        'Invalid index', i,
-                        'clashing with existing free symbols'
+                        "Invalid index",
+                        i,
+                        "clashing with existing free symbols",
                     )
                 excl.add(i)
-                continue
 
             terms = self._reset_dumms(self._terms, excl=excl)
 
         elif isinstance(variable, Symbol):
             terms = self._terms
         else:
-            raise TypeError('Invalid variable to differentiate', variable)
+            raise TypeError("Invalid variable to differentiate", variable)
 
-        return Tensor(self._drudge, self._diff(
-            terms, variable, real=real, wirtinger_conj=wirtinger_conj
-        ), expanded=True)
+        return Tensor(
+            self._drudge,
+            self._diff(
+                terms, variable, real=real, wirtinger_conj=wirtinger_conj
+            ),
+            expanded=True,
+        )
 
     def _diff(self, terms, variable, real, wirtinger_conj):
         """Differentiate the terms."""
@@ -1565,7 +1641,8 @@ class Tensor:
         """
         return self.apply(
             lambda terms: terms.filter(crit),
-            free_vars=None, repartitioned=False
+            free_vars=None,
+            repartitioned=False,
         )
 
     def map(self, func):
@@ -1617,9 +1694,14 @@ class Tensor:
 
         """
 
-        return Tensor(self._drudge, self._terms.map(lambda x: x.map(
-            action, skip_vecs=skip_vecs, skip_ranges=skip_ranges
-        )))
+        return Tensor(
+            self._drudge,
+            self._terms.map(
+                lambda x: x.map(
+                    action, skip_vecs=skip_vecs, skip_ranges=skip_ranges
+                )
+            ),
+        )
 
     def map2amps(self, action):
         """Map the given action to the amplitudes in the tensor.
@@ -1644,7 +1726,7 @@ class Tensor:
         try:
             meth = self._drudge.get_tensor_method(item)
         except KeyError:
-            raise AttributeError('Invalid operation name on tensor', item)
+            raise AttributeError("Invalid operation name on tensor", item)
 
         return functools.partial(meth, self)
 
@@ -1737,28 +1819,29 @@ class TensorDef(Tensor):
             super().__init__(tensor.drudge, tensor.terms)
         else:
             raise TypeError(
-                'Invalid LHS for tensor definition', tensor,
-                'expecting a tensor instance'
+                "Invalid LHS for tensor definition",
+                tensor,
+                "expecting a tensor instance",
             )
 
         self._exts = []
         for i in exts:
             explicit_ext = (
-                    isinstance(i, Sequence) and len(i) == 2 and
-                    isinstance(i[0], Symbol) and isinstance(i[1], Range)
+                isinstance(i, Sequence)
+                and len(i) == 2
+                and isinstance(i[0], Symbol)
+                and isinstance(i[1], Range)
             )
             if explicit_ext:
                 self._exts.append(tuple(i))
             elif isinstance(i, Expr):
-                self._exts.append((
-                    i, None
-                ))
+                self._exts.append((i, None))
             else:
                 raise TypeError(
-                    'Invalid external index', i,
-                    'expecting dummy/range pair or a dummy.'
+                    "Invalid external index",
+                    i,
+                    "expecting dummy/range pair or a dummy.",
                 )
-            continue
 
         # Normalize the base.
         base_name = str(base)
@@ -1814,8 +1897,7 @@ class TensorDef(Tensor):
     #
 
     def simplify(self):
-        """Simplify the tensor in the definition.
-        """
+        """Simplify the tensor in the definition."""
 
         reset = self.reset_dumms()
         return TensorDef(reset.base, reset.exts, Tensor.simplify(reset))
@@ -1842,10 +1924,14 @@ class TensorDef(Tensor):
 
         tensor = Tensor(
             self.drudge,
-            self.terms.map(lambda x: x.reset_dumms(
-                dumms=dumms.value, excl=excl,
-                dummbegs=dict(dummbegs), add_substs=ext_substs
-            )[0])
+            self.terms.map(
+                lambda x: x.reset_dumms(
+                    dumms=dumms.value,
+                    excl=excl,
+                    dummbegs=dict(dummbegs),
+                    add_substs=ext_substs,
+                )[0]
+            ),
         )
 
         return TensorDef(self._base, exts, tensor)
@@ -1870,10 +1956,9 @@ class TensorDef(Tensor):
     #
 
     def __str__(self):
-        """Form simple readable string for a definition.
-        """
+        """Form simple readable string for a definition."""
 
-        return ' = '.join([str(self.lhs), super().__str__()])
+        return " = ".join([str(self.lhs), super().__str__()])
 
     def latex(self, **kwargs):
         r"""Get the latex form for the tensor definition.
@@ -1926,17 +2011,14 @@ class TensorDef(Tensor):
         )
 
     def __getitem__(self, item):
-        """Get the tensor when the definition is indexed.
-        """
+        """Get the tensor when the definition is indexed."""
 
         if not isinstance(item, Sequence):
             item = (item,)
 
         n_exts = len(self._exts)
         if len(item) != n_exts:
-            raise ValueError(
-                'Invalid subscripts', item, 'expecting', n_exts
-            )
+            raise ValueError("Invalid subscripts", item, "expecting", n_exts)
 
         return self.act(self._base[item])
 
@@ -1945,13 +2027,11 @@ class TensorDef(Tensor):
     #
 
     def __getstate__(self):
-        """Get the current state of the definition.
-        """
+        """Get the current state of the definition."""
         return self._base, self._exts, self.local_terms
 
     def __setstate__(self, state):
-        """Set the state for the new definition.
-        """
+        """Set the state for the new definition."""
         super().__setstate__(state[2])
         self.__init__(state[0], state[1], self)
         return
@@ -1998,7 +2078,7 @@ class Drudge:
         elif isinstance(num_partitions, int) or num_partitions is None:
             self._num_partitions = num_partitions
         else:
-            raise TypeError('Invalid default partition', num_partitions)
+            raise TypeError("Invalid default partition", num_partitions)
 
         self._full_simplify = True
         self._simple_merge = False
@@ -2021,14 +2101,13 @@ class Drudge:
         self._inside_drs = False
 
         # Default simplification of summation.
-        self.sum_simplifiers = BCastVar(self._ctx, {
-            1: [_simplify_symbolic_sum]
-        })
+        self.sum_simplifiers = BCastVar(
+            self._ctx, {1: [_simplify_symbolic_sum]}
+        )
 
     @property
     def ctx(self):
-        """The Spark context of the drudge.
-        """
+        """The Spark context of the drudge."""
         return self._ctx
 
     #
@@ -2037,20 +2116,19 @@ class Drudge:
 
     @property
     def num_partitions(self):
-        """The preferred number of partitions for data.
-        """
+        """The preferred number of partitions for data."""
         return self._num_partitions
 
     @num_partitions.setter
     def num_partitions(self, value):
-        """Set the preferred number of partitions for data.
-        """
+        """Set the preferred number of partitions for data."""
         if isinstance(value, int) or value is None:
             self._num_partitions = value
         else:
             raise TypeError(
-                'Invalid default number of partitions', value,
-                'expecting integer or None'
+                "Invalid default number of partitions",
+                value,
+                "expecting integer or None",
             )
 
     @property
@@ -2065,12 +2143,12 @@ class Drudge:
 
     @full_simplify.setter
     def full_simplify(self, value):
-        """Set if full simplification is going to be carried out.
-        """
+        """Set if full simplification is going to be carried out."""
         if value is not True and value is not False:
             raise TypeError(
-                'Invalid full simplification option', value,
-                'expecting boolean'
+                "Invalid full simplification option",
+                value,
+                "expecting boolean",
             )
         self._full_simplify = value
 
@@ -2094,13 +2172,13 @@ class Drudge:
 
     @simple_merge.setter
     def simple_merge(self, value):
-        """Set if simple merge is going to be carried out.
-        """
+        """Set if simple merge is going to be carried out."""
 
         if value is not True and value is not False:
             raise ValueError(
-                'Invalid simple merge setting', value,
-                'expecting plain boolean'
+                "Invalid simple merge setting",
+                value,
+                "expecting plain boolean",
             )
         self._simple_merge = value
 
@@ -2116,13 +2194,13 @@ class Drudge:
 
     @default_einst.setter
     def default_einst(self, value):
-        """Set if Einstein convention definition is default for def_.
-        """
+        """Set if Einstein convention definition is default for def_."""
 
         if value is not True and value is not False:
             raise ValueError(
-                'Invalid default Einstein convention', value,
-                'expecting plain boolean'
+                "Invalid default Einstein convention",
+                value,
+                "expecting plain boolean",
             )
         self._default_einst = value
 
@@ -2143,9 +2221,9 @@ class Drudge:
 
         """
         if self is not tensor_def.drudge:
-            raise ValueError('Unable to add definition from another drudge.')
+            raise ValueError("Unable to add definition from another drudge.")
 
-        return '_' + str(tensor_def.base)
+        return "_" + str(tensor_def.base)
 
     def form_def_name(self, tensor_def: TensorDef) -> typing.Optional[str]:
         """Form the name for a tensor definition in name archive.
@@ -2156,7 +2234,7 @@ class Drudge:
 
         """
         if self is not tensor_def.drudge:
-            raise ValueError('Unable to add definition from another drudge.')
+            raise ValueError("Unable to add definition from another drudge.")
         return str(tensor_def.base)
 
     def set_name(self, *args, **kwargs):
@@ -2173,7 +2251,6 @@ class Drudge:
 
         for label, obj in self._get_name_obj_pairs(args, kwargs):
             setattr(self._names, label, obj)
-            continue
         return
 
     def unset_name(self, *args, **kwargs):
@@ -2188,7 +2265,6 @@ class Drudge:
         for label, obj in self._get_name_obj_pairs(args, kwargs):
             if hasattr(self.names, label):
                 delattr(self._names, label)
-            continue
         return
 
     def _get_name_obj_pairs(self, args, kwargs):
@@ -2201,13 +2277,12 @@ class Drudge:
             if isinstance(i, TensorDef):
                 for j, k in [
                     (self.form_base_name(i), i.base),
-                    (self.form_def_name(i), i)
+                    (self.form_def_name(i), i),
                 ]:
                     if j is not None:
                         yield j, k
             else:
                 yield str(i), i
-            continue
 
         yield from kwargs.items()
 
@@ -2221,7 +2296,7 @@ class Drudge:
         """
         return self._names
 
-    def inject_names(self, prefix='', suffix=''):
+    def inject_names(self, prefix="", suffix=""):
         """Inject the names in the name archive into the current global scope.
 
         This function is for the convenience of users, especially interactive
@@ -2240,7 +2315,7 @@ class Drudge:
             del stack
 
         for k, v in self._names.__dict__.items():
-            globals_[''.join([prefix, k, suffix])] = v
+            globals_["".join([prefix, k, suffix])] = v
 
         return
 
@@ -2252,9 +2327,14 @@ class Drudge:
     # be overridden.
     #
 
-    def set_dumms(self, range_: Range, dumms,
-                  set_range_name=True, dumms_suffix='_dumms',
-                  set_dumm_names=True):
+    def set_dumms(
+        self,
+        range_: Range,
+        dumms,
+        set_range_name=True,
+        dumms_suffix="_dumms",
+        set_dumm_names=True,
+    ):
         """Set the dummies for a range.
 
         Note that this function overwrites the existing dummies if the range has
@@ -2276,8 +2356,7 @@ class Drudge:
 
     @property
     def dumms(self):
-        """The broadcast form of the dummies dictionary.
-        """
+        """The broadcast form of the dummies dictionary."""
         return self._dumms.bcast
 
     def set_symm(self, base, *symms, valence=None, set_base_name=True):
@@ -2308,7 +2387,7 @@ class Drudge:
         """
 
         if len(symms) == 0:
-            raise ValueError('Invalid empty symmetry, expecting generators!')
+            raise ValueError("Invalid empty symmetry, expecting generators!")
         elif len(symms) == 1 and symms[0] is None:
             group = None
         else:
@@ -2319,9 +2398,11 @@ class Drudge:
                 elif isinstance(i, Iterable):
                     gens.extend(i)
                 else:
-                    raise TypeError('Invalid generator: ', i,
-                                    'expecting Perm or iterable of Perms')
-                continue
+                    raise TypeError(
+                        "Invalid generator: ",
+                        i,
+                        "expecting Perm or iterable of Perms",
+                    )
 
             if len(gens) > 0:
                 group = Group(gens)
@@ -2334,16 +2415,14 @@ class Drudge:
                 valence = int(valence)
             except ValueError:
                 raise ValueError(
-                    'Invalid valence', valence, 'expecting integer'
+                    "Invalid valence", valence, "expecting integer"
                 )
             if valence < 1:
                 raise ValueError(
-                    'Invalid valence', valence, 'expecting positive integer'
+                    "Invalid valence", valence, "expecting positive integer"
                 )
 
-        self._symms.var[
-            base if valence is None else (base, valence)
-        ] = group
+        self._symms.var[base if valence is None else (base, valence)] = group
 
         if set_base_name:
             self.set_name(**{str(base): base})
@@ -2352,8 +2431,7 @@ class Drudge:
 
     @property
     def symms(self):
-        """The broadcast form of the symmetries.
-        """
+        """The broadcast form of the symmetries."""
         return self._symms.bcast
 
     def add_resolver(self, resolver):
@@ -2404,10 +2482,9 @@ class Drudge:
             for i in ranges:
                 if i not in curr_dumms:
                     raise ValueError(
-                        'Unexpected range, dummies not yet set', i
+                        "Unexpected range, dummies not yet set", i
                     )
                 to_proc.append((i, curr_dumms[i]))
-                continue
 
         self.add_resolver(SymbResolver(to_proc, strict))
 
@@ -2418,9 +2495,9 @@ class Drudge:
         Note that all later resolvers will not be invoked at all after this
         resolver is added.
         """
-        self.add_resolver(functools.partial(
-            _resolve_default_range, range_=range_
-        ))
+        self.add_resolver(
+            functools.partial(_resolve_default_range, range_=range_)
+        )
 
     @property
     def resolvers(self):
@@ -2479,7 +2556,7 @@ class Drudge:
 
         if len(kwargs) != 0:
             raise ValueError(
-                'Invalid arguments to free algebra normal order', kwargs
+                "Invalid arguments to free algebra normal order", kwargs
             )
 
         return terms
@@ -2524,11 +2601,11 @@ class Drudge:
         .. doctest::
 
             >>> dr = Drudge(SparkContext())
-            >>> r = Range('R')
-            >>> a = Symbol('a')
-            >>> b = Symbol('b')
-            >>> x = IndexedBase('x')
-            >>> v = Vec('v')
+            >>> r = Range("R")
+            >>> a = Symbol("a")
+            >>> b = Symbol("b")
+            >>> x = IndexedBase("x")
+            >>> v = Vec("v")
             >>> tensor = dr.sum((a, r), (b, r), x[a, b] * v[a] * v[b])
             >>> str(tensor)
             'sum_{a, b} x[a, b] * v[a] * v[b]'
@@ -2538,7 +2615,7 @@ class Drudge:
 
         .. doctest::
 
-            >>> s = Range('S')
+            >>> s = Range("S")
             >>> tensor = dr.sum((a, r, s), x[a] * v[a])
             >>> print(str(tensor))
             sum_{a} x[a] * v[a]
@@ -2585,21 +2662,26 @@ class Drudge:
         """
 
         if len(args) == 0:
-            raise ValueError('Expecting summand!')
+            raise ValueError("Expecting summand!")
 
         summand = args[-1]
         sum_args = args[:-1]
 
         if isinstance(summand, Tensor):
-            return Tensor(self, summand.terms.flatMap(
-                lambda x: sum_term(sum_args, x, predicate=predicate)
-            ))
+            return Tensor(
+                self,
+                summand.terms.flatMap(
+                    lambda x: sum_term(sum_args, x, predicate=predicate)
+                ),
+            )
         else:
-            return self.create_tensor(sum_term(
-                sum_args, summand, predicate=predicate
-            ))
+            return self.create_tensor(
+                sum_term(sum_args, summand, predicate=predicate)
+            )
 
-    def einst(self, summand, auto_exts: bool = False) -> typing.Union[
+    def einst(
+        self, summand, auto_exts: bool = False
+    ) -> typing.Union[
         Tensor, typing.Tuple[Tensor, typing.AbstractSet[Symbol]]
     ]:
         """Create a tensor from Einstein summation convention.
@@ -2619,10 +2701,10 @@ class Drudge:
         .. doctest::
 
             >>> dr = Drudge(SparkContext())
-            >>> r = Range('R')
-            >>> a, b, c = dr.set_dumms(r, symbols('a b c'))
+            >>> r = Range("R")
+            >>> a, b, c = dr.set_dumms(r, symbols("a b c"))
             >>> dr.add_resolver_for_dumms()
-            >>> x = IndexedBase('x')
+            >>> x = IndexedBase("x")
             >>> tensor = dr.einst(x[a, b] * x[b, c])
             >>> str(tensor)
             'sum_{b} x[a, b]*x[b, c]'
@@ -2656,10 +2738,11 @@ class Drudge:
 
         # Separate the cases for local and distributed terms for optimization.
         if isinstance(summand, Tensor):
-
-            einst_res = summand.expand().terms.map(
-                lambda x: einst_term(x, resolvers.value)
-            ).cache()
+            einst_res = (
+                summand.expand()
+                .terms.map(lambda x: einst_term(x, resolvers.value))
+                .cache()
+            )
             tensor = Tensor(
                 self, einst_res.flatMap(operator.itemgetter(0)), expanded=True
             )
@@ -2697,8 +2780,7 @@ class Drudge:
                     res_terms.extend(terms)
                     exts_union |= exts
                     exts_inters = _inters(exts_inters, exts)
-                    continue
-                continue
+
             tensor = self.create_tensor(res_terms)
 
         # End splitting between distributed and local input.
@@ -2709,8 +2791,9 @@ class Drudge:
         if exts_union != exts_inters:
             diff = exts_union - exts_inters
             raise ValueError(
-                'Invalid external indices for Einstein convention',
-                diff, 'appeared only in some terms'
+                "Invalid external indices for Einstein convention",
+                diff,
+                "appeared only in some terms",
             )
 
         return tensor, exts_inters
@@ -2750,7 +2833,7 @@ class Drudge:
 
         """
         if len(args) == 0:
-            raise ValueError('Expecting arguments for definition.')
+            raise ValueError("Expecting arguments for definition.")
 
         base, exts = self._parse_def_lhs(args[:-1])
         content = args[-1]
@@ -2771,12 +2854,12 @@ class Drudge:
         """
 
         if len(args) == 0:
-            raise ValueError('Expecting arguments for definition.')
+            raise ValueError("Expecting arguments for definition.")
 
         if auto_exts:
             if len(args) != 2:
                 raise TypeError(
-                    'Invalid number of arguments, base and rhs expected!'
+                    "Invalid number of arguments, base and rhs expected!"
                 )
             tensor, exts = self.einst(args[-1], auto_exts=True)
             exts = self._form_exts(exts)
@@ -2796,7 +2879,7 @@ class Drudge:
         """
 
         if len(args) == 0:
-            raise ValueError('No LHS given for tensor definition.')
+            raise ValueError("No LHS given for tensor definition.")
         elif len(args) == 1:
             arg = args[0]
             if isinstance(arg, (Indexed, Vec)):
@@ -2822,7 +2905,7 @@ class Drudge:
                 range_ = try_resolve_range(i, {}, self.resolvers.value)
                 if range_ is None:
                     raise ValueError(
-                        'Invalid index', i, 'range cannot be resolved'
+                        "Invalid index", i, "range cannot be resolved"
                     )
                 if isinstance(range_, Sequence):
                     exts.append(i)
@@ -2830,7 +2913,7 @@ class Drudge:
                     exts.append((i, range_))
             else:
                 exts.append(i)
-            continue
+
         return exts
 
     def def_(self, *args) -> TensorDef:
@@ -2855,8 +2938,14 @@ class Drudge:
     #
 
     def format_latex(
-            self, inp, sep_lines=False, align_terms=False, proc=None,
-            no_sum=False, bounds=False, scalar_mul=''
+        self,
+        inp,
+        sep_lines=False,
+        align_terms=False,
+        proc=None,
+        no_sum=False,
+        bounds=False,
+        scalar_mul="",
     ):
         r"""Get the LaTeX form of a given tensor or tensor definition.
 
@@ -2916,18 +3005,21 @@ class Drudge:
         """
 
         if isinstance(inp, TensorDef):
-            prefix = (self._latex_vec(inp.lhs) if isinstance(inp.lhs, Vec) else
-                      self._latex_sympy(inp.lhs)) + ' = '
+            prefix = (
+                self._latex_vec(inp.lhs)
+                if isinstance(inp.lhs, Vec)
+                else self._latex_sympy(inp.lhs)
+            ) + " = "
         elif isinstance(inp, Tensor):
-            prefix = ''
+            prefix = ""
         else:
-            raise TypeError('Invalid object to form into LaTeX.')
+            raise TypeError("Invalid object to form into LaTeX.")
 
         n_terms = inp.n_terms
         inp_terms = inp.local_terms
 
         if n_terms == 0:
-            return prefix + '0'
+            return prefix + "0"
 
         terms = []
         for i, v in enumerate(inp_terms):
@@ -2938,18 +3030,17 @@ class Drudge:
             if proc is not None:
                 term = proc(term, term=v, idx=i)
 
-            if i != 0 and term[0] not in {'+', '-'}:
-                term = ' + ' + term
+            if i != 0 and term[0] not in {"+", "-"}:
+                term = " + " + term
             if align_terms:
-                term = ' & ' + term
+                term = " & " + term
             terms.append(term)
-            continue
 
-        term_sep = r' \\ ' if sep_lines else ' '
+        term_sep = r" \\ " if sep_lines else " "
 
         return prefix + term_sep.join(terms)
 
-    def _latex_term(self, term, no_sum=False, bounds=False, scalar_mul=''):
+    def _latex_term(self, term, no_sum=False, bounds=False, scalar_mul=""):
         """Format a term into LaTeX form.
 
         This method does not generally need to be overridden.
@@ -2958,7 +3049,7 @@ class Drudge:
         # Small utility.
         def parenth(content: str):
             """Parenthesize the string."""
-            return ''.join([r'\left(', content, r'\right)'])
+            return "".join([r"\left(", content, r"\right)"])
 
         parts = []
 
@@ -2969,8 +3060,8 @@ class Drudge:
         if isinstance(term.amp, Add):
             # In this case, we need a big parenthesis for the amplitude.
             first_try = self._latex_sympy(term.amp)
-            if first_try[0] == '-':
-                parts.append('-')
+            if first_try[0] == "-":
+                parts.append("-")
                 amp_latex = self._latex_sympy(-term.amp)
             else:
                 amp_latex = first_try
@@ -2983,11 +3074,11 @@ class Drudge:
             if coeff == 1 and not if_pure_coeff:
                 pass
             elif coeff == -1 and not if_pure_coeff:
-                parts.append('-')
+                parts.append("-")
             else:
                 coeff_latex = self._latex_sympy(coeff)
-                if coeff_latex[0] == '-':
-                    parts.append('-')
+                if coeff_latex[0] == "-":
+                    parts.append("-")
                     coeff_latex = coeff_latex[1:]
 
                 if isinstance(coeff, Add):
@@ -2995,13 +3086,16 @@ class Drudge:
                 amp_parts.append(coeff_latex)
 
             if len(factors) > 0:
-                scalar_mul = ''.join([' ', scalar_mul, ' '])
+                scalar_mul = "".join([" ", scalar_mul, " "])
 
-                amp_parts.append(scalar_mul.join(
-                    parenth(self._latex_sympy(i)) if isinstance(i, Add)
-                    else self._latex_sympy(i)
-                    for i in factors
-                ))
+                amp_parts.append(
+                    scalar_mul.join(
+                        parenth(self._latex_sympy(i))
+                        if isinstance(i, Add)
+                        else self._latex_sympy(i)
+                        for i in factors
+                    )
+                )
 
         if not term.is_scalar:
             amp_parts.append(scalar_mul)
@@ -3010,22 +3104,21 @@ class Drudge:
             for i, j in term.sums:
                 dumm = self._latex_sympy(i)
                 if bounds and j.bounded:
-                    form = r'\sum_{{{} = {}}}^{{{}}}'.format(
-                        dumm, self._latex_sympy(j.lower),
-                        self._latex_sympy(j.upper - 1)  # Math notation.
+                    form = r"\sum_{{{} = {}}}^{{{}}}".format(
+                        dumm,
+                        self._latex_sympy(j.lower),
+                        self._latex_sympy(j.upper - 1),  # Math notation.
                     )
                 else:
-                    form = r'\sum_{{{} \in {}}}'.format(dumm, j.label)
+                    form = r"\sum_{{{} \in {}}}".format(dumm, j.label)
                 parts.append(form)
 
-        parts.append(' '.join(amp_parts))
+        parts.append(" ".join(amp_parts))
 
-        vecs = self._latex_vec_mul.join(
-            self._latex_vec(i) for i in term.vecs
-        )
+        vecs = self._latex_vec_mul.join(self._latex_vec(i) for i in term.vecs)
         parts.append(vecs)
 
-        return ' '.join(parts)
+        return " ".join(parts)
 
     @staticmethod
     def _latex_sympy(expr):
@@ -3044,14 +3137,14 @@ class Drudge:
         indices are put into the subscripts.
         """
 
-        head = r'\mathbf{{{}}}'.format(vec.label)
+        head = r"\mathbf{{{}}}".format(vec.label)
         if len(vec.indices) > 0:
-            indices = ', '.join(self._latex_sympy(i) for i in vec.indices)
-            return r'{}_{{{}}}'.format(head, indices)
+            indices = ", ".join(self._latex_sympy(i) for i in vec.indices)
+            return r"{}_{{{}}}".format(head, indices)
         else:
             return head
 
-    _latex_vec_mul = r' \otimes '
+    _latex_vec_mul = r" \otimes "
 
     @contextlib.contextmanager
     def report(self, filename, title):
@@ -3085,9 +3178,9 @@ class Drudge:
             :options: +SKIP
 
             >>> dr = Drudge(SparkContext())
-            >>> tensor = dr.sum(IndexedBase('x')[Symbol('a')])
-            >>> with dr.report('report.html', 'A simple tensor') as report:
-            ...     report.add('Simple tensor', tensor)
+            >>> tensor = dr.sum(IndexedBase("x")[Symbol("a")])
+            >>> with dr.report("report.html", "A simple tensor") as report:
+            ...     report.add("Simple tensor", tensor)
 
         """
 
@@ -3125,7 +3218,7 @@ class Drudge:
         .. doctest::
 
             >>> dr = Drudge(SparkContext())
-            >>> tensor = dr.sum(IndexedBase('x')[Symbol('a')])
+            >>> tensor = dr.sum(IndexedBase("x")[Symbol("a")])
             >>> import pickle
             >>> serialized = pickle.dumps(tensor)
             >>> with dr.pickle_env():
@@ -3141,7 +3234,7 @@ class Drudge:
         yield None
         current_drudge = prev_drudge
 
-    def memoize(self, comput, filename, log=None, log_header='Memoize:'):
+    def memoize(self, comput, filename, log=None, log_header="Memoize:"):
         """Preserve/lookup result of computation into/from pickle file.
 
         When the file with the given name exists, it will be opened and
@@ -3186,10 +3279,10 @@ class Drudge:
             :options: +SKIP
 
             >>> dr = Drudge(SparkContext())
-            >>> res = dr.memoize(lambda: 10, 'intermediate.pickle')
+            >>> res = dr.memoize(lambda: 10, "intermediate.pickle")
             >>> res
             10
-            >>> dr.memoize(lambda: 10, 'intermediate.pickle')
+            >>> dr.memoize(lambda: 10, "intermediate.pickle")
             10
 
         Note that in the second execution, the number 10 should be read from the
@@ -3204,23 +3297,25 @@ class Drudge:
         if log is None:
             log_args = {}
         else:
-            log_args = {'file': log}
+            log_args = {"file": log}
 
         try:
-
-            with self.pickle_env(), open(filename, 'rb') as fp:
+            with self.pickle_env(), open(filename, "rb") as fp:
                 res = pickle.load(fp)
 
-            print(log_header, 'read data from {}'.format(filename), **log_args)
+            print(log_header, "read data from {}".format(filename), **log_args)
 
         except (OSError, pickle.PickleError) as exc:
-
-            print(log_header, 'computing, failed to read from {}: {!s}'.format(
-                filename, exc
-            ), **log_args)
+            print(
+                log_header,
+                "computing, failed to read from {}: {!s}".format(
+                    filename, exc
+                ),
+                **log_args,
+            )
 
             res = comput()
-            with open(filename, 'wb') as fp:
+            with open(filename, "wb") as fp:
                 pickle.dump(res, fp)
 
         return res
@@ -3234,7 +3329,7 @@ class Drudge:
         """If we are currently inside a drudge script."""
         return self._inside_drs
 
-    def exec_drs(self, src, filename='<unknown>'):
+    def exec_drs(self, src, filename="<unknown>"):
         """Execute the drudge script.
 
         Drudge script are Python scripts tweaked to be executed in special
@@ -3320,7 +3415,7 @@ class Drudge:
 
     @staticmethod
     def lvt_defs2mat(
-            defs: typing.Iterable[TensorDef], rhs_vecs=None, ret_rhs=False
+        defs: typing.Iterable[TensorDef], rhs_vecs=None, ret_rhs=False
     ):
         r"""Turn a linear vector transformation into matrix form.
 
@@ -3366,24 +3461,19 @@ class Drudge:
             if not isinstance(lhs, Vec):
                 lhs = 1
             if lhs in coeffs:
-                raise ValueError(
-                    'Duplicate definition', def_.lhs
-                )
+                raise ValueError("Duplicate definition", def_.lhs)
             curr_coeffs = collections.defaultdict(lambda: 0)
             coeffs[lhs] = curr_coeffs
 
             for term in def_.local_terms:
-
                 if len(term.sums) > 0:
                     raise NotImplementedError(
-                        'RHS for', lhs, 'too complicated', term
+                        "RHS for", lhs, "too complicated", term
                     )
 
                 vecs = term.vecs
                 if len(vecs) > 1:
-                    raise ValueError(
-                        'Nonlinear term for ', lhs, 'in', term
-                    )
+                    raise ValueError("Nonlinear term for ", lhs, "in", term)
                 elif len(vecs) == 1:
                     curr_coeffs[vecs[0]] += term.amp
                 else:
@@ -3397,7 +3487,6 @@ class Drudge:
             rhs_vecs = set()
             for i in coeffs.values():
                 rhs_vecs.update(i.keys())
-                continue
             rhs_vecs = list(rhs_vecs)
 
         res_coeffs = []
@@ -3408,13 +3497,11 @@ class Drudge:
                     row.append(rhs.pop(i))
                 else:
                     row.append(0)
-                continue
             if len(rhs) != 0:
                 raise ValueError(
-                    'Terms with vectors not given as RHS', list(rhs.keys())
+                    "Terms with vectors not given as RHS", list(rhs.keys())
                 )
             res_coeffs.append(row)
-            continue
 
         res = Matrix(res_coeffs)
         if ret_rhs:
@@ -3423,8 +3510,10 @@ class Drudge:
             return res
 
     def lvt_mat2defs(
-            self, mat: Matrix, lhs_vecs: typing.Iterable[Vec],
-            rhs_vecs: typing.Iterable[Vec]
+        self,
+        mat: Matrix,
+        lhs_vecs: typing.Iterable[Vec],
+        rhs_vecs: typing.Iterable[Vec],
     ):
         """Form definitions from a linear transformation matrix.
 
@@ -3438,20 +3527,20 @@ class Drudge:
 
         if n_rows != len(lhs_vecs):
             raise ValueError(
-                'Expecting', n_rows, 'LHS vectors', len(lhs_vecs), 'given'
+                "Expecting", n_rows, "LHS vectors", len(lhs_vecs), "given"
             )
         if n_cols != len(rhs_vecs):
             raise ValueError(
-                'Expecting', n_cols, 'RHS vectors', len(rhs_vecs), 'given'
+                "Expecting", n_cols, "RHS vectors", len(rhs_vecs), "given"
             )
 
         defs = []
         for idx in range(n_rows):
-            def_ = self.define(lhs_vecs[idx], sum(
-                i * j for i, j in zip(mat.row(idx), rhs_vecs)
-            ))
+            def_ = self.define(
+                lhs_vecs[idx],
+                sum(i * j for i, j in zip(mat.row(idx), rhs_vecs)),
+            )
             defs.append(def_)
-            continue
 
         return defs
 
@@ -3517,10 +3606,7 @@ class _DecomposeSpecials:
     In default mode, no symbol is considered special.
     """
 
-    __slots__ = [
-        '_consts',
-        '_gens'
-    ]
+    __slots__ = ["_consts", "_gens"]
 
     def __init__(self, consts=None, gens=None):
         """Initialize the container."""
@@ -3559,9 +3645,7 @@ def _decompose_term(term, specials):
     """
 
     # To distinguish ranges with the same label but different bounds.
-    sums = tuple(
-        (dumm, range_.args) for dumm, range_ in term.sums
-    )
+    sums = tuple((dumm, range_.args) for dumm, range_ in term.sums)
     amp = term.amp
 
     if specials is None:
@@ -3575,26 +3659,23 @@ def _decompose_term(term, specials):
             symbs = i.atoms(Symbol)
             if len(symbs) == 0:
                 coeff *= i
-            elif isinstance(i, Indexed) or i in specials or any(
-                    j in specials for j in symbs
+            elif (
+                isinstance(i, Indexed)
+                or i in specials
+                or any(j in specials for j in symbs)
             ):
                 factor *= i
             else:
                 coeff *= i
-            continue
-    return (
-        (sums, term.vecs, factor),
-        coeff
-    )
+
+    return ((sums, term.vecs, factor), coeff)
 
 
 def _recover_term(state):
     """Recover a term from a merging state."""
 
     key, coeff = state
-    sums = tuple(
-        (dumm, Range(*range_args)) for dumm, range_args in key[0]
-    )
+    sums = tuple((dumm, Range(*range_args)) for dumm, range_args in key[0])
     return Term(sums, coeff * key[2], key[1])
 
 
@@ -3616,6 +3697,7 @@ class _Decred(int):
     that it can be used in places where ordering and equality comparison is
     needed.
     """
+
     __slots__ = []
 
 
@@ -3627,6 +3709,4 @@ def _simplify_symbolic_sum(expr, **_):
 
     assert len(expr.args) == 2
 
-    return eval_sum_symbolic(
-        expr.args[0].simplify(), expr.args[1]
-    )
+    return eval_sum_symbolic(expr.args[0].simplify(), expr.args[1])

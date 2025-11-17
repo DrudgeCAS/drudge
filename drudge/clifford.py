@@ -23,12 +23,14 @@ def inner_by_delta(vec1: Vec, vec2: Vec):
     indices2 = vec2.indices
     if vec1.label != vec2.label or len(indices1) != len(indices2):
         raise ValueError(
-            'Invalid vectors to computer inner product by delta', (vec1, vec2)
+            "Invalid vectors to computer inner product by delta", (vec1, vec2)
         )
 
-    return functools.reduce(operator.mul, (
-        KroneckerDelta(i, j) for i, j in zip(indices1, indices2)
-    ), Integer(1))
+    return functools.reduce(
+        operator.mul,
+        (KroneckerDelta(i, j) for i, j in zip(indices1, indices2)),
+        Integer(1),
+    )
 
 
 class CliffordDrudge(WickDrudge):
@@ -74,12 +76,8 @@ class CliffordDrudge(WickDrudge):
         super().__init__(ctx, **kwargs)
 
         self._inner = inner
-        self._contractor = functools.partial(
-            _contract4clifford, inner=inner
-        )
-        self._collapse = functools.partial(
-            _collapse4clifford, inner=inner
-        )
+        self._contractor = functools.partial(_contract4clifford, inner=inner)
+        self._collapse = functools.partial(_collapse4clifford, inner=inner)
 
     @property
     def phase(self):
@@ -118,10 +116,7 @@ def _compare_by_sort_key(vec1: Vec, vec2: Vec, _: Term):
     return vec1.sort_key > vec2.sort_key
 
 
-def _contract4clifford(
-        vec1: Vec, vec2: Vec, _: Term, *,
-        inner
-):
+def _contract4clifford(vec1: Vec, vec2: Vec, _: Term, *, inner):
     """Contract two vectors by Clifford rules."""
     return inner(vec1, vec2) * Integer(2)
 
@@ -132,7 +127,6 @@ def _collapse4clifford(term: Term, *, inner):
     vecs = []
     amp = term.amp
     for k, g in itertools.groupby(term.vecs):
-
         n_vecs = sum(1 for _ in g)
         n_inners = n_vecs // 2
         n_rem = n_vecs % 2
@@ -143,7 +137,5 @@ def _collapse4clifford(term: Term, *, inner):
 
         if n_rem > 0:
             vecs.append(k)
-
-        continue
 
     return Term(term.sums, amp, tuple(vecs))

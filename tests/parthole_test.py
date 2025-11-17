@@ -6,18 +6,18 @@ from sympy import Rational, IndexedBase
 from drudge import PartHoleDrudge
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope="module")
 def parthole(spark_ctx):
     """Initialize the environment for a free algebra."""
     dr = PartHoleDrudge(spark_ctx)
     return dr
 
 
-@pytest.mark.parametrize('par_level', [0, 1, 2])
-@pytest.mark.parametrize('full_simplify', [True, False])
-@pytest.mark.parametrize('simple_merge', [True, False])
+@pytest.mark.parametrize("par_level", [0, 1, 2])
+@pytest.mark.parametrize("full_simplify", [True, False])
+@pytest.mark.parametrize("simple_merge", [True, False])
 def test_simple_parthole_normal_order(
-        parthole, par_level, full_simplify, simple_merge
+    parthole, par_level, full_simplify, simple_merge
 ):
     """Test particle-hole normal ordering on a simple term.
 
@@ -34,9 +34,7 @@ def test_simple_parthole_normal_order(
     j = p.j
 
     t = dr.one_body
-    inp = dr.einst(
-        t[i, j] * c_dag[i] * c_[j]
-    )
+    inp = dr.einst(t[i, j] * c_dag[i] * c_[j])
 
     dr.wick_parallel = par_level
     dr.full_simplify = full_simplify
@@ -49,9 +47,7 @@ def test_simple_parthole_normal_order(
     dr.simple_merge = False
 
     assert res.n_terms == 2
-    assert res == dr.einst(
-        -t[i, j] * c_[j] * c_dag[i] + t[i, i]
-    ).simplify()
+    assert res == dr.einst(-t[i, j] * c_[j] * c_dag[i] + t[i, i]).simplify()
 
 
 def test_parthole_drudge_has_good_ham(parthole):
@@ -64,7 +60,7 @@ def test_parthole_drudge_has_good_ham(parthole):
     #
     # TODO: Add inspection of the actual value.
 
-    assert dr.orig_ham.n_terms == 2 ** 2 + 2 ** 4
+    assert dr.orig_ham.n_terms == 2**2 + 2**4
     assert dr.full_ham.n_terms == 2 + 8 + 9
 
     assert dr.ham_energy.n_terms == 2
@@ -76,11 +72,14 @@ def test_parthole_drudge_has_good_ham(parthole):
 
     h_range = p.O
     i, j = p.O_dumms[:2]
-    expected = (dr.sum(
-        (i, h_range), dr.one_body[i, i]
-    ) + dr.sum(
-        (i, h_range), (j, h_range), dr.two_body[i, j, i, j] * Rational(1, 2)
-    )).simplify()
+    expected = (
+        dr.sum((i, h_range), dr.one_body[i, i])
+        + dr.sum(
+            (i, h_range),
+            (j, h_range),
+            dr.two_body[i, j, i, j] * Rational(1, 2),
+        )
+    ).simplify()
 
     assert dr.eval_fermi_vev(dr.orig_ham).simplify() == expected
     assert dr.ham_energy == expected
@@ -100,7 +99,7 @@ def test_tce_parse(parthole):
     * Sum ( h5 ) * f ( h5 h1 ) * t ( p3 p4 h5 h2 )
     """
 
-    t = IndexedBase('t')
+    t = IndexedBase("t")
 
     res = dr.parse_tce(tce_out, {2: t})
 
@@ -144,8 +143,7 @@ def test_parthole_with_ph_excitations(parthole):
 
 
 def test_parthole_drudge_gives_conventional_dummies(parthole):
-    """Test dummy naming in canonicalization facility on particle-hole drudge.
-    """
+    """Test dummy naming in canonicalization facility on particle-hole drudge."""
 
     dr = parthole
     p = dr.names
@@ -177,12 +175,14 @@ def test_parthole_drudge_canonicalize_complex_exprs(parthole):
     dr = parthole
     p = dr.names
 
-    t = IndexedBase('t')
-    z = IndexedBase('z')
+    t = IndexedBase("t")
+    z = IndexedBase("z")
 
     tensor = dr.einst(
-        t[p.c, p.l] * t[p.d, p.k] * p.u[p.k, p.i, p.c, p.a] *
-        z[p.d, p.b, p.j, p.l]
+        t[p.c, p.l]
+        * t[p.d, p.k]
+        * p.u[p.k, p.i, p.c, p.a]
+        * z[p.d, p.b, p.j, p.l]
     )
 
     once = tensor.canon().reset_dumms()
@@ -204,12 +204,12 @@ def test_drs_for_parthole_drudge(parthole):
     dr = parthole
     p = dr.names
 
-    env = dr.exec_drs(DRUDGE_SCRIPT, '<inline>')
+    env = dr.exec_drs(DRUDGE_SCRIPT, "<inline>")
 
-    x_def = env['x']
-    s = env['s']
+    x_def = env["x"]
+    s = env["s"]
 
-    t = IndexedBase('t')
+    t = IndexedBase("t")
     u = p.u
     i, j, a, b = p.i, p.j, p.a, p.b
 
@@ -219,20 +219,18 @@ def test_drs_for_parthole_drudge(parthole):
     assert s == 0
 
     # Different repr form in different environments.
-    assert repr(s).find('TensorDef object at 0x') > 0
-    assert env['s_str'] == 'x = 0'
+    assert repr(s).find("TensorDef object at 0x") > 0
+    assert env["s_str"] == "x = 0"
 
 
 def test_einstein_sum_for_both_particles_and_holes(parthole):
     """Test Einstein convention over both ranges."""
     dr = parthole
     p = dr.names
-    x = IndexedBase('x')
+    x = IndexedBase("x")
 
     summand = x[p.p, p.q] * p.c_[p.p, p.q]
     res = dr.einst(summand).simplify()
     assert res.n_terms == 4
     ranges = (dr.part_range, dr.hole_range)
-    assert res == dr.sum(
-        (p.p, ranges), (p.q, ranges), summand
-    ).simplify()
+    assert res == dr.sum((p.p, ranges), (p.q, ranges), summand).simplify()

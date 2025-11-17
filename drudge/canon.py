@@ -59,17 +59,17 @@ class Eldag:
 
         int_colour = [None for _ in self.colours]
 
-        group_res = enumerate(itertools.groupby(
-            sorted((v, i) for i, v in enumerate(self.colours)),
-            lambda x: x[0]
-        ))
+        group_res = enumerate(
+            itertools.groupby(
+                sorted((v, i) for i, v in enumerate(self.colours)),
+                lambda x: x[0],
+            )
+        )
 
         for i, v in group_res:
             _, g = v
             for _, idx in g:
                 int_colour[idx] = i
-                continue
-            continue
 
         return int_colour
 
@@ -130,16 +130,14 @@ def canon_factors(sums, factors, symms):
 
     # Sums are guaranteed to be in the initial segment of the nodes, but they
     # might not be at the beginning any more after the canonicalization.
-    sums_res = [sums[i] for i in node_order if
-                eldag.colours[i][0] == _SUM]
+    sums_res = [sums[i] for i in node_order if eldag.colours[i][0] == _SUM]
 
     coeff = 1
     factors_res = []
 
     for i, v in enumerate(factors):
-
         factor = v[0]
-        if hasattr(factor, 'indices'):
+        if hasattr(factor, "indices"):
             indices = factor.indices
             is_indexed = True
         else:
@@ -168,12 +166,11 @@ def canon_factors(sums, factors, symms):
                 # TODO: Allow vectors to have their own dagger form, maybe.
                 if if_vector:
                     raise ValueError(
-                        'Vector', factor, 'cannot have conjugation symmetry'
+                        "Vector", factor, "cannot have conjugation symmetry"
                     )
                 factor_res = conjugate(factor_res)
 
         factors_res.append(factor_res)
-        continue
 
     return sums_res, factors_res, coeff
 
@@ -227,10 +224,9 @@ def _build_eldag(sums, factors, symms):
         free_var_keys.sort()
         # Unbounded comes before bounded, those without dummy involvement comes
         # before those with.
-        eldag.add_node(edges, None, (
-            _SUM, i.label, bounded, with_dummy, free_var_keys
-        ))
-        continue
+        eldag.add_node(
+            edges, None, (_SUM, i.label, bounded, with_dummy, free_var_keys)
+        )
 
     # Real work, factors.
     #
@@ -238,7 +234,7 @@ def _build_eldag(sums, factors, symms):
     dumms = {v[0]: i for i, v in enumerate(sums)}
 
     for factor, colour in factors:
-        if hasattr(factor, 'base'):
+        if hasattr(factor, "base"):
             base = factor.base
             indices = factor.indices
         else:
@@ -250,28 +246,22 @@ def _build_eldag(sums, factors, symms):
             factor_symms = None
         else:
             prim_keys = [base]
-            if hasattr(base, 'label'):
+            if hasattr(base, "label"):
                 prim_keys.append(base.label)
             keys = itertools.chain(
-                ((i, n_indices) for i in prim_keys),
-                prim_keys
+                ((i, n_indices) for i in prim_keys), prim_keys
             )
             for i in keys:
                 if i in symms:
                     factor_symms = symms[i]
                     break
-                else:
-                    continue
             else:
                 factor_symms = None
 
         index_nodes = _proc_indices(indices, dumms, eldag)
-        idx = eldag.add_node(
-            index_nodes, factor_symms, (_FACTOR, colour)
-        )
+        idx = eldag.add_node(index_nodes, factor_symms, (_FACTOR, colour))
 
         factor_idxes.append(idx)
-        continue
 
     return eldag, factor_idxes
 
@@ -281,7 +271,7 @@ class _Placeholders(dict):
 
     def __missing__(self, key):
         """Add the placeholder for the given dummy."""
-        return Symbol('internalDummyPlaceholder{}'.format(key))
+        return Symbol("internalDummyPlaceholder{}".format(key))
 
 
 _placeholders = _Placeholders()
@@ -296,12 +286,10 @@ def _proc_indices(indices, dumms, eldag):
     nodes = []
 
     for expr in indices:
-
         involved = {}  # Sum node index -> actual dummy.
         for i in expr.atoms(Symbol):
             if i in dumms:
                 involved[dumms[i]] = i
-            continue
 
         sum_nodes = list(involved.keys())
 
@@ -312,14 +300,14 @@ def _proc_indices(indices, dumms, eldag):
 
         if len(sum_nodes) > 2:
             warnings.warn(
-                "Index expression", expr,
-                "contains too many summed dummies, something might be wrong"
+                "Index expression",
+                expr,
+                "contains too many summed dummies, something might be wrong",
             )
 
         for edges in itertools.permutations(sum_nodes):
             substs = {
-                involved[v]: _placeholders[i]
-                for i, v in enumerate(edges)
+                involved[v]: _placeholders[i] for i, v in enumerate(edges)
             }
             form = expr.xreplace(substs)
 
@@ -331,17 +319,16 @@ def _proc_indices(indices, dumms, eldag):
                 curr_symms = []
             elif form == curr_form:
                 curr_symms.append(_find_perm(curr_edges, edges))
-            continue
 
         # Now the order of the edges are determined.
 
         idx = eldag.add_node(
-            curr_edges, Group(curr_symms) if len(curr_symms) > 0 else None,
-            (_EXPR, curr_order)
+            curr_edges,
+            Group(curr_symms) if len(curr_symms) > 0 else None,
+            (_EXPR, curr_order),
         )
 
         nodes.append(idx)
-        continue
 
     return nodes
 

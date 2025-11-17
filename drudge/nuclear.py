@@ -7,8 +7,20 @@ import typing
 
 import collections
 from sympy import (
-    Symbol, Function, Sum, symbols, Wild, KroneckerDelta, IndexedBase, Integer,
-    sqrt, factor, Mul, Expr, Matrix, Pow
+    Symbol,
+    Function,
+    Sum,
+    symbols,
+    Wild,
+    KroneckerDelta,
+    IndexedBase,
+    Integer,
+    sqrt,
+    factor,
+    Mul,
+    Expr,
+    Matrix,
+    Pow,
 )
 from sympy.physics.quantum.cg import CG, Wigner3j, Wigner6j, Wigner9j
 from sympy.concrete.summations import eval_sum_symbolic
@@ -25,8 +37,7 @@ _NEG_UNITY = Integer(-1)
 
 
 class _QNOf(Function):
-    """Base class for quantum number access symbolic functions.
-    """
+    """Base class for quantum number access symbolic functions."""
 
     # To be override by subclasses.
     _latex_header = None
@@ -37,47 +48,54 @@ class _QNOf(Function):
         The printing will be the header given in the subclasses followed by the
         printing of the orbit wrapped in braces.
         """
-        return ''.join([
-            self._latex_header, '{', printer.doprint(self.args[0]), '}'
-        ])
+        return "".join(
+            [self._latex_header, "{", printer.doprint(self.args[0]), "}"]
+        )
 
 
 class JOf(_QNOf):
     """Symbolic access of j quantum number of an orbit."""
-    _latex_header = 'j_'
+
+    _latex_header = "j_"
 
 
 class TildeOf(_QNOf):
     """Symbolic access of the tilde part of an orbit."""
-    _latex_header = r'\tilde'
+
+    _latex_header = r"\tilde"
 
 
 class MOf(_QNOf):
     """Symbolic access of the m quantum number of an orbit."""
-    _latex_header = 'm_'
+
+    _latex_header = "m_"
 
 
 class NOf(_QNOf):
     """Symbolic access of the n quantum number of an orbit."""
-    _latex_header = 'n_'
+
+    _latex_header = "n_"
 
 
 class LOf(_QNOf):
     """Symbolic access of the l quantum number in an orbit."""
-    _latex_header = 'l_'
+
+    _latex_header = "l_"
 
 
 class PiOf(_QNOf):
     """Symbolic access of the parity of an orbit."""
-    _latex_header = r'\pi_'
+
+    _latex_header = r"\pi_"
 
 
 class TOf(_QNOf):
     """Symbolic access to the t quantum number of an orbit."""
-    _latex_header = 't_'
+
+    _latex_header = "t_"
 
 
-_SUFFIXED = re.compile(r'^([a-zA-Z]+)([0-9]+)$')
+_SUFFIXED = re.compile(r"^([a-zA-Z]+)([0-9]+)$")
 
 
 def _decor_base(symb: Symbol, op, **kwargs):
@@ -91,22 +109,20 @@ def _decor_base(symb: Symbol, op, **kwargs):
     """
     m = _SUFFIXED.match(symb.name)
     if not m:
-        raise ValueError('Invalid symbol name to parse', symb)
+        raise ValueError("Invalid symbol name to parse", symb)
 
     name, suffix = m.groups()
     return Symbol(op(name) + suffix, **kwargs)
 
 
 def form_tilde(orig: Symbol):
-    """Form the tilde symbol for a given orbit symbol.
-    """
-    return _decor_base(orig, lambda x: x + 'tilde')
+    """Form the tilde symbol for a given orbit symbol."""
+    return _decor_base(orig, lambda x: x + "tilde")
 
 
 def form_m(orig: Symbol):
-    """Form the symbol for m quantum number for a given orbit symbol.
-    """
-    return _decor_base(orig, lambda _: 'm')
+    """Form the symbol for m quantum number for a given orbit symbol."""
+    return _decor_base(orig, lambda _: "m")
 
 
 class NuclearBogoliubovDrudge(BogoliubovDrudge):
@@ -138,17 +154,17 @@ class NuclearBogoliubovDrudge(BogoliubovDrudge):
     """
 
     def __init__(
-            self, ctx, coll_j_range=Range('J', 0, Symbol('Jmax') + 1),
-            coll_m_range=Range('M'),
-            coll_j_dumms=tuple(
-                Symbol('J{}'.format(i)) for i in range(1, 30)
-            ),
-            coll_m_dumms=tuple(
-                Symbol('M{}'.format(i)) for i in range(1, 30)
-            ),
-            tilde_range=Range(r'\tilde{Q}', 0, Symbol('Ntilde')),
-            form_tilde=form_tilde,
-            m_range=Range('m'), form_m=form_m, **kwargs
+        self,
+        ctx,
+        coll_j_range=Range("J", 0, Symbol("Jmax") + 1),
+        coll_m_range=Range("M"),
+        coll_j_dumms=tuple(Symbol("J{}".format(i)) for i in range(1, 30)),
+        coll_m_dumms=tuple(Symbol("M{}".format(i)) for i in range(1, 30)),
+        tilde_range=Range(r"\tilde{Q}", 0, Symbol("Ntilde")),
+        form_tilde=form_tilde,
+        m_range=Range("m"),
+        form_m=form_m,
+        **kwargs,
     ):
         """Initialize the drudge object."""
         super().__init__(ctx, **kwargs)
@@ -156,9 +172,18 @@ class NuclearBogoliubovDrudge(BogoliubovDrudge):
         # Convenient names for quantum number access functions inside drudge
         # scripts.
         self.set_name(
-            n_=NOf, NOf=NOf, l_=LOf, LOf=LOf, j_=JOf, JOf=JOf,
-            tilde_=TildeOf, TildeOf=TildeOf, m_=MOf, MOf=MOf,
-            pi_=PiOf, PiOf=PiOf
+            n_=NOf,
+            NOf=NOf,
+            l_=LOf,
+            LOf=LOf,
+            j_=JOf,
+            JOf=JOf,
+            tilde_=TildeOf,
+            TildeOf=TildeOf,
+            m_=MOf,
+            MOf=MOf,
+            pi_=PiOf,
+            PiOf=PiOf,
         )
 
         self.coll_j_range = coll_j_range
@@ -185,37 +210,45 @@ class NuclearBogoliubovDrudge(BogoliubovDrudge):
             CG=CG, Wigner3j=Wigner3j, Wigner6j=Wigner6j, Wigner9j=Wigner9j
         )
 
-        self.sum_simplifiers = BCastVar(self._ctx, {
-            1: [_simplify_symbolic_sum_nodoit]
-        })
-        self._am_sum_simplifiers = BCastVar(self.ctx, {
-            # TODO: Add more simplifications here.
-            2: [_sum_2_3j_to_delta],
-            5: [_sum_4_3j_to_6j]
-        })
-        self.set_tensor_method('simplify_am', self.simplify_am)
+        self.sum_simplifiers = BCastVar(
+            self._ctx, {1: [_simplify_symbolic_sum_nodoit]}
+        )
+        self._am_sum_simplifiers = BCastVar(
+            self.ctx,
+            {
+                # TODO: Add more simplifications here.
+                2: [_sum_2_3j_to_delta],
+                5: [_sum_4_3j_to_6j],
+            },
+        )
+        self.set_tensor_method("simplify_am", self.simplify_am)
 
         # All expressions for J/j, for merging of simple terms with factors in
         # J/j-hat style.
-        self._j_exprs = frozenset(itertools.chain(self.coll_j_dumms, (
-            JOf(i) for i in self.tilde_dumms
-        )))
+        self._j_exprs = frozenset(
+            itertools.chain(
+                self.coll_j_dumms, (JOf(i) for i in self.tilde_dumms)
+            )
+        )
 
         # For angular momentum coupling.
-        self.set_tensor_method('do_amc', self.do_amc)
+        self.set_tensor_method("do_amc", self.do_amc)
 
         # Special simplification routines.
-        self.set_tensor_method('simplify_pono', self.simplify_pono)
-        self.set_tensor_method('deep_simplify', self.deep_simplify)
-        self.set_tensor_method('merge_j', self.merge_j)
+        self.set_tensor_method("simplify_pono", self.simplify_pono)
+        self.set_tensor_method("deep_simplify", self.deep_simplify)
+        self.set_tensor_method("merge_j", self.merge_j)
 
     #
     # Angular momentum coupling utilities
     #
 
     def form_amc_def(
-            self, base: IndexedBase, cr_order: int, an_order: int,
-            res_base: IndexedBase = None
+        self,
+        base: IndexedBase,
+        cr_order: int,
+        an_order: int,
+        res_base: IndexedBase = None,
     ):
         """Form the tensor definition for angular momentum coupled form.
 
@@ -261,12 +294,11 @@ class NuclearBogoliubovDrudge(BogoliubovDrudge):
             return self._form_amc_def_2(base, cr_order, an_order, res_base)
         else:
             raise NotImplementedError(
-                'AMC has not been implemented for total order', total_order
+                "AMC has not been implemented for total order", total_order
             )
 
     def _form_amc_def_1(self, base, cr_order, an_order, res_base):
-        """Form AMC for 1-body tensors.
-        """
+        """Form AMC for 1-body tensors."""
         assert cr_order + an_order == 2
 
         k1, k2 = self.qp_dumms[:2]
@@ -274,7 +306,7 @@ class NuclearBogoliubovDrudge(BogoliubovDrudge):
 
         phase = _UNITY
         if cr_order == 2:
-            phase = _NEG_UNITY ** (JOf(k2) + mk2),
+            phase = (_NEG_UNITY ** (JOf(k2) + mk2),)
             mk2 = -mk2
         elif cr_order == 1:
             pass
@@ -284,18 +316,21 @@ class NuclearBogoliubovDrudge(BogoliubovDrudge):
         else:
             assert 0
 
-        res = self.define(base[k1, k2], self.sum(
-            phase * KroneckerDelta(PiOf(k1), PiOf(k2))
-            * KroneckerDelta(JOf(k1), JOf(k2))
-            * KroneckerDelta(TOf(k1), TOf(k2))
-            * KroneckerDelta(mk1, mk2)
-            * res_base[LOf(k1), JOf(k1), TOf(k1), NOf(k1), NOf(k2)]
-        ))
+        res = self.define(
+            base[k1, k2],
+            self.sum(
+                phase
+                * KroneckerDelta(PiOf(k1), PiOf(k2))
+                * KroneckerDelta(JOf(k1), JOf(k2))
+                * KroneckerDelta(TOf(k1), TOf(k2))
+                * KroneckerDelta(mk1, mk2)
+                * res_base[LOf(k1), JOf(k1), TOf(k1), NOf(k1), NOf(k2)]
+            ),
+        )
         return res
 
     def _form_amc_def_2(self, base, cr_order, an_order, res_base):
-        """Form AMC for 2-body tensors.
-        """
+        """Form AMC for 2-body tensors."""
         assert cr_order + an_order == 4
 
         ks = self.qp_dumms[:4]
@@ -323,13 +358,19 @@ class NuclearBogoliubovDrudge(BogoliubovDrudge):
             mk3 = -mk3
             mk4 = -mk4
 
-        res = self.define(base[k1, k2, k3, k4], self.sum(
-            (cj, self.coll_j_range), (cm, self.coll_m_range[-cj, cj + 1]),
-            phase
-            * res_base[cj, TildeOf(k1), TildeOf(k2), TildeOf(k3), TildeOf(k4)]
-            * CG(jk1, mk1, jk2, mk2, cj, cm)
-            * CG(jk3, mk3, jk4, mk4, cj, cm)
-        ))
+        res = self.define(
+            base[k1, k2, k3, k4],
+            self.sum(
+                (cj, self.coll_j_range),
+                (cm, self.coll_m_range[-cj, cj + 1]),
+                phase
+                * res_base[
+                    cj, TildeOf(k1), TildeOf(k2), TildeOf(k3), TildeOf(k4)
+                ]
+                * CG(jk1, mk1, jk2, mk2, cj, cm)
+                * CG(jk3, mk3, jk4, mk4, cj, cm),
+            ),
+        )
         return res
 
     def do_amc(self, tensor: Tensor, defs, exts=None):
@@ -370,7 +411,7 @@ class NuclearBogoliubovDrudge(BogoliubovDrudge):
             jtilde = JOf(tilde)
             return [
                 (form_tilde(dumm), tilde_range, tilde),
-                (form_m(dumm), m_range[-jtilde, jtilde + 1], MOf(dumm))
+                (form_m(dumm), m_range[-jtilde, jtilde + 1], MOf(dumm)),
             ]
 
         return substed.expand_sums(
@@ -419,12 +460,9 @@ class NuclearBogoliubovDrudge(BogoliubovDrudge):
         return tensor.merge(consts=self._j_exprs).map2amps(factor)
 
     def simplify_pono(self, tensor: Tensor):
-        """Simplify the powers of negative ones in the amplitudes of the tensor.
-        """
+        """Simplify the powers of negative ones in the amplitudes of the tensor."""
         resolvers = self.resolvers
-        return tensor.map(
-            lambda term: _simpl_pono_term(term, resolvers.value)
-        )
+        return tensor.map(lambda term: _simpl_pono_term(term, resolvers.value))
 
     @staticmethod
     def deep_simplify(tensor: Tensor):
@@ -463,6 +501,7 @@ class NuclearBogoliubovDrudge(BogoliubovDrudge):
 # their special treatment.
 #
 
+
 class _JM:
     """A pair of j and m quantum numbers.
 
@@ -477,12 +516,7 @@ class _JM:
 
     """
 
-    __slots__ = [
-        'j',
-        '_m',
-        '_m_symb',
-        '_m_phase'
-    ]
+    __slots__ = ["j", "_m", "_m_symb", "_m_phase"]
 
     def __init__(self, j: Expr, m: Expr):
         """Initialize the pair."""
@@ -515,33 +549,30 @@ class _JM:
 
     @property
     def m_symb(self):
-        """The only symbol in the m part when it is a bare symbol.
-        """
+        """The only symbol in the m part when it is a bare symbol."""
         return self._m_symb
 
     @property
     def m_phase(self):
-        """The phase for the bare symbol in the m part, when applicable.
-        """
+        """The phase for the bare symbol in the m part, when applicable."""
         return self._m_phase
 
     def inv_m(self):
-        """Invert the sign of the m part.
-        """
+        """Invert the sign of the m part."""
         self.m = -self.m
 
     def __repr__(self):
-        """Get a simple string form for debugging.
-        """
-        return '{!s}, {!s}'.format(self.j, self.m)
+        """Get a simple string form for debugging."""
+        return "{!s}, {!s}".format(self.j, self.m)
 
 
 #
 # Special simplifications of general scalar quantities.
 #
 
+
 def _simpl_pono(
-        expr: Expr, resolvers, sums_dict, jms=None, rels=None, sums_only=True
+    expr: Expr, resolvers, sums_dict, jms=None, rels=None, sums_only=True
 ):
     """Simplify powers of negative one (pono) in the given expression.
 
@@ -595,9 +626,7 @@ def _simpl_pono(
     # Preparatory steps.
 
     # Mapping from m symbols to the corresponding j symbols.
-    j_of = {
-        i.m: i.j for i in jms
-    } if jms else {}
+    j_of = {i.m: i.j for i in jms} if jms else {}
 
     # m symbols considered in the relations.  A mapping from the symbol to its
     # index number, which is going to be used for coefficient vectors.
@@ -623,7 +652,6 @@ def _simpl_pono(
 
         else:
             rel_dicts.append(rel)
-        continue
 
     # Cast the relations into vectors.
     raw_rel_vecs = []
@@ -632,9 +660,7 @@ def _simpl_pono(
         coeffs = [0] * n_symbs
         for k, v in i.items():
             coeffs[symb2idx[k]] = v
-            continue
         raw_rel_vecs.append(Matrix(coeffs))
-        continue
 
     # Gram-Schmidt procedure to make the relations orthogonal.
     rel_vecs = []
@@ -649,15 +675,13 @@ def _simpl_pono(
         lambda x: isinstance(x, Pow) and x.args[0] == -1,
         lambda x: _simpl_one_pono(
             x, resolvers, sums_dict, j_of, symb2idx, rel_vecs
-        )
+        ),
     )
 
     return expr.powsimp().simplify()
 
 
-def _simpl_one_pono(
-        expr: Pow, resolvers, sums_dict, j_of, symb2idx, rel_vecs
-):
+def _simpl_one_pono(expr: Pow, resolvers, sums_dict, j_of, symb2idx, rel_vecs):
     """Simplify a power of negative one.
 
     Current strategy: first the linear factors over j/m symbols will be given
@@ -686,40 +710,34 @@ def _simpl_one_pono(
             other.append(i)
         else:
             coeffs[symb2idx[symb]] += coeff
-        continue
 
     projed_coeffs = _proj_out(rel_vecs, Matrix(coeffs))
     addends = other
     for i, j in zip(symb2idx.keys(), projed_coeffs):
         if j != 0:
             addends.append(i * j)
-        continue
 
     # Finally, canonicalize the coefficients again.
     expr = _NEG_UNITY ** sum(addends)
     if not isinstance(expr, Pow):
         return expr
 
-    expr = _simpl_pono_jm(
-        expr, resolvers, sums_dict, j_of
-    )
+    expr = _simpl_pono_jm(expr, resolvers, sums_dict, j_of)
 
     return expr
 
 
 def _simpl_pono_jm(expr: Pow, resolvers, sums_dict, j_of):
-    """Simplify expression based on integer/half-integer properties of j/m.
-    """
+    """Simplify expression based on integer/half-integer properties of j/m."""
 
     addends = _parse_pono(expr)
 
     res = _UNITY  # The result.
 
     def add_to_res(expon):
-        """Add one exponent of -1 to the result.
-        """
+        """Add one exponent of -1 to the result."""
         nonlocal res
-        res *= (_NEG_UNITY ** expon).simplify()
+        res *= (_NEG_UNITY**expon).simplify()
         return
 
     phase = 1  # The overall +- 1 phase, separated out for performance.
@@ -756,7 +774,6 @@ def _simpl_pono_jm(expr: Pow, resolvers, sums_dict, j_of):
             phase *= _NEG_UNITY
 
         add_to_res(canon_numer / denom * symb)
-        continue
 
     return res.powsimp().simplify() * phase
 
@@ -786,8 +803,6 @@ def _find_if_half_int(indics, sums_dict, resolvers):
             elif (2 * lower).is_integer:
                 return True
 
-            continue
-
     # After all indicators have been tried.
     return None
 
@@ -805,8 +820,7 @@ def _parse_pono(expr: Pow):
 
 
 def _simpl_pono_term(term: Term, resolvers) -> Term:
-    """Try to simplify powers of negative unity in a term.
-    """
+    """Try to simplify powers of negative unity in a term."""
 
     sums_dict = dict(term.sums)
     other, wigner_3js = _parse_3js(term.amp)
@@ -816,9 +830,7 @@ def _simpl_pono_term(term: Term, resolvers) -> Term:
         other, resolvers, sums_dict, jms, rels, sums_only=False
     )
 
-    new_amp = new_other * prod_(
-        i.expr for i in wigner_3js
-    )
+    new_amp = new_other * prod_(i.expr for i in wigner_3js)
 
     return Term(term.sums, new_amp, term.vecs)
 
@@ -827,6 +839,7 @@ def _simpl_pono_term(term: Term, resolvers) -> Term:
 # General utilities
 #
 
+
 def _parse_sum(expr: Sum):
     """Parse a SymPy summation into the summand and the summations.
 
@@ -834,9 +847,7 @@ def _parse_sum(expr: Sum):
     """
     assert isinstance(expr, Sum)
     args = expr.args
-    return args[0], {
-        i: (j, k) for i, j, k in args[1:]
-    }
+    return args[0], {i: (j, k) for i, j, k in args[1:]}
 
 
 class _UnexpectedForm(ValueError):
@@ -848,6 +859,7 @@ class _UnexpectedForm(ValueError):
     can have a central handling for noncompliance.
 
     """
+
     pass
 
 
@@ -903,37 +915,30 @@ def _decomp_phase(phase: Expr, sums):
 
     inv = _UNITY
     other = _UNITY
-    for i in (
-            expanded.args if isinstance(expanded, Mul) else (expanded,)
-    ):
+    for i in expanded.args if isinstance(expanded, Mul) else (expanded,):
         if i.atoms(Symbol).isdisjoint(dumms):
             other *= i
         else:
             inv *= i
-        continue
 
-    return tuple(
-        i.powsimp().simplify() for i in (other, inv)
-    )
+    return tuple(i.powsimp().simplify() for i in (other, inv))
 
 
 def _rewrite_cg(expr):
-    """Rewrite CG coefficients in terms of the Wigner 3j symbols.
-    """
-    j1, m1, j2, m2, j3, m3 = symbols(
-        'j1 m1 j2 m2 j3 m3', cls=Wild
-    )
+    """Rewrite CG coefficients in terms of the Wigner 3j symbols."""
+    j1, m1, j2, m2, j3, m3 = symbols("j1 m1 j2 m2 j3 m3", cls=Wild)
     return expr.replace(
         CG(j1, m1, j2, m2, j3, m3),
-        _NEG_UNITY ** (-j1 + j2 - m3) * sqrt(2 * j3 + 1) * Wigner3j(
-            j1, m1, j2, m2, j3, -m3
-        )
+        _NEG_UNITY ** (-j1 + j2 - m3)
+        * sqrt(2 * j3 + 1)
+        * Wigner3j(j1, m1, j2, m2, j3, -m3),
     )
 
 
 #
 # Special simplifications
 #
+
 
 class _Wigner3j:
     """Wrapper for a Wigner 3j symbols for easy manipulation.
@@ -966,12 +971,12 @@ class _Wigner3j:
     """
 
     __slots__ = [
-        'indices',
-        '_slot_decided',
-        'phase_decided',
-        '_uniq_m',
-        '_total_j',
-        '_m_dumms'
+        "indices",
+        "_slot_decided",
+        "phase_decided",
+        "_uniq_m",
+        "_total_j",
+        "_m_dumms",
     ]
 
     def __init__(self, expr: Wigner3j, sums=None, uniq_m=True):
@@ -979,9 +984,7 @@ class _Wigner3j:
         assert isinstance(expr, Wigner3j)
 
         args = expr.args
-        indices = [
-            _JM(args[i], args[i + 1]) for i in range(0, 6, 2)
-        ]
+        indices = [_JM(args[i], args[i + 1]) for i in range(0, 6, 2)]
         self.indices = indices
         self._slot_decided = [False for _ in range(3)]
         self.phase_decided = False
@@ -1002,7 +1005,6 @@ class _Wigner3j:
                         m_dumms[m_symb].add(i)
                 else:
                     m_dumms[m_symb] = i if uniq_m else {i}
-                continue
 
         # This does not change after the manipulations.
         self._total_j = sum(i.j for i in indices)
@@ -1029,8 +1031,7 @@ class _Wigner3j:
         return Wigner3j(*args)
 
     def is_decided(self, slot_index):
-        """If the content for a slot has been decided.
-        """
+        """If the content for a slot has been decided."""
         return self._slot_decided[slot_index]
 
     def decide(self, slot_index):
@@ -1041,8 +1042,7 @@ class _Wigner3j:
         self._slot_decided[slot_index] = True
 
     def swap(
-            self, src, dest, raise_src=False, raise_dest=False,
-            raise_pred=False
+        self, src, dest, raise_src=False, raise_dest=False, raise_pred=False
     ) -> typing.Optional[Expr]:
         """Try to swap index slots.
 
@@ -1064,8 +1064,6 @@ class _Wigner3j:
             for i, v in enumerate(self.indices):
                 if pred(v):
                     src = i if src is None else False
-                else:
-                    continue
             if src is None or src is False:
                 return _fail(raise_pred)
 
@@ -1089,7 +1087,7 @@ class _Wigner3j:
             # symbol does not need to be changed as well.
             for m_symb, old_idx, new_idx in [
                 (src_m, src, dest),
-                (dest_m, dest, src)
+                (dest_m, dest, src),
             ]:
                 if m_symb is None or m_symb not in self._m_dumms:
                     continue
@@ -1103,28 +1101,29 @@ class _Wigner3j:
                     entry.add(new_idx)
 
         self.decide(dest)
-        return _NEG_UNITY ** self._total_j
+        return _NEG_UNITY**self._total_j
 
     def inv_ms(self):
-        """Invert the sign of all m quantum numbers.
-        """
+        """Invert the sign of all m quantum numbers."""
         for i in self.indices:
             i.inv_m()
-            continue
 
-        return _NEG_UNITY ** self._total_j
+        return _NEG_UNITY**self._total_j
 
     def __repr__(self):
-        """Form a string representation for easy debugging.
-        """
-        return '_Wigner3j({})'.format(', '.join([
-            repr(i) for i in self.indices
-        ]))
+        """Form a string representation for easy debugging."""
+        return "_Wigner3j({})".format(
+            ", ".join([repr(i) for i in self.indices])
+        )
 
 
 def _check_m_contr(
-        factor1: _Wigner3j, factor2: _Wigner3j, decided_ms, normal, inv,
-        raise_=True
+    factor1: _Wigner3j,
+    factor2: _Wigner3j,
+    decided_ms,
+    normal,
+    inv,
+    raise_=True,
 ) -> typing.Optional[Expr]:
     """Check if two Wigner 3j symbols contracts according to the given pattern.
 
@@ -1245,11 +1244,8 @@ def _check_m_contr(
     return res
 
 
-def _check_m_contr_fixed_phase(
-        factor1, factor2, normal, inv, shared_dumms
-):
-    """Check the m contraction of two symbols with fixed phase.
-    """
+def _check_m_contr_fixed_phase(factor1, factor2, normal, inv, shared_dumms):
+    """Check the m contraction of two symbols with fixed phase."""
 
     factors = [factor1, factor2]
     indices1 = factor1.indices
@@ -1274,7 +1270,6 @@ def _check_m_contr_fixed_phase(
         dumms.add(dumm)
         if not factor1.is_decided(i1) and not factor2.is_decided(i2):
             frees.add(dumm)
-        continue
 
     if len(normal_dumms) != len(normal) or len(inv_dumms) != len(inv):
         return None
@@ -1282,7 +1277,7 @@ def _check_m_contr_fixed_phase(
     phase = _UNITY
     for to_proc, dumms, frees in [
         (normal, normal_dumms, free_normal_dumms),
-        (inv, inv_dumms, free_inv_dumms)
+        (inv, inv_dumms, free_inv_dumms),
     ]:
         for i1, i2 in to_proc:
             decided1 = factor1.is_decided(i1)
@@ -1342,9 +1337,7 @@ def _check_m_contr_fixed_phase(
     return phase
 
 
-def _parse_3js(expr, **kwargs) -> typing.Tuple[
-    Expr, typing.List[_Wigner3j]
-]:
+def _parse_3js(expr, **kwargs) -> typing.Tuple[Expr, typing.List[_Wigner3j]]:
     """Parse an expression of Wigner 3j symbol product.
 
     The result is a phase and a list of wrappers of 3j symbols.  All keyword
@@ -1359,7 +1352,6 @@ def _parse_3js(expr, **kwargs) -> typing.Tuple[
             wigner_3js.append(_Wigner3j(i, **kwargs))
         else:
             phase *= i
-        continue
     return phase, wigner_3js
 
 
@@ -1373,7 +1365,7 @@ def _get_jms_rels(wigner_3js: typing.Iterable[_Wigner3j]):
 
     return (
         [j for i in wigner_3js for j in i.indices],
-        [i.indices for i in wigner_3js]
+        [i.indices for i in wigner_3js],
     )
 
 
@@ -1398,9 +1390,9 @@ def _sum_2_3j_to_delta(expr: Sum, resolvers, sums_dict):
             return None
 
         decided_ms = {}
-        phase *= _check_m_contr(wigner_3js[0], wigner_3js[1], decided_ms, [
-            (0, 0), (1, 1)
-        ], [])
+        phase *= _check_m_contr(
+            wigner_3js[0], wigner_3js[1], decided_ms, [(0, 0), (1, 1)], []
+        )
     except _UnexpectedForm:
         return None
 
@@ -1412,16 +1404,19 @@ def _sum_2_3j_to_delta(expr: Sum, resolvers, sums_dict):
 
     indices0 = wigner_3js[0].indices
     indices1 = wigner_3js[1].indices
-    j1, m1 = indices0[0].j, indices0[0].m
-    j2, m2 = indices0[1].j, indices0[1].m
-    j3, m3 = indices0[2].j, indices0[2].m
+    m1 = indices0[0].m
+    m2 = indices0[1].m
     assert m1 == indices1[0].m
     assert m2 == indices1[1].m
+    j3, m3 = indices0[2].j, indices0[2].m
     j4, m4 = indices1[2].j, indices1[2].m
 
-    return KroneckerDelta(j3, j4) * KroneckerDelta(
-        m3, m4
-    ) / (2 * j3 + 1) * noinv_phase
+    return (
+        KroneckerDelta(j3, j4)
+        * KroneckerDelta(m3, m4)
+        / (2 * j3 + 1)
+        * noinv_phase
+    )
 
 
 def _sum_4_3j_to_6j(expr: Sum, resolvers, sums_dict):
@@ -1454,16 +1449,12 @@ def _sum_4_3j_to_6j(expr: Sum, resolvers, sums_dict):
                 ext_3js.append(i)
             else:
                 return None
-            continue
         if len(ext_3js) != 2 or len(int_3js) != 2:
             return None
 
         # Put the external ones in the middle.
         for ext_3j in ext_3js:
-            phase *= ext_3j.swap(
-                lambda x: x.m_symb not in sums, 1
-            )
-            continue
+            phase *= ext_3j.swap(lambda x: x.m_symb not in sums, 1)
 
         decided_ms = {}
 
@@ -1511,17 +1502,26 @@ def _sum_4_3j_to_6j(expr: Sum, resolvers, sums_dict):
     noinv_phase, phase = _decomp_phase(phase.xreplace(decided_ms), sums)
     jms, rels = _get_jms_rels(wigner_3js)
     simpl_phase = _simpl_pono(phase, resolvers, sums_dict, jms, rels)
-    expected_phase = _simpl_pono(_NEG_UNITY ** (
-            - m1 - m2 - m4 - m5 - m6
-    ), resolvers, sums_dict, jms, rels)
+    expected_phase = _simpl_pono(
+        _NEG_UNITY ** (-m1 - m2 - m4 - m5 - m6),
+        resolvers,
+        sums_dict,
+        jms,
+        rels,
+    )
     if (simpl_phase / expected_phase).simplify() != 1:
         return None
 
-    return _NEG_UNITY ** (j3 - m3 - j1 - j2 - j4 - j5 - j6) / (2 * j3 + 1) * (
+    return (
+        _NEG_UNITY ** (j3 - m3 - j1 - j2 - j4 - j5 - j6)
+        / (2 * j3 + 1)
+        * (
             KroneckerDelta(j3, jprm3)
             * KroneckerDelta(m3, mprm3)
             * Wigner6j(j1, j2, j3, j4, j5, j6)
-    ) * noinv_phase
+        )
+        * noinv_phase
+    )
 
 
 def _proj_out(bases, vec):
@@ -1535,8 +1535,7 @@ def _proj_out(bases, vec):
 
 
 def _canon_cg(expr):
-    """Pose CG coefficients in the expression into canonical form.
-    """
+    """Pose CG coefficients in the expression into canonical form."""
     return expr.replace(CG, _canon_cg_core)
 
 
@@ -1576,7 +1575,7 @@ def _simpl_varsh_872_4(expr: Sum):
         return None
 
     dummies = (expr.args[1][0], expr.args[2][0])
-    j1, j2, cj1, cm1, cj2, cm2 = symbols('j1 j2 J1 M1 J2 M2', cls=Wild)
+    j1, j2, cj1, cm1, cj2, cm2 = symbols("j1 j2 J1 M1 J2 M2", cls=Wild)
 
     for m1, m2 in [dummies, reversed(dummies)]:
         match = expr.args[0].match(
@@ -1584,21 +1583,20 @@ def _simpl_varsh_872_4(expr: Sum):
         )
         if not match:
             continue
-        return KroneckerDelta(
-            match[cj1], match[cj2]
-        ) * KroneckerDelta(match[cm1], match[cm2])
+        return KroneckerDelta(match[cj1], match[cj2]) * KroneckerDelta(
+            match[cm1], match[cm2]
+        )
 
     return None
 
 
 def _simpl_varsh_872_5(expr: Sum):
-    """Make CG simplification based on Varsh 8.7.2 Eq (5).
-    """
+    """Make CG simplification based on Varsh 8.7.2 Eq (5)."""
     if len(expr.args) != 3:
         return None
 
     dummies = (expr.args[1][0], expr.args[2][0])
-    j1, j2, m2, j3, m3, cj = symbols('j1 j2 m2 j3 m3 J', cls=Wild)
+    j1, j2, m2, j3, m3, cj = symbols("j1 j2 m2 j3 m3 J", cls=Wild)
     for m1, cm in [dummies, reversed(dummies)]:
         match = expr.args[0].match(
             CG(j1, m1, j2, m2, cj, cm) * CG(j1, m1, j3, m3, cj, cm)
@@ -1610,32 +1608,35 @@ def _simpl_varsh_872_5(expr: Sum):
         cjhat = 2 * match[cj] + 1
         jhat2 = 2 * match[j2] + 1
 
-        return (cjhat / jhat2) * KroneckerDelta(
-            match[j2], match[j3]
-        ) * KroneckerDelta(match[m2], match[m3])
+        return (
+            (cjhat / jhat2)
+            * KroneckerDelta(match[j2], match[j3])
+            * KroneckerDelta(match[m2], match[m3])
+        )
 
     return None
 
 
 def _simpl_varsh_911_8(expr: Sum):
-    """Make CG simplification based on Varsh 9.1.1 Eq (8).
-    """
+    """Make CG simplification based on Varsh 9.1.1 Eq (8)."""
     if len(expr.args) != 6:
         return None
 
-    j, m, j12, m12, j2, m2 = symbols('j m j12 m12 j2 m2', cls=Wild)
-    j1, m1 = symbols('j1 m1', cls=Wild)
-    j_prm, m_prm, j22, m22 = symbols('jprm mprm j22 m22', cls=Wild)
-    j23, m23, j3, m3 = symbols('j23 m23 j3 m3', cls=Wild)
+    j, m, j12, m12, j2, m2 = symbols("j m j12 m12 j2 m2", cls=Wild)
+    j1, m1 = symbols("j1 m1", cls=Wild)
+    j_prm, m_prm, j22, m22 = symbols("jprm mprm j22 m22", cls=Wild)
+    j23, m23, j3, m3 = symbols("j23 m23 j3 m3", cls=Wild)
 
     match = expr.args[0].match(
-        CG(j12, m12, j3, m3, j, m) * CG(j1, m1, j2, m2, j12, m12) *
-        CG(j1, m1, j23, m23, j_prm, m_prm) * CG(j2, m2, j3, m3, j23, m23)
+        CG(j12, m12, j3, m3, j, m)
+        * CG(j1, m1, j2, m2, j12, m12)
+        * CG(j1, m1, j23, m23, j_prm, m_prm)
+        * CG(j2, m2, j3, m3, j23, m23)
     )
 
-    if not match or sorted((match[i] for i in (
-            m1, m2, m3, m12, m23
-    )), key=sympy_key) != sorted((i[0] for i in expr.args[1:]), key=sympy_key):
+    if not match or sorted(
+        (match[i] for i in (m1, m2, m3, m12, m23)), key=sympy_key
+    ) != sorted((i[0] for i in expr.args[1:]), key=sympy_key):
         return None
 
     jhat12 = sqrt(2 * match[j12] + 1)
@@ -1643,19 +1644,21 @@ def _simpl_varsh_911_8(expr: Sum):
 
     phase = _NEG_UNITY ** (match[j1] + match[j2] + match[j3] + match[j])
 
-    return jhat12 * jhat23 * phase * KroneckerDelta(
-        match[j], match[j_prm]
-    ) * KroneckerDelta(match[m], match[m_prm]) * Wigner6j(
-        match[j1], match[j2], match[j12], match[j3], match[j], match[j23]
+    return (
+        jhat12
+        * jhat23
+        * phase
+        * KroneckerDelta(match[j], match[j_prm])
+        * KroneckerDelta(match[m], match[m_prm])
+        * Wigner6j(
+            match[j1], match[j2], match[j12], match[j3], match[j], match[j23]
+        )
     )
 
 
 def _simplify_symbolic_sum_nodoit(expr, **_):
-    """Try to simplify a symbolic summation of one dummy with `doit=False`.
-    """
+    """Try to simplify a symbolic summation of one dummy with `doit=False`."""
 
     assert len(expr.args) == 2
 
-    return eval_sum_symbolic(
-        expr.args[0].simplify(doit=False), expr.args[1]
-    )
+    return eval_sum_symbolic(expr.args[0].simplify(doit=False), expr.args[1])
