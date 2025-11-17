@@ -1,0 +1,31 @@
+name: Lint and Format
+
+on:
+  push:
+    branches:
+      - master
+      - 'release/*'
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+
+env:
+  CLICOLOR: 1
+
+jobs:
+  ruff:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Ruff format check
+        uses: astral-sh/ruff-action@v3
+        with:
+          args: "format --check"
+
+      - name: Ruff lint
+        uses: astral-sh/ruff-action@v3
+        with:
+          args: "check"
