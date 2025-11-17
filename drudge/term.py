@@ -754,7 +754,7 @@ class Term(ATerms):
         amp = self._amp
 
         if monom_only and isinstance(amp, Add):
-            raise ValueError("Invalid amplitude: ", amp, "expecting monomial")
+            raise ValueError(f"Invalid amplitude: {amp}, expecting monomial")
 
         if isinstance(amp, Mul):
             all_factors = amp.args
