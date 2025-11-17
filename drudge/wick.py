@@ -53,7 +53,7 @@ class WickDrudge(Drudge, abc.ABC):
 
         if level not in {0, 1, 2}:
             raise ValueError(
-                'Invalid parallel level for Wick expansion', level
+                "Invalid parallel level for Wick expansion", level
             )
         self._wick_parallel = level
 
@@ -99,12 +99,10 @@ class WickDrudge(Drudge, abc.ABC):
         by the abstract properties.
 
         """
-        comparator = kwargs.pop('comparator', self.comparator)
-        contractor = kwargs.pop('contractor', self.contractor)
+        comparator = kwargs.pop("comparator", self.comparator)
+        contractor = kwargs.pop("contractor", self.contractor)
         if len(kwargs) != 0:
-            raise ValueError(
-                'Invalid arguments to Wick normal order', kwargs
-            )
+            raise ValueError("Invalid arguments to Wick normal order", kwargs)
 
         phase = self.phase
         symms = self.symms
@@ -119,31 +117,34 @@ class WickDrudge(Drudge, abc.ABC):
             return terms_to_keep
 
         # Triples: term, contractions, schemes.
-        wick_terms = terms_to_proc.map(lambda x: _prepare_wick(
-            x, comparator, contractor, symms.value, resolvers.value
-        ))
+        wick_terms = terms_to_proc.map(
+            lambda x: _prepare_wick(
+                x, comparator, contractor, symms.value, resolvers.value
+            )
+        )
 
         if self._wick_parallel == 0:
-
-            normal_ordered = wick_terms.flatMap(lambda x: [
-                _form_term_from_wick(x[0], x[1], phase, resolvers.value, i)
-                for i in x[2]
-            ])
+            normal_ordered = wick_terms.flatMap(
+                lambda x: [
+                    _form_term_from_wick(x[0], x[1], phase, resolvers.value, i)
+                    for i in x[2]
+                ]
+            )
 
         elif self._wick_parallel == 1:
-
             flattened = wick_terms.flatMap(
                 lambda x: [(x[0], x[1], i) for i in x[2]]
             )
             if self._num_partitions is not None:
                 flattened = flattened.repartition(self._num_partitions)
 
-            normal_ordered = flattened.map(lambda x: _form_term_from_wick(
-                x[0], x[1], phase, resolvers.value, x[2]
-            ))
+            normal_ordered = flattened.map(
+                lambda x: _form_term_from_wick(
+                    x[0], x[1], phase, resolvers.value, x[2]
+                )
+            )
 
         elif self._wick_parallel == 2:
-
             # This level of parallelism is reserved for really hard problems.
             expanded = []
             for term, contrs, schemes in wick_terms.collect():
@@ -155,13 +156,12 @@ class WickDrudge(Drudge, abc.ABC):
 
                 curr = self._ctx.parallelize(schemes).map(form_term)
                 expanded.append(curr)
-                continue
 
             normal_ordered = self._ctx.union(expanded)
 
         else:
             raise ValueError(
-                'Invalid Wick expansion parallel level', self._wick_parallel
+                "Invalid Wick expansion parallel level", self._wick_parallel
             )
 
         return terms_to_keep.union(normal_ordered)
@@ -214,7 +214,6 @@ def _sort_vecs(term, comparator, contractor, resolvers):
     front = 2
     pivot = 1
     while pivot < n_vecs:
-
         pivot_i = vec_order[pivot]
         pivot_vec = vecs[pivot_i]
         prev = pivot - 1
@@ -222,7 +221,6 @@ def _sort_vecs(term, comparator, contractor, resolvers):
         if pivot == 0 or comparator(vecs[vec_order[prev]], pivot_vec, term):
             pivot, front = front, front + 1
         else:
-
             prev_i = vec_order[prev]
             prev_vec = vecs[prev_i]
             vec_order[prev], vec_order[pivot] = pivot_i, prev_i
@@ -232,11 +230,10 @@ def _sort_vecs(term, comparator, contractor, resolvers):
             )
             if contr_amp != 0:
                 contrs[prev_i][pivot_i] = (
-                    contr_amp, tuple(contr_substs.items())
+                    contr_amp,
+                    tuple(contr_substs.items()),
                 )
             pivot -= 1
-
-        continue
 
     return vec_order, contrs
 
@@ -264,9 +261,7 @@ def _get_all_contrs(term, contractor, resolvers):
             )
             if contr_amp != 0:
                 curr_contrs[j] = (contr_amp, tuple(contr_substs.items()))
-            continue
         contrs.append(curr_contrs)
-        continue
 
     return contrs
 
@@ -308,9 +303,7 @@ def _add_wick(schemes, avail, pivot, contred, vec_order, contrs):
             vec_perm = list(contred)
             if not contr_all:
                 vec_perm.extend(i for i in vec_order if avail[i])
-            schemes.append((
-                vec_perm, len(contred)
-            ))
+            schemes.append((vec_perm, len(contred)))
         return
 
     pivot_contrs = contrs[pivot]
@@ -325,21 +318,17 @@ def _add_wick(schemes, avail, pivot, contred, vec_order, contrs):
         if avail[vec_idx] and vec_idx in pivot_contrs:
             avail[vec_idx] = False
             contred.extend([pivot, vec_idx])
-            _add_wick(
-                schemes, avail, pivot + 1, contred, vec_order, contrs
-            )
+            _add_wick(schemes, avail, pivot + 1, contred, vec_order, contrs)
             avail[vec_idx] = True
             contred.pop()
             contred.pop()
-        continue
 
     avail[pivot] = True
     return
 
 
 def _form_term_from_wick(term, contrs, phase, resolvers, wick_scheme):
-    """Generate a full Term from a Wick expansion scheme.
-    """
+    """Generate a full Term from a Wick expansion scheme."""
 
     sums_dict = term.dumms
 
@@ -351,15 +340,15 @@ def _form_term_from_wick(term, contrs, phase, resolvers, wick_scheme):
     for contr_i in range(0, n_contred, 2):
         contr_amp, contr_substs = contrs[perm[contr_i]][perm[contr_i + 1]]
         amp, _ = compose_simplified_delta(
-            amp * contr_amp, contr_substs,
-            substs, sums_dict=sums_dict, resolvers=resolvers
+            amp * contr_amp,
+            contr_substs,
+            substs,
+            sums_dict=sums_dict,
+            resolvers=resolvers,
         )
-        continue
 
     vecs = tuple(term.vecs[i] for i in perm[n_contred:])
-    return term.subst(
-        substs, amp=amp * term.amp, vecs=vecs, purge_sums=True
-    )
+    return term.subst(substs, amp=amp * term.amp, vecs=vecs, purge_sums=True)
 
 
 def _form_term_from_wick_bcast(term, contrs, phase, resolvers, wick_scheme):
@@ -377,6 +366,8 @@ def _get_perm_phase(order, phase):
     """Get the phase of the given permutation of points."""
     n_points = len(order)
     return phase ** sum(
-        1 for i in range(n_points) for j in range(i + 1, n_points)
+        1
+        for i in range(n_points)
+        for j in range(i + 1, n_points)
         if order[i] > order[j]
     )

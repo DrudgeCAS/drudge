@@ -25,26 +25,22 @@ class Report:
         self._filename = filename
         self._drudge = drudge
 
-        filename_parts = filename.split('.')
+        filename_parts = filename.split(".")
         if len(filename_parts) < 2:
             raise ValueError(
-                'Invalid filename, unable to determine type', filename
+                "Invalid filename, unable to determine type", filename
             )
         ext = filename_parts[-1].lower()
-        if ext not in {'html', 'tex', 'pdf'}:
-            raise ValueError('Invalid extension', ext, 'in', filename)
+        if ext not in {"html", "tex", "pdf"}:
+            raise ValueError("Invalid extension", ext, "in", filename)
         self._ext = ext
-        self._basename = '.'.join(filename_parts[:-1])
+        self._basename = ".".join(filename_parts[:-1])
 
         self._sects = []
-        self._ctx = {
-            'title': title,
-            'sects': self._sects
-        }
+        self._ctx = {"title": title, "sects": self._sects}
 
     def add(
-            self, title=None, content=None, description=None,
-            env='[', **kwargs
+        self, title=None, content=None, description=None, env="[", **kwargs
     ):
         r"""Add a section to the result.
 
@@ -90,17 +86,16 @@ class Report:
 
         """
 
-        if env == '[':
-            opening, closing = r'\[', r'\]'
+        if env == "[":
+            opening, closing = r"\[", r"\]"
         else:
             opening, closing = [
-                r'\{}{{{}}}'.format(i, env)
-                for i in ['begin', 'end']
+                r"\{}{{{}}}".format(i, env) for i in ["begin", "end"]
             ]
 
         if content is None:
             expr = None
-        elif hasattr(content, 'latex'):
+        elif hasattr(content, "latex"):
             expr = content.latex(**kwargs)
         elif isinstance(content, ATerms):
             expr = self._drudge.sum(content).latex(**kwargs)
@@ -108,13 +103,15 @@ class Report:
             # Try to use raw SymPy LaTeX printing.
             expr = ScalarLatexPrinter().doprint(content)
 
-        self._sects.append({
-            'title': title,
-            'description': description,
-            'expr': expr,
-            'opening': opening,
-            'closing': closing
-        })
+        self._sects.append(
+            {
+                "title": title,
+                "description": description,
+                "expr": expr,
+                "opening": opening,
+                "closing": closing,
+            }
+        )
 
     def write(self):
         """Write the report.
@@ -123,41 +120,43 @@ class Report:
         """
 
         env = Environment(
-            loader=PackageLoader('drudge'),
-            lstrip_blocks=True, trim_blocks=True
+            loader=PackageLoader("drudge"),
+            lstrip_blocks=True,
+            trim_blocks=True,
         )
 
-        if self._ext == 'html':
-            templ_name = 'report.html'
+        if self._ext == "html":
+            templ_name = "report.html"
             filename = self._filename
-        elif self._ext == 'tex' or self._ext == 'pdf':
-            templ_name = 'report.tex'
-            filename = self._basename + '.tex'
+        elif self._ext == "tex" or self._ext == "pdf":
+            templ_name = "report.tex"
+            filename = self._basename + ".tex"
         else:
             assert False
 
         templ = env.get_template(templ_name)
 
-        with open(filename, 'w') as fp:
+        with open(filename, "w") as fp:
             templ.stream(self._ctx).dump(fp)
 
-        if self._ext == 'pdf':
+        if self._ext == "pdf":
             if shutil.which(_PDFLATEX) is not None:
                 stat = subprocess.run(
                     [_PDFLATEX, filename],
-                    stdout=subprocess.PIPE, stderr=subprocess.PIPE
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
                 )
                 # Do not crash program only because LaTeX does not compile.
                 if stat.returncode != 0:
-                    err_msg = '{} failed for {}.  Error: \n{}\n{}'.format(
+                    err_msg = "{} failed for {}.  Error: \n{}\n{}".format(
                         _PDFLATEX, filename, stat.stdout, stat.stderr
                     )
                     warnings.warn(err_msg)
             else:
-                warnings.warn('{} cannot be found.'.format(_PDFLATEX))
+                warnings.warn("{} cannot be found.".format(_PDFLATEX))
 
 
-_PDFLATEX = 'pdflatex'
+_PDFLATEX = "pdflatex"
 
 
 class ScalarLatexPrinter(LatexPrinter):
@@ -172,15 +171,11 @@ class ScalarLatexPrinter(LatexPrinter):
 
     def _print_Indexed(self, expr):
         base = self._print(expr.base)
-        match = re.match(r'(.*)_\{(.*)\}', base)
+        match = re.match(r"(.*)_\{(.*)\}", base)
         if match and len(match.group(2)) > 0:
-            base = ''.join([
-                match.group(1), '^{(', match.group(2), ')}'
-            ])
-        if base.startswith('_'):
+            base = "".join([match.group(1), "^{(", match.group(2), ")}"])
+        if base.startswith("_"):
             base = base[1:]
 
-        indices = ','.join(self._print(i) for i in expr.indices)
-        return ''.join([
-            base, '_{', indices, '}'
-        ])
+        indices = ",".join(self._print(i) for i in expr.indices)
+        return "".join([base, "_{", indices, "}"])

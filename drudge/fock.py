@@ -11,8 +11,14 @@ import warnings
 
 from pyspark import RDD
 from sympy import (
-    KroneckerDelta, IndexedBase, Expr, Symbol, Rational, symbols, conjugate,
-    factorial
+    KroneckerDelta,
+    IndexedBase,
+    Expr,
+    Symbol,
+    Rational,
+    symbols,
+    conjugate,
+    factorial,
 )
 
 from ._tceparser import parse_tce_out
@@ -38,10 +44,7 @@ class CranChar(EnumSymbs):
     representing creation and annihilation operators.
     """
 
-    _symbs_ = [
-        ('CR', r'\dagger'),
-        ('AN', '')
-    ]
+    _symbs_ = [("CR", r"\dagger"), ("AN", "")]
 
 
 CR = CranChar.CR
@@ -83,11 +86,13 @@ class FockDrudge(WickDrudge):
         if exch == FERMI or exch == BOSE:
             self._exch = exch
         else:
-            raise ValueError('Invalid exchange', exch, 'expecting plus/minus 1')
+            raise ValueError(
+                "Invalid exchange", exch, "expecting plus/minus 1"
+            )
 
-        self.set_tensor_method('eval_vev', self.eval_vev)
-        self.set_tensor_method('eval_phys_vev', self.eval_phys_vev)
-        self.set_tensor_method('dagger', self.dagger)
+        self.set_tensor_method("eval_vev", self.eval_vev)
+        self.set_tensor_method("eval_phys_vev", self.eval_phys_vev)
+        self.set_tensor_method("dagger", self.dagger)
 
     @property
     def contractor(self):
@@ -101,8 +106,9 @@ class FockDrudge(WickDrudge):
         op_parser = self.op_parser
 
         return functools.partial(
-            _contr_field_ops, ancr_contractor=ancr_contractor,
-            op_parser=op_parser
+            _contr_field_ops,
+            ancr_contractor=ancr_contractor,
+            op_parser=op_parser,
         )
 
     @property
@@ -143,7 +149,7 @@ class FockDrudge(WickDrudge):
 
     ANCR_CONTRACTOR = typing.Callable[
         [typing.Any, typing.Sequence[Expr], typing.Any, typing.Sequence[Expr]],
-        Expr
+        Expr,
     ]
 
     @property
@@ -170,9 +176,12 @@ class FockDrudge(WickDrudge):
         And this function is also set as a tensor method by the same name.
         """
 
-        return Tensor(self, self.normal_order(
-            tensor.terms, comparator=None, contractor=contractor
-        ))
+        return Tensor(
+            self,
+            self.normal_order(
+                tensor.terms, comparator=None, contractor=contractor
+            ),
+        )
 
     def eval_phys_vev(self, tensor: Tensor):
         """Evaluate expectation value with respect to the physical vacuum.
@@ -181,9 +190,7 @@ class FockDrudge(WickDrudge):
         function is also set as a tensor method by the same name.
         """
 
-        return Tensor(
-            self, self.normal_order(tensor.terms, comparator=None)
-        )
+        return Tensor(self, self.normal_order(tensor.terms, comparator=None))
 
     def normal_order(self, terms: RDD, **kwargs):
         """Normal order the field operators.
@@ -281,21 +288,25 @@ class FockDrudge(WickDrudge):
 
         if n_body > 1:
             second_half = list(range(n_body, n_slots))
-            gens.append(Perm(
-                self._form_cycl(0, n_body) + second_half, cycl_accs[0]
-            ))
-            gens.append(Perm(
-                self._form_transp(0, n_body) + second_half, transp_acc
-            ))
+            gens.append(
+                Perm(self._form_cycl(0, n_body) + second_half, cycl_accs[0])
+            )
+            gens.append(
+                Perm(self._form_transp(0, n_body) + second_half, transp_acc)
+            )
 
         if n_body2 > 1:
             first_half = list(range(0, n_body))
-            gens.append(Perm(
-                first_half + self._form_cycl(n_body, n_slots), cycl_accs[1]
-            ))
-            gens.append(Perm(
-                first_half + self._form_transp(n_body, n_slots), transp_acc
-            ))
+            gens.append(
+                Perm(
+                    first_half + self._form_cycl(n_body, n_slots), cycl_accs[1]
+                )
+            )
+            gens.append(
+                Perm(
+                    first_half + self._form_transp(n_body, n_slots), transp_acc
+                )
+            )
 
         self.set_symm(base, gens, valence=n_slots)
 
@@ -317,14 +328,15 @@ class FockDrudge(WickDrudge):
         return res
 
     def _latex_vec(self, vec):
-        """Get the LaTeX form of field operators.
-        """
+        """Get the LaTeX form of field operators."""
 
-        head = r'{}^{{{}}}'.format(vec.label, self._latex_sympy(vec.indices[0]))
-        indices = ', '.join(self._latex_sympy(i) for i in vec.indices[1:])
-        return r'{}_{{{}}}'.format(head, indices)
+        head = r"{}^{{{}}}".format(
+            vec.label, self._latex_sympy(vec.indices[0])
+        )
+        indices = ", ".join(self._latex_sympy(i) for i in vec.indices[1:])
+        return r"{}_{{{}}}".format(head, indices)
 
-    _latex_vec_mul = ' '
+    _latex_vec_mul = " "
 
 
 def parse_field_op(op: Vec, _: Term):
@@ -336,15 +348,15 @@ def parse_field_op(op: Vec, _: Term):
 
     indices = op.indices
     if len(indices) < 1 or (indices[0] != CR and indices[0] != AN):
-        raise ValueError('Invalid field operator', op,
-                         'expecting operator character')
+        raise ValueError(
+            "Invalid field operator", op, "expecting operator character"
+        )
 
     return op.label, indices[0], indices[1:]
 
 
 def _compare_field_ops(
-        op1: Vec, op2: Vec, term: Term,
-        op_parser: FockDrudge.OP_PARSER
+    op1: Vec, op2: Vec, term: Term, op_parser: FockDrudge.OP_PARSER
 ):
     """Compare the given field operators.
 
@@ -370,9 +382,13 @@ def _compare_field_ops(
         return key1 >= key2
 
 
-def _contr_field_ops(op1: Vec, op2: Vec, term: Term,
-                     ancr_contractor: FockDrudge.ANCR_CONTRACTOR,
-                     op_parser: FockDrudge.OP_PARSER):
+def _contr_field_ops(
+    op1: Vec,
+    op2: Vec,
+    term: Term,
+    ancr_contractor: FockDrudge.ANCR_CONTRACTOR,
+    op_parser: FockDrudge.OP_PARSER,
+):
     """Contract two field operators.
 
     Here we work by the fermion-boson commutation rules.  The contractor is only
@@ -396,24 +412,27 @@ def _contr_ancr_by_delta(label1, indices1, label2, indices2):
     # For the delta contraction, some additional checking is needed for it to
     # make sense.
 
-    err_header = 'Invalid field operators to contract by delta'
+    err_header = "Invalid field operators to contract by delta"
 
     # When the operators are on different base, it is likely that delta is not
     # what is intended.
 
     if label1 != label2:
-        raise ValueError(err_header, (label1, label2),
-                         'expecting the same base')
+        raise ValueError(
+            err_header, (label1, label2), "expecting the same base"
+        )
 
     if len(indices1) != len(indices2):
-        raise ValueError(err_header, (indices1, indices2),
-                         'expecting same number of indices')
+        raise ValueError(
+            err_header,
+            (indices1, indices2),
+            "expecting same number of indices",
+        )
 
     res = 1
     for i, j in zip(indices1, indices2):
         # TODO: Maybe support continuous indices here.
         res *= KroneckerDelta(i, j)
-        continue
 
     return res
 
@@ -443,28 +462,23 @@ def _get_dagger(term: Term, real: bool):
             new_char = CR
         else:
             raise ValueError(
-                'Invalid vector to take Hermitian adjoint', vec,
-                'expecting CR/AN character in first index'
+                "Invalid vector to take Hermitian adjoint",
+                vec,
+                "expecting CR/AN character in first index",
             )
-        new_vecs.append(
-            base[(new_char,) + indices[1:]]
-        )
-        continue
+        new_vecs.append(base[(new_char,) + indices[1:]])
 
     return term.map(
         lambda x: x if real else conjugate(x),
-        vecs=tuple(new_vecs), skip_vecs=True
+        vecs=tuple(new_vecs),
+        skip_vecs=True,
     )
 
 
 def _is_not_zero_by_nilp(term: Term):
-    """Test if a term is not zero by nilpotency of the operators.
-    """
+    """Test if a term is not zero by nilpotency of the operators."""
     vecs = term.vecs
-    return all(
-        vecs[i] != vecs[i + 1]
-        for i in range(0, len(vecs) - 1)
-    )
+    return all(vecs[i] != vecs[i + 1] for i in range(0, len(vecs) - 1))
 
 
 #
@@ -483,8 +497,11 @@ def conserve_spin(*spin_symbs):
 
     n_symbs = len(spin_symbs)
     if n_symbs % 2 == 1:
-        raise ValueError('Invalid spin symbols', spin_symbs,
-                         'expecting a even number of them')
+        raise ValueError(
+            "Invalid spin symbols",
+            spin_symbs,
+            "expecting a even number of them",
+        )
     n_particles = n_symbs // 2
 
     outs = spin_symbs[0:n_particles]
@@ -492,10 +509,7 @@ def conserve_spin(*spin_symbs):
 
     def test_conserve(symbs_dict):
         """Test if the spin values from the dictionary is conserved."""
-        return all(
-            symbs_dict[i] == symbs_dict[j]
-            for i, j in zip(ins, outs)
-        )
+        return all(symbs_dict[i] == symbs_dict[j] for i, j in zip(ins, outs))
 
     return test_conserve
 
@@ -551,10 +565,18 @@ class GenMBDrudge(FockDrudge):
 
     """
 
-    def __init__(self, *args, exch=FERMI, op_label='c',
-                 orb=((Range('L'), 'abcdefghijklmnopq'),), spin=(),
-                 one_body=IndexedBase('t'), two_body=IndexedBase('u'),
-                 dbbar=False, **kwargs):
+    def __init__(
+        self,
+        *args,
+        exch=FERMI,
+        op_label="c",
+        orb=((Range("L"), "abcdefghijklmnopq"),),
+        spin=(),
+        one_body=IndexedBase("t"),
+        two_body=IndexedBase("u"),
+        dbbar=False,
+        **kwargs,
+    ):
         """Initialize the drudge object.
 
         Parameters
@@ -616,11 +638,9 @@ class GenMBDrudge(FockDrudge):
         self.cr = cr
         self.an = an
 
-        self.set_name(**{
-            str(op) + '_': an,
-            str(op) + '_dag': cr,
-            str(op) + 'dag_': cr
-        })
+        self.set_name(
+            **{str(op) + "_": an, str(op) + "_dag": cr, str(op) + "dag_": cr}
+        )
 
         #
         # Ranges, dummies, and spins.
@@ -630,7 +650,6 @@ class GenMBDrudge(FockDrudge):
         for range_, dumms in orb:
             self.set_dumms(range_, dumms)
             orb_ranges.append(range_)
-            continue
         self.orb_ranges = orb_ranges
 
         spin = list(spin)
@@ -645,8 +664,9 @@ class GenMBDrudge(FockDrudge):
             has_spin = True
             if len(spin) != 2:
                 raise ValueError(
-                    'Invalid spin specification', spin,
-                    'expecting range/dummies pair.'
+                    "Invalid spin specification",
+                    spin,
+                    "expecting range/dummies pair.",
                 )
             self.set_dumms(spin[0], spin[1])
             spin_range = spin[0]
@@ -659,8 +679,8 @@ class GenMBDrudge(FockDrudge):
             spin_vals = [ensure_expr(i) for i in spin]
             if len(spin_vals) == 1:
                 warnings.warn(
-                    'Just one spin value is given: '
-                    'consider dropping it for better performance'
+                    "Just one spin value is given: "
+                    "consider dropping it for better performance"
                 )
             spin_range = spin_vals
 
@@ -677,12 +697,10 @@ class GenMBDrudge(FockDrudge):
         # indexing.
 
         orb_dumms = tuple(
-            Symbol('internalOrbitPlaceholder{}'.format(i))
-            for i in range(4)
+            Symbol("internalOrbitPlaceholder{}".format(i)) for i in range(4)
         )
         spin_dumms = tuple(
-            Symbol('internalSpinPlaceholder{}'.format(i))
-            for i in range(2)
+            Symbol("internalSpinPlaceholder{}".format(i)) for i in range(2)
         )
 
         orb_sums = [(i, orb_ranges) for i in orb_dumms]
@@ -707,8 +725,8 @@ class GenMBDrudge(FockDrudge):
 
         if has_spin:
             one_body_ops = (
-                    cr[orb_dumms[0], spin_dumms[0]] *
-                    an[orb_dumms[1], spin_dumms[0]]
+                cr[orb_dumms[0], spin_dumms[0]]
+                * an[orb_dumms[1], spin_dumms[0]]
             )
         else:
             one_body_ops = cr[orb_dumms[0]] * an[orb_dumms[1]]
@@ -731,15 +749,17 @@ class GenMBDrudge(FockDrudge):
 
         if has_spin:
             two_body_ops = (
-                    cr[orb_dumms[0], spin_dumms[0]] *
-                    cr[orb_dumms[1], spin_dumms[1]] *
-                    an[orb_dumms[3], spin_dumms[1]] *
-                    an[orb_dumms[2], spin_dumms[0]]
+                cr[orb_dumms[0], spin_dumms[0]]
+                * cr[orb_dumms[1], spin_dumms[1]]
+                * an[orb_dumms[3], spin_dumms[1]]
+                * an[orb_dumms[2], spin_dumms[0]]
             )
         else:
             two_body_ops = (
-                    cr[orb_dumms[0]] * cr[orb_dumms[1]] *
-                    an[orb_dumms[3]] * an[orb_dumms[2]]
+                cr[orb_dumms[0]]
+                * cr[orb_dumms[1]]
+                * an[orb_dumms[3]]
+                * an[orb_dumms[2]]
             )
 
         two_body_ham = self.sum(
@@ -788,38 +808,52 @@ class PartHoleDrudge(GenMBDrudge):
 
     """
 
-    DEFAULT_PART_DUMMS = tuple(Symbol(i) for i in 'abcd') + tuple(
-        Symbol('a{}'.format(i)) for i in range(50)
+    DEFAULT_PART_DUMMS = tuple(Symbol(i) for i in "abcd") + tuple(
+        Symbol("a{}".format(i)) for i in range(50)
     )
-    DEFAULT_HOLE_DUMMS = tuple(Symbol(i) for i in 'ijkl') + tuple(
-        Symbol('i{}'.format(i)) for i in range(50)
+    DEFAULT_HOLE_DUMMS = tuple(Symbol(i) for i in "ijkl") + tuple(
+        Symbol("i{}".format(i)) for i in range(50)
     )
-    DEFAULT_ORB_DUMMS = tuple(Symbol(i) for i in 'pqrs') + tuple(
-        Symbol('p{}'.format(i)) for i in range(50)
+    DEFAULT_ORB_DUMMS = tuple(Symbol(i) for i in "pqrs") + tuple(
+        Symbol("p{}".format(i)) for i in range(50)
     )
 
-    def __init__(self, *args, op_label='c',
-                 part_orb=(Range('V', 0, Symbol('nv')), DEFAULT_PART_DUMMS),
-                 hole_orb=(Range('O', 0, Symbol('no')), DEFAULT_HOLE_DUMMS),
-                 all_orb_dumms=DEFAULT_ORB_DUMMS, spin=(),
-                 one_body=IndexedBase('t'), two_body=IndexedBase('u'),
-                 fock=IndexedBase('f'),
-                 dbbar=True, **kwargs):
+    def __init__(
+        self,
+        *args,
+        op_label="c",
+        part_orb=(Range("V", 0, Symbol("nv")), DEFAULT_PART_DUMMS),
+        hole_orb=(Range("O", 0, Symbol("no")), DEFAULT_HOLE_DUMMS),
+        all_orb_dumms=DEFAULT_ORB_DUMMS,
+        spin=(),
+        one_body=IndexedBase("t"),
+        two_body=IndexedBase("u"),
+        fock=IndexedBase("f"),
+        dbbar=True,
+        **kwargs,
+    ):
         """Initialize the particle-hole drudge."""
 
         self.part_range = part_orb[0]
         self.hole_range = hole_orb[0]
 
-        super().__init__(*args, exch=FERMI, op_label=op_label,
-                         orb=(part_orb, hole_orb), spin=spin,
-                         one_body=one_body, two_body=two_body, dbbar=dbbar,
-                         **kwargs)
+        super().__init__(
+            *args,
+            exch=FERMI,
+            op_label=op_label,
+            orb=(part_orb, hole_orb),
+            spin=spin,
+            one_body=one_body,
+            two_body=two_body,
+            dbbar=dbbar,
+            **kwargs,
+        )
 
         self.all_orb_dumms = tuple(all_orb_dumms)
         self.set_name(*self.all_orb_dumms)
-        self.add_resolver({
-            i: (self.part_range, self.hole_range) for i in all_orb_dumms
-        })
+        self.add_resolver(
+            {i: (self.part_range, self.hole_range) for i in all_orb_dumms}
+        )
 
         full_ham = self.ham
         full_ham.cache()
@@ -827,9 +861,7 @@ class PartHoleDrudge(GenMBDrudge):
 
         self.ham_energy = full_ham.filter(lambda term: term.is_scalar)
 
-        self.one_body_ham = full_ham.filter(
-            lambda term: len(term.vecs) == 2
-        )
+        self.one_body_ham = full_ham.filter(lambda term: len(term.vecs) == 2)
         two_body_ham = full_ham.filter(lambda term: len(term.vecs) == 4)
 
         # We need to rewrite the one-body part in terms of Fock matrices.
@@ -838,14 +870,13 @@ class PartHoleDrudge(GenMBDrudge):
         for i in self.one_body_ham.local_terms:
             if i.amp.has(one_body):
                 one_body_terms.append(i.subst({one_body: fock}))
-            continue
         rewritten_one_body_ham = self.create_tensor(one_body_terms)
 
         ham = rewritten_one_body_ham + two_body_ham
         ham.cache()
         self.ham = ham
 
-        self.set_tensor_method('eval_fermi_vev', self.eval_fermi_vev)
+        self.set_tensor_method("eval_fermi_vev", self.eval_fermi_vev)
 
         self.set_name(no=self.hole_range.size)
         self.set_name(nv=self.part_range.size)
@@ -869,8 +900,11 @@ class PartHoleDrudge(GenMBDrudge):
                 indices[0], dict(term.sums), resolvers.value
             )
             if orb_range is None:
-                raise ValueError('Invalid orbit value', indices[0],
-                                 'expecting particle or hole')
+                raise ValueError(
+                    "Invalid orbit value",
+                    indices[0],
+                    "expecting particle or hole",
+                )
             if orb_range == hole_range:
                 char = AN if char == CR else CR
             return label, char, indices
@@ -886,8 +920,9 @@ class PartHoleDrudge(GenMBDrudge):
         """
         return self.eval_phys_vev(tensor)
 
-    def parse_tce(self, tce_out: str,
-                  cc_bases: typing.Mapping[int, IndexedBase]):
+    def parse_tce(
+        self, tce_out: str, cc_bases: typing.Mapping[int, IndexedBase]
+    ):
         """Parse TCE output into a tensor.
 
         The CC amplitude bases should be given as a dictionary mapping from the
@@ -896,18 +931,18 @@ class PartHoleDrudge(GenMBDrudge):
 
         def range_cb(label):
             """The range call-back."""
-            return self.part_range if label[0] == 'p' else self.hole_range
+            return self.part_range if label[0] == "p" else self.hole_range
 
         def base_cb(name, indices):
             """Get the indexed base for a name in TCE output."""
-            if name == 'f':
+            if name == "f":
                 return self.fock
-            elif name == 'v':
+            elif name == "v":
                 return self.two_body
-            elif name == 't':
+            elif name == "t":
                 return cc_bases[len(indices) // 2]
             else:
-                raise ValueError('Invalid base', name, 'in TCE output.')
+                raise ValueError("Invalid base", name, "in TCE output.")
 
         terms, free_vars = parse_tce_out(tce_out, range_cb, base_cb)
 
@@ -916,12 +951,10 @@ class PartHoleDrudge(GenMBDrudge):
         substs = {}
         for range_, symbs in free_vars.items():
             for i, j in zip(
-                    sorted(symbs, key=lambda x: int(x.name[1:])),
-                    self.dumms.value[range_]
+                sorted(symbs, key=lambda x: int(x.name[1:])),
+                self.dumms.value[range_],
             ):
                 substs[i] = j
-                continue
-            continue
 
         return self.create_tensor([i.subst(substs) for i in terms])
 
@@ -935,10 +968,7 @@ class SpinOneHalf(EnumSymbs):
 
     """
 
-    _symbs_ = [
-        ('UP', r'\uparrow'),
-        ('DOWN', r'\downarrow')
-    ]
+    _symbs_ = [("UP", r"\uparrow"), ("DOWN", r"\downarrow")]
 
 
 UP = SpinOneHalf.UP
@@ -954,8 +984,7 @@ class SpinOneHalfGenDrudge(GenMBDrudge):
     """
 
     def __init__(self, *args, **kwargs):
-        """Initialize the drudge object.
-        """
+        """Initialize the drudge object."""
 
         super().__init__(*args, exch=FERMI, spin=[UP, DOWN], **kwargs)
 
@@ -972,22 +1001,28 @@ class SpinOneHalfPartHoleDrudge(PartHoleDrudge):
     """
 
     def __init__(
-            self, *args,
-            part_orb=(
-                    Range('V', 0, Symbol('nv')),
-                    PartHoleDrudge.DEFAULT_PART_DUMMS + symbols('beta gamma')
-            ),
-            hole_orb=(
-                    Range('O', 0, Symbol('no')),
-                    PartHoleDrudge.DEFAULT_HOLE_DUMMS + symbols('u v')
-            ), spin=(UP, DOWN),
-            **kwargs
+        self,
+        *args,
+        part_orb=(
+            Range("V", 0, Symbol("nv")),
+            PartHoleDrudge.DEFAULT_PART_DUMMS + symbols("beta gamma"),
+        ),
+        hole_orb=(
+            Range("O", 0, Symbol("no")),
+            PartHoleDrudge.DEFAULT_HOLE_DUMMS + symbols("u v"),
+        ),
+        spin=(UP, DOWN),
+        **kwargs,
     ):
         """Initialize the particle-hole drudge."""
 
         super().__init__(
-            *args, spin=spin, dbbar=False,
-            part_orb=part_orb, hole_orb=hole_orb, **kwargs
+            *args,
+            spin=spin,
+            dbbar=False,
+            part_orb=part_orb,
+            hole_orb=hole_orb,
+            **kwargs,
         )
 
 
@@ -1017,30 +1052,30 @@ class RestrictedPartHoleDrudge(SpinOneHalfPartHoleDrudge):
     """
 
     def __init__(
-            self, *args,
-            spin_range=Range(r'\uparrow\downarrow', 0, 2),
-            spin_dumms=tuple(Symbol('sigma{}'.format(i)) for i in range(50)),
-            **kwargs
+        self,
+        *args,
+        spin_range=Range(r"\uparrow\downarrow", 0, 2),
+        spin_dumms=tuple(Symbol("sigma{}".format(i)) for i in range(50)),
+        **kwargs,
     ):
         """Initialize the restricted particle-hole drudge."""
 
-        super().__init__(
-            *args, spin=(spin_range, spin_dumms), **kwargs
-        )
-        self.add_resolver({
-            UP: spin_range,
-            DOWN: spin_range
-        })
+        super().__init__(*args, spin=(spin_range, spin_dumms), **kwargs)
+        self.add_resolver({UP: spin_range, DOWN: spin_range})
 
         self.spin_range = spin_range
         self.spin_dumms = self.dumms.value[spin_range]
 
         sigma = self.dumms.value[spin_range][0]
-        p = Symbol('p')
-        q = Symbol('q')
-        self.e_ = TensorDef(Vec('E'), (p, q), self.sum(
-            (sigma, spin_range), self.cr[p, sigma] * self.an[q, sigma]
-        ))
+        p = Symbol("p")
+        q = Symbol("q")
+        self.e_ = TensorDef(
+            Vec("E"),
+            (p, q),
+            self.sum(
+                (sigma, spin_range), self.cr[p, sigma] * self.an[q, sigma]
+            ),
+        )
         self.set_name(e_=self.e_)
 
 
@@ -1107,27 +1142,35 @@ class BogoliubovDrudge(GenMBDrudge):
 
     """
 
-    DEFAULT_P_DUMMS = tuple(
-        Symbol('l{}'.format(i)) for i in range(1, 100)
-    )
-    DEFAULT_QP_DUMMS = tuple(
-        Symbol('k{}'.format(i)) for i in range(1, 100)
-    )
+    DEFAULT_P_DUMMS = tuple(Symbol("l{}".format(i)) for i in range(1, 100))
+    DEFAULT_QP_DUMMS = tuple(Symbol("k{}".format(i)) for i in range(1, 100))
 
     def __init__(
-            self, ctx, p_range=Range('L'), p_dumms=DEFAULT_P_DUMMS,
-            qp_range=Range('Q', 0, Symbol('N')), qp_dumms=DEFAULT_QP_DUMMS,
-            u_base=IndexedBase('u'), v_base=IndexedBase('v'),
-            one_body=IndexedBase('epsilon'), two_body=IndexedBase('vbar'),
-            dbbar=True, qp_op_label=r'\beta', ham_me_format='H^{{{}{}}}',
-            ham_me_name_format='H{}{}',
-            **kwargs
+        self,
+        ctx,
+        p_range=Range("L"),
+        p_dumms=DEFAULT_P_DUMMS,
+        qp_range=Range("Q", 0, Symbol("N")),
+        qp_dumms=DEFAULT_QP_DUMMS,
+        u_base=IndexedBase("u"),
+        v_base=IndexedBase("v"),
+        one_body=IndexedBase("epsilon"),
+        two_body=IndexedBase("vbar"),
+        dbbar=True,
+        qp_op_label=r"\beta",
+        ham_me_format="H^{{{}{}}}",
+        ham_me_name_format="H{}{}",
+        **kwargs,
     ):
         """Initialize the drudge object."""
 
         super().__init__(
-            ctx, orb=((p_range, p_dumms),),
-            one_body=one_body, two_body=two_body, dbbar=dbbar, **kwargs
+            ctx,
+            orb=((p_range, p_dumms),),
+            one_body=one_body,
+            two_body=two_body,
+            dbbar=dbbar,
+            **kwargs,
         )
         self.set_dumms(qp_range, qp_dumms)
         self.add_resolver_for_dumms()
@@ -1143,12 +1186,14 @@ class BogoliubovDrudge(GenMBDrudge):
         self.qp_cr = qp_cr
         self.qp_an = qp_an
 
-        qp_op_str = str(qp_op).replace('\\', "")
-        self.set_name(**{
-            qp_op_str + '_': qp_an,
-            qp_op_str + '_dag': qp_cr,
-            qp_op_str + 'dag_': qp_cr
-        })
+        qp_op_str = str(qp_op).replace("\\", "")
+        self.set_name(
+            **{
+                qp_op_str + "_": qp_an,
+                qp_op_str + "_dag": qp_cr,
+                qp_op_str + "dag_": qp_cr,
+            }
+        )
 
         self.u_base = u_base
         self.v_base = v_base
@@ -1158,12 +1203,20 @@ class BogoliubovDrudge(GenMBDrudge):
         l = p_dumms[0]
         k = qp_dumms[0]
         self.f_in_qp = [
-            self.define(cr[l], self.einst(
-                conjugate(u_base[l, k]) * qp_cr[k] + v_base[l, k] * qp_an[k]
-            )),
-            self.define(an[l], self.einst(
-                u_base[l, k] * qp_an[k] + conjugate(v_base[l, k]) * qp_cr[k]
-            ))
+            self.define(
+                cr[l],
+                self.einst(
+                    conjugate(u_base[l, k]) * qp_cr[k]
+                    + v_base[l, k] * qp_an[k]
+                ),
+            ),
+            self.define(
+                an[l],
+                self.einst(
+                    u_base[l, k] * qp_an[k]
+                    + conjugate(v_base[l, k]) * qp_cr[k]
+                ),
+            ),
         ]
 
         orig_ham = self.ham
@@ -1174,12 +1227,10 @@ class BogoliubovDrudge(GenMBDrudge):
         self.ham = rewritten
         self.ham_mes = ham_mes
 
-        self.set_tensor_method(
-            'eval_bogoliubov_vev', self.eval_bogoliubov_vev
-        )
+        self.set_tensor_method("eval_bogoliubov_vev", self.eval_bogoliubov_vev)
 
     def write_in_qp(
-            self, tensor: Tensor, format_: str, name_format=None, set_symms=True
+        self, tensor: Tensor, format_: str, name_format=None, set_symms=True
     ):
         """Write the given expression in terms of quasi-particle operators.
 
@@ -1234,7 +1285,7 @@ class BogoliubovDrudge(GenMBDrudge):
             for i in term.vecs:
                 if len(i.indices) != 2:
                     raise ValueError(
-                        'Invalid operator to rewrite, one index expected', i
+                        "Invalid operator to rewrite, one index expected", i
                     )
                 char, index = i.indices
                 if char == CR:
@@ -1246,7 +1297,6 @@ class BogoliubovDrudge(GenMBDrudge):
                     assert False
 
                 indices.append(index)
-                continue
 
             norm = factorial(cr_order) * factorial(an_order)
             order = (cr_order, an_order)
@@ -1271,7 +1321,6 @@ class BogoliubovDrudge(GenMBDrudge):
                     new_sums.append(i)
                 else:
                     wrapped_sums.append(i)
-                continue
 
             def_term = Term(
                 sums=tuple(wrapped_sums), amp=orig_amp * norm, vecs=()
@@ -1283,13 +1332,15 @@ class BogoliubovDrudge(GenMBDrudge):
                 entry[1].append(def_term)
             else:
                 transf[order] = (new_amp, [def_term])
-                rewritten_terms.append(Term(
-                    sums=tuple(new_sums), amp=new_amp / norm, vecs=term.vecs
-                ))
+                rewritten_terms.append(
+                    Term(
+                        sums=tuple(new_sums),
+                        amp=new_amp / norm,
+                        vecs=term.vecs,
+                    )
+                )
                 if set_symms and (cr_order > 1 or an_order > 1):
                     self.set_dbbar_base(base, cr_order, an_order)
-
-            continue
 
         defs = [
             self.define(lhs, self.create_tensor(rhs_terms))

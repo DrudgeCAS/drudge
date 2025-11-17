@@ -17,8 +17,7 @@ from .term import ATerms
 
 
 class _Definable:
-    """Mixin for definable objects in drudge scripts.
-    """
+    """Mixin for definable objects in drudge scripts."""
 
     __slots__ = []
 
@@ -45,10 +44,7 @@ class DrsSymbol(_Definable, Symbol):
     dictionaries.
     """
 
-    __slots__ = [
-        '_drudge',
-        '_orig'
-    ]
+    __slots__ = ["_drudge", "_orig"]
 
     def __new__(cls, drudge, name):
         """Create a symbol object."""
@@ -94,19 +90,19 @@ class DrsSymbol(_Definable, Symbol):
         which makes the symbols unable to be used as subscripts for indexed
         objects.
         """
-        raise TypeError('Drudge script symbol cannot be iterated over.')
+        raise TypeError("Drudge script symbol cannot be iterated over.")
 
     def __call__(self, *args, **kwargs):
         """Make a call to a tensor method."""
         name = self.name
 
         if len(args) == 0:
-            raise NameError('Undefined function', name)
+            raise NameError("Undefined function", name)
         else:
             target = args[0]
             rest = args[1:]
 
-            err = NameError('Invalid method', name, 'for', str(type(target)))
+            err = NameError("Invalid method", name, "for", str(type(target)))
             if not hasattr(target, name):
                 # It is possible that a tensor method is tried to be called on
                 # an input.
@@ -137,7 +133,7 @@ class DrsSymbol(_Definable, Symbol):
 
     def __getnewargs_ex__(self):
         """Get the arguments and keyword arguments for __new__.
-        
+
         This method takes precedence over __getnewargs__ in Python 3.6+
         and is used by SymPy v1.9+. We need to override it to ensure
         proper pickling/unpickling of DrsSymbol objects.
@@ -152,6 +148,7 @@ class DrsSymbol(_Definable, Symbol):
     def __setstate__(self, state):
         """Set the state according to pickled content."""
         from .drudge import current_drudge
+
         if current_drudge is None:
             raise ValueError(_PICKLE_ENV_ERR)
         self.__init__(current_drudge, self.name)
@@ -160,7 +157,7 @@ class DrsSymbol(_Definable, Symbol):
     def __getattr__(self, item):
         """Report undefined attributes."""
         raise AttributeError(
-            'Invalid operation `{}` on Drudge symbol `{}`'.format(
+            "Invalid operation `{}` on Drudge symbol `{}`".format(
                 item, self.name
             )
         )
@@ -169,10 +166,7 @@ class DrsSymbol(_Definable, Symbol):
 class DrsIndexed(_Definable, Indexed):
     """Indexed objects for drudge scripts."""
 
-    __slots__ = [
-        '_drudge',
-        '_orig'
-    ]
+    __slots__ = ["_drudge", "_orig"]
 
     def __new__(cls, drudge, base, *args, **kwargs):
         """Create an indexed object for drudge scripts."""
@@ -217,7 +211,7 @@ class DrsIndexed(_Definable, Indexed):
 
     def __getnewargs_ex__(self):
         """Get the arguments and keyword arguments for __new__.
-        
+
         This method takes precedence over __getnewargs__ in Python 3.6+
         and is used by SymPy v1.9+. We need to override it to ensure
         proper pickling/unpickling of DrsIndexed objects.
@@ -228,19 +222,20 @@ class DrsIndexed(_Definable, Indexed):
         """Get the state for pickling."""
         # Return a non-None state to ensure __setstate__ is called
         return {}
-        
+
     def __setstate__(self, state):
         """Set the state according to pickled content."""
         from .drudge import current_drudge
+
         if current_drudge is None:
             raise ValueError(_PICKLE_ENV_ERR)
         self.__init__(current_drudge, self.base, *self.indices)
 
 
-_PICKLE_ENV_ERR = '''
+_PICKLE_ENV_ERR = """
 Failed to unpickle,
 not inside a pickling environment from pickle_env or inside a drudge script.
-'''
+"""
 
 
 #
@@ -259,7 +254,7 @@ class _NumFixer(ast.NodeTransformer):
         """Update the number nodes."""
         val = node.value
         if isinstance(val, int):
-            constr = ast.Name(id='Integer', ctx=ast.Load())
+            constr = ast.Name(id="Integer", ctx=ast.Load())
             ast.copy_location(constr, node)
             fixed = ast.Call(func=constr, args=[node], keywords=[])
             ast.copy_location(fixed, node)
@@ -268,7 +263,7 @@ class _NumFixer(ast.NodeTransformer):
             return node
 
 
-_DEF_METH_NAME = 'def_as'
+_DEF_METH_NAME = "def_as"
 
 
 class _DefFixer(ast.NodeTransformer):
@@ -285,13 +280,11 @@ class _DefFixer(ast.NodeTransformer):
             return node
 
         lhs = node.target
-        if hasattr(lhs, 'ctx'):
+        if hasattr(lhs, "ctx"):
             lhs.ctx = ast.Load()
         rhs = node.value
 
-        deleg = ast.Attribute(
-            value=lhs, attr=_DEF_METH_NAME, ctx=ast.Load()
-        )
+        deleg = ast.Attribute(value=lhs, attr=_DEF_METH_NAME, ctx=ast.Load())
         ast.copy_location(deleg, lhs)
         call = ast.Call(func=deleg, args=[rhs], keywords=[])
         ast.copy_location(call, node)
@@ -313,7 +306,7 @@ def compile_drs(src, filename):
         root = i.visit(root)
         continue
 
-    return compile(root, filename, mode='exec')
+    return compile(root, filename, mode="exec")
 
 
 #
@@ -323,8 +316,7 @@ def compile_drs(src, filename):
 
 
 class DrsEnv(dict):
-    """The global scope for drudge script execution.
-    """
+    """The global scope for drudge script execution."""
 
     def __init__(self, dr, specials=None):
         """Initialize the scope."""
@@ -340,6 +332,7 @@ class DrsEnv(dict):
 
         path.append((dr, frozenset()))
         import drudge
+
         path.append((drudge, frozenset()))
 
         try:
@@ -350,11 +343,11 @@ class DrsEnv(dict):
             path.append((gristmill, frozenset()))
 
         import sympy
-        path.append((sympy, frozenset([
-            'N'
-        ])))
+
+        path.append((sympy, frozenset(["N"])))
 
         import builtins
+
         path.append((builtins, frozenset()))
 
     def __missing__(self, key: str):
@@ -364,7 +357,7 @@ class DrsEnv(dict):
         surprise.
         """
 
-        if key.startswith('__') and key.endswith('__'):
+        if key.startswith("__") and key.endswith("__"):
             raise KeyError(key)
 
         for entry, excl in self._path:
@@ -383,48 +376,52 @@ class DrsEnv(dict):
 #
 
 
-_DRUDGE_MAGIC = 'DRUDGE'
+_DRUDGE_MAGIC = "DRUDGE"
 
-_CONF_HELP = '''
+_CONF_HELP = """
 The config file for the drudge to be used, it needs to be a Python script
 finally setting a global variable named ``{}`` for the drudge.
-'''.format(_DRUDGE_MAGIC)
+""".format(_DRUDGE_MAGIC)
 
 
 def main(argv=None):
-    """The main driver for using drudge as a program.
-    """
+    """The main driver for using drudge as a program."""
 
-    parser = argparse.ArgumentParser(prog='drudge')
-    parser.add_argument('conf', type=str, metavar='CONF', help=_CONF_HELP)
+    parser = argparse.ArgumentParser(prog="drudge")
+    parser.add_argument("conf", type=str, metavar="CONF", help=_CONF_HELP)
     parser.add_argument(
-        'script', type=str, metavar='SCRIPT',
-        help='The drudge script to execute'
+        "script",
+        type=str,
+        metavar="SCRIPT",
+        help="The drudge script to execute",
     )
     if argv is not None:
         args = parser.parse_args(args=argv)
     else:
         args = parser.parse_args()
 
-    with open(args.conf, 'r') as conf_fp:
+    with open(args.conf, "r") as conf_fp:
         conf_src = conf_fp.read()
-        conf_code = compile(conf_src, args.conf, 'exec')
+        conf_code = compile(conf_src, args.conf, "exec")
 
-    with open(args.script, 'r') as script_fp:
+    with open(args.script, "r") as script_fp:
         script_src = script_fp.read()
 
     conf_env = {}
     exec(conf_code, conf_env)
     if _DRUDGE_MAGIC not in conf_env:
-        raise ValueError('Drudge is not set to {} by {}'.format(
-            _DRUDGE_MAGIC, args.conf
-        ))
+        raise ValueError(
+            "Drudge is not set to {} by {}".format(_DRUDGE_MAGIC, args.conf)
+        )
     drudge = conf_env[_DRUDGE_MAGIC]
     from drudge import Drudge
+
     if not isinstance(drudge, Drudge):
-        raise ValueError('Invalid drudge is set to {} by {}'.format(
-            _DRUDGE_MAGIC, args.conf
-        ))
+        raise ValueError(
+            "Invalid drudge is set to {} by {}".format(
+                _DRUDGE_MAGIC, args.conf
+            )
+        )
 
     env = drudge.exec_drs(script_src, args.script)
     return 0 if argv is None else env

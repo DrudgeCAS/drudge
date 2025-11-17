@@ -8,8 +8,15 @@ from collections.abc import Sequence
 
 from pyspark import RDD, SparkContext
 from sympy import (
-    sympify, Symbol, Expr, SympifyError, count_ops, default_sort_key,
-    AtomicExpr, Integer, S
+    sympify,
+    Symbol,
+    Expr,
+    SympifyError,
+    count_ops,
+    default_sort_key,
+    AtomicExpr,
+    Integer,
+    S,
 )
 from sympy.core.sympify import CantSympify
 
@@ -19,32 +26,33 @@ from sympy.core.sympify import CantSympify
 # ---------------
 #
 
-def ensure_sympify(obj, role='', expected_type=None):
+
+def ensure_sympify(obj, role="", expected_type=None):
     """Sympify the given object with checking and error reporting.
 
     This is a shallow wrapper over SymPy sympify function to have error
     reporting in consistent style and an optional type checking.
     """
 
-    header = 'Invalid {}: '.format(role)
+    header = "Invalid {}: ".format(role)
 
     try:
         sympified = sympify(obj)
     except SympifyError as exc:
-        raise TypeError(header, obj, 'failed to be simplified', exc.args)
+        raise TypeError(header, obj, "failed to be simplified", exc.args)
 
     if expected_type is None or isinstance(sympified, expected_type):
         return sympified
     else:
-        raise TypeError(header, sympified, 'expecting', expected_type)
+        raise TypeError(header, sympified, "expecting", expected_type)
 
 
-def ensure_symb(obj, role=''):
+def ensure_symb(obj, role=""):
     """Sympify the given object into a symbol."""
     return ensure_sympify(obj, role, Symbol)
 
 
-def ensure_expr(obj, role=''):
+def ensure_expr(obj, role=""):
     """Sympify the given object into an expression."""
     return ensure_sympify(obj, role, Expr)
 
@@ -65,7 +73,7 @@ def is_higher(obj, priority):
     lower.
     """
 
-    return getattr(obj, '_op_priority', priority - 1) > priority
+    return getattr(obj, "_op_priority", priority - 1) > priority
 
 
 class NonsympifiableFunc(CantSympify):
@@ -77,7 +85,7 @@ class NonsympifiableFunc(CantSympify):
 
     """
 
-    __slots__ = ['_func']
+    __slots__ = ["_func"]
 
     def __init__(self, func):
         """Initialize the object."""
@@ -95,7 +103,7 @@ class _EnumSymbsMeta(type):
     values from the enumerated symbols set in the class body.
     """
 
-    SYMBS_INPUT = '_symbs_'
+    SYMBS_INPUT = "_symbs_"
 
     def __new__(mcs, name, bases, attrs):
         """Create the new concrete symbols class."""
@@ -103,7 +111,7 @@ class _EnumSymbsMeta(type):
         cls = super().__new__(mcs, name, bases, attrs)
 
         if not hasattr(cls, mcs.SYMBS_INPUT):
-            raise AttributeError('Cannot find attribute ' + mcs.SYMBS_INPUT)
+            raise AttributeError("Cannot find attribute " + mcs.SYMBS_INPUT)
 
         symbs = getattr(cls, mcs.SYMBS_INPUT)
         if symbs is None:
@@ -111,25 +119,27 @@ class _EnumSymbsMeta(type):
             return cls
 
         if not isinstance(symbs, Sequence):
-            raise ValueError('Invalid symbols', symbs, 'expecting a sequence')
+            raise ValueError("Invalid symbols", symbs, "expecting a sequence")
         for i in symbs:
-            invalid = not isinstance(i, Sequence) or len(i) != 2 or any(
-                not isinstance(j, str) for j in i
+            invalid = (
+                not isinstance(i, Sequence)
+                or len(i) != 2
+                or any(not isinstance(j, str) for j in i)
             )
             if invalid:
                 raise ValueError(
-                    'Invalid symbol', i,
-                    'expecting pairs of identifier and LaTeX form.'
+                    "Invalid symbol",
+                    i,
+                    "expecting pairs of identifier and LaTeX form.",
                 )
         if len(symbs) < 2:
             raise ValueError(
-                'Invalid symbols ', symbs, 'expecting multiple of them'
+                "Invalid symbols ", symbs, "expecting multiple of them"
             )
 
         for i, v in enumerate(symbs):
             obj = cls(i)
             setattr(cls, v[0], obj)
-            continue
 
         return cls
 
@@ -148,20 +158,19 @@ class EnumSymbs(AtomicExpr, metaclass=_EnumSymbsMeta):
 
     _symbs_ = None
 
-    _VAL_FIELD = '_val_index'
+    _VAL_FIELD = "_val_index"
     __slots__ = [_VAL_FIELD]
 
     def __init__(self, val_index):
-        """Initialize the concrete symbol object.
-        """
+        """Initialize the concrete symbol object."""
         if self._symbs_ is None:
-            raise ValueError('Base EnumSymbs class cannot be instantiated')
+            raise ValueError("Base EnumSymbs class cannot be instantiated")
         setattr(self, self._VAL_FIELD, val_index)
 
     @property
     def args(self):
         """The argument for SymPy."""
-        return Integer(getattr(self, self._VAL_FIELD)),
+        return (Integer(getattr(self, self._VAL_FIELD)),)
 
     def __str__(self):
         """Get the string representation of the symbol."""
@@ -169,7 +178,7 @@ class EnumSymbs(AtomicExpr, metaclass=_EnumSymbsMeta):
 
     def __repr__(self):
         """Get the machine readable string representation."""
-        return '.'.join([type(self).__name__, str(self)])
+        return ".".join([type(self).__name__, str(self)])
 
     _op_priority = 20.0
 
@@ -205,8 +214,9 @@ class EnumSymbs(AtomicExpr, metaclass=_EnumSymbsMeta):
             return self.args[0] - other.args[0]
         elif len(other.atoms(Symbol)) == 0:
             raise ValueError(
-                'Invalid operation for ', (self, other),
-                'concrete symbols can only be subtracted for the same type'
+                "Invalid operation for ",
+                (self, other),
+                "concrete symbols can only be subtracted for the same type",
             )
         else:
             # We are having a symbolic value at the other expression.  We just
@@ -234,7 +244,8 @@ class EnumSymbs(AtomicExpr, metaclass=_EnumSymbsMeta):
         return (
             self.class_key(),
             (1, tuple(i.sort_key() for i in self.args)),
-            S.One.sort_key(), S.One
+            S.One.sort_key(),
+            S.One,
         )
 
     def _latex(self, _):
@@ -257,11 +268,7 @@ class BCastVar:
 
     """
 
-    __slots__ = [
-        '_ctx',
-        '_var',
-        '_bcast'
-    ]
+    __slots__ = ["_ctx", "_var", "_bcast"]
 
     def __init__(self, ctx: SparkContext, var):
         """Initialize the broadcast variable."""
@@ -307,8 +314,7 @@ def nest_bind(rdd: RDD, func, full_balance=True):
 
 
 def _nest_bind_full_balance(rdd: RDD, func):
-    """Nest the flat map of the given function with full load balancing.
-    """
+    """Nest the flat map of the given function with full load balancing."""
 
     ctx = rdd.context
 
@@ -331,14 +337,12 @@ def _nest_bind_full_balance(rdd: RDD, func):
         res.append(new_entries)
         curr = step_res.filter(lambda x: x[0]).map(lambda x: x[1])
         curr.cache()
-        continue
 
     return ctx.union(res)
 
 
 def _nest_bind_no_balance(rdd: RDD, func):
-    """Nest the flat map of the given function without load balancing.
-    """
+    """Nest the flat map of the given function without load balancing."""
 
     def wrapped(obj):
         """Wrapped function for nest bind."""
@@ -352,9 +356,7 @@ def _nest_bind_no_balance(rdd: RDD, func):
                     res.append(i)
                 else:
                     new_curr.extend(step_res)
-                continue
             curr = new_curr
-            continue
 
         return res
 
@@ -366,18 +368,15 @@ def _nest_bind_no_balance(rdd: RDD, func):
 # --------------
 #
 
+
 def ensure_pair(obj, role):
     """Ensures that the given object is a pair."""
     if not (isinstance(obj, Sequence) and len(obj) == 2):
-        raise TypeError('Invalid {}: '.format(role), obj, 'expecting pair')
+        raise TypeError("Invalid {}: ".format(role), obj, "expecting pair")
     return obj
 
 
-_ALNUM = frozenset(
-    j
-    for i in [string.ascii_letters, string.digits]
-    for j in i
-)
+_ALNUM = frozenset(j for i in [string.ascii_letters, string.digits] for j in i)
 
 
 def extract_alnum(inp: str):
@@ -386,13 +385,14 @@ def extract_alnum(inp: str):
     This function is mostly for generating valid identifiers for objects with a
     mathematically formatted name.
     """
-    return ''.join(i for i in inp if i in _ALNUM)
+    return "".join(i for i in inp if i in _ALNUM)
 
 
 #
 # Small user utilities
 # --------------------
 #
+
 
 def sum_(obj):
     """Sum the values in the given iterable.
@@ -487,16 +487,16 @@ class Stopwatch:
 
         if tensor is not None:
             tensor.cache()
-            n_terms = '{} terms, '.format(tensor.n_terms)
+            n_terms = "{} terms, ".format(tensor.n_terms)
         else:
-            n_terms = ''
+            n_terms = ""
 
         now = time.perf_counter()
         elapse = now - self._prev
         self._prev = now
 
         self._print(
-            '{} done, {}wall time: {:.2f} s'.format(label, n_terms, elapse)
+            "{} done, {}wall time: {:.2f} s".format(label, n_terms, elapse)
         )
 
     def tock_total(self):
@@ -507,9 +507,7 @@ class Stopwatch:
         """
 
         now = time.perf_counter()
-        self._print(
-            'Total wall time: {:.2f} s'.format(now - self._begin)
-        )
+        self._print("Total wall time: {:.2f} s".format(now - self._begin))
 
 
 class CallByIndex:
@@ -521,7 +519,7 @@ class CallByIndex:
 
     """
 
-    __slots__ = ['_callable']
+    __slots__ = ["_callable"]
 
     def __init__(self, callable):
         """Initialize the object."""
@@ -564,10 +562,7 @@ class SymbResolver:
 
     """
 
-    __slots__ = [
-        '_known',
-        '_strict'
-    ]
+    __slots__ = ["_known", "_strict"]
 
     def __init__(self, range_symbs, strict):
         """Initialize the resolver."""
@@ -577,8 +572,6 @@ class SymbResolver:
         for range_, dumms in range_symbs:
             for i in dumms:
                 known[i] = range_
-                continue
-            continue
 
         self._strict = strict
 
@@ -593,6 +586,5 @@ class SymbResolver:
             for i in expr.atoms(Symbol):
                 if i in known:
                     return known[i]
-                continue
 
         return None

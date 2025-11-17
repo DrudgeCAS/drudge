@@ -10,9 +10,19 @@ from .canon import IDENT, NEG, CONJ
 from .drudge import Tensor, TensorDef, Drudge
 from .wick import WickDrudge
 from .fock import (
-    CR, AN, FERMI, BOSE, FockDrudge, GenMBDrudge, PartHoleDrudge,
-    UP, DOWN, SpinOneHalfGenDrudge, SpinOneHalfPartHoleDrudge,
-    RestrictedPartHoleDrudge, BogoliubovDrudge
+    CR,
+    AN,
+    FERMI,
+    BOSE,
+    FockDrudge,
+    GenMBDrudge,
+    PartHoleDrudge,
+    UP,
+    DOWN,
+    SpinOneHalfGenDrudge,
+    SpinOneHalfPartHoleDrudge,
+    RestrictedPartHoleDrudge,
+    BogoliubovDrudge,
 )
 from .genquad import GenQuadDrudge, GenQuadLatticeDrudge
 from .su2 import SU2LatticeDrudge
@@ -22,59 +32,65 @@ from .nuclear import NuclearBogoliubovDrudge
 from .report import Report, ScalarLatexPrinter
 from .utils import sum_, prod_, Stopwatch, CallByIndex, InvariantIndexable
 
-__version__ = '0.11.1'
+__version__ = "0.11.1"
 
 __all__ = [
     # Canonpy.
-    'Perm',
-    'Group',
-
+    "Perm",
+    "Group",
+    #
     # Vec.
-    'Vec',
-
+    "Vec",
+    #
     # Term.
-    'Range',
-    'Term',
-
+    "Range",
+    "Term",
+    #
     # Canon.
-    'IDENT',
-    'NEG',
-    'CONJ',
-
+    "IDENT",
+    "NEG",
+    "CONJ",
+    #
     # Drudge.
-    'Tensor',
-    'TensorDef',
-    'Drudge',
-
+    "Tensor",
+    "TensorDef",
+    "Drudge",
+    #
     # Different problem-specific drudges.
     #
     # Base Wick algebra.
-    'WickDrudge',
-
+    "WickDrudge",
+    #
     # Many-body theories.
-    'CR', 'AN', 'FERMI', 'BOSE',
-    'FockDrudge',
-    'GenMBDrudge', 'PartHoleDrudge',
-    'UP', 'DOWN',
-    'SpinOneHalfGenDrudge', 'SpinOneHalfPartHoleDrudge',
-    'RestrictedPartHoleDrudge',
-    'BogoliubovDrudge',
-
+    "CR",
+    "AN",
+    "FERMI",
+    "BOSE",
+    "FockDrudge",
+    "GenMBDrudge",
+    "PartHoleDrudge",
+    "UP",
+    "DOWN",
+    "SpinOneHalfGenDrudge",
+    "SpinOneHalfPartHoleDrudge",
+    "RestrictedPartHoleDrudge",
+    "BogoliubovDrudge",
+    #
     # Other algebraic systems.
-    'GenQuadDrudge',
-    'GenQuadLatticeDrudge',
-    'SU2LatticeDrudge',
-    'CliffordDrudge',
-    'ReducedBCSDrudge',
-    'NuclearBogoliubovDrudge',
-    'inner_by_delta',
-
+    "GenQuadDrudge",
+    "GenQuadLatticeDrudge",
+    "SU2LatticeDrudge",
+    "CliffordDrudge",
+    "ReducedBCSDrudge",
+    "NuclearBogoliubovDrudge",
+    "inner_by_delta",
+    #
     # Small user utilities.
-    'sum_',
-    'prod_',
-    'Stopwatch',
-    'CallByIndex',
-    'InvariantIndexable',
-    'Report',
-    'ScalarLatexPrinter'
+    "sum_",
+    "prod_",
+    "Stopwatch",
+    "CallByIndex",
+    "InvariantIndexable",
+    "Report",
+    "ScalarLatexPrinter",
 ]
