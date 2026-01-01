@@ -22,7 +22,7 @@ jobs:
           - { os: macos-latest,  name: macOS }
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Download submodules
         shell: bash
