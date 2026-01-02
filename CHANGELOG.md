@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.11.2](https://github.com/DrudgeCAS/drudge/compare/drudge-v0.11.1...drudge-v0.11.2) (2026-01-02)
+
+
+### Dependencies
+
+* **deps:** bump ipython from 9.6.0 to 9.8.0 ([#54](https://github.com/DrudgeCAS/drudge/issues/54)) ([e7f31fd](https://github.com/DrudgeCAS/drudge/commit/e7f31fd80464ba9220ca5e51ac2eca3da5a760b9))
+
 ## [0.11.1](https://github.com/DrudgeCAS/drudge/compare/drudge-v0.11.0...drudge-v0.11.1) (2025-11-10)
 
 
