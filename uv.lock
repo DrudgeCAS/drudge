@@ -255,7 +255,7 @@ requires-dist = [
     { name = "ipykernel", specifier = ">=7.1.0" },
     { name = "ipython", specifier = ">=9.0" },
     { name = "jinja2" },
-    { name = "pyspark", specifier = ">=3.5,<3.6" },
+    { name = "pyspark", specifier = ">=3.5,<4.2" },
     { name = "pytest", marker = "extra == 'dev'" },
     { name = "sphinx", marker = "extra == 'docs'" },
     { name = "sympy", specifier = ">=1.14" },
@@ -664,12 +664,12 @@ wheels = [
 
 [[package]]
 name = "pyspark"
-version = "3.5.6"
+version = "4.1.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "py4j" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/2e/62/36e50d38e5fe158e97cddec983b44f9417b1e205b02320e3c463b5f802fa/pyspark-3.5.6.tar.gz", hash = "sha256:f8b1c4360e41ab398c64904fae08740503bcb6bd389457d659fa6d9f2952cc48", size = 317359167, upload-time = "2025-05-27T08:24:20.82Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/88/0d/f280cbd070e424008f370c068c6a371e0cbb902e33d9709b01e97d479b01/pyspark-4.1.0.tar.gz", hash = "sha256:09c714ada88dfac3e1213c066617c6f473c1e22fbe279855028f77e12434147d", size = 455337789, upload-time = "2025-12-16T12:30:47.141Z" }
 
 [[package]]
 name = "pytest"
