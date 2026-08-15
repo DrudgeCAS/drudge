@@ -55,6 +55,6 @@ drudge = "drudge.drs:main"
 [dependency-groups]
 dev = [
   "pytest",
-  "ruff>=0.14.5",
+  "ruff>=0.16.2",
   "pre-commit",
 ]
