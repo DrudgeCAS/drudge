@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.11.3](https://github.com/DrudgeCAS/drudge/compare/drudge-v0.11.2...drudge-v0.11.3) (2026-08-15)
+
+
+### Dependencies
+
+* Bump libcanon to 0.1.3 ([dc92c54](https://github.com/DrudgeCAS/drudge/commit/dc92c5444ce59aa9fc803876e87c266fdc43ef7b))
+
 ## [0.11.2](https://github.com/DrudgeCAS/drudge/compare/drudge-v0.11.1...drudge-v0.11.2) (2026-08-15)
 
 
