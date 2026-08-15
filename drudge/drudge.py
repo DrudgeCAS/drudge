@@ -963,9 +963,9 @@ class Tensor:
                 # Special optimization when we just have one term.
                 other_term = other_terms[0]
                 prod = self._terms.map(
-                    lambda term: (other_term, term)
-                    if right
-                    else (term, other_term)
+                    lambda term: (
+                        (other_term, term) if right else (term, other_term)
+                    )
                 )
 
             free_vars = set.union(*[i.free_vars for i in other_terms])
