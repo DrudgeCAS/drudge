@@ -22,18 +22,23 @@ jobs:
       # `pyproject.toml`.  release-please does not know about it, so refresh
       # it on the release branch it just wrote.
       - name: Check out the release branch
-        if: ${{ steps.release.outputs.prs_created == 'true' || steps.release.outputs.pr != '' }}
+        if: ${{ steps.release.outputs.pr != '' }}
         uses: actions/checkout@v6
         with:
-          ref: release-please--branches--master--components--drudge
-          fetch-depth: 0
+          ref: ${{ fromJson(steps.release.outputs.pr).headBranchName }}
+
+      - name: Set up Python
+        if: ${{ steps.release.outputs.pr != '' }}
+        uses: actions/setup-python@v6
+        with:
+          python-version-file: pyproject.toml
 
       - name: Install uv
-        if: ${{ steps.release.outputs.prs_created == 'true' || steps.release.outputs.pr != '' }}
+        if: ${{ steps.release.outputs.pr != '' }}
         uses: astral-sh/setup-uv@v7
 
       - name: Refresh uv.lock and push if it changed
-        if: ${{ steps.release.outputs.prs_created == 'true' || steps.release.outputs.pr != '' }}
+        if: ${{ steps.release.outputs.pr != '' }}
         run: |
           uv lock
           if git diff --quiet uv.lock; then
