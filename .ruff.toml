@@ -4,6 +4,12 @@ exclude = ["deps"]
 extend-include = ["*.drs"]
 
 [lint]
+# State the rule set explicitly.  Leaving it implicit means inheriting
+# whatever ruff's defaults happen to be, and those change between releases:
+# ruff 0.16 widened them, which turned a green tree into 244 errors without
+# a line of this project's code changing.  These four are ruff's classic
+# defaults, which is what this project has been linted against.
+select = ["E4", "E7", "E9", "F"]
 ignore = ["E741"]
 
 [format]
