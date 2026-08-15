@@ -1,10 +1,10 @@
 [build-system]
-requires = ["scikit-build-core>=0.10"]
+requires = ["scikit-build-core>=0.10,<2"]
 build-backend = "scikit_build_core.build"
 
 [tool.scikit-build]
-cmake.minimum-version = "3.15"  # Minimum version of CMake
-cmake.verbose = true  # Verbose build for debugging
+cmake.version = ">=3.15"  # Minimum version of CMake
+build.verbose = true  # Verbose build for debugging
 # Don't create a separate subdirectory - install alongside Python source files
 wheel.packages = ["drudge"]
 sdist.include = ["drudge/templates/*", "drudge/*.h", "deps/libcanon/include/**/*.h"]
