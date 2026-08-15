@@ -1,9 +1,8 @@
 """Tests for user utility functions."""
 
 import functools
-import time
 import types
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 from sympy import IndexedBase, symbols, Symbol
 
@@ -35,15 +34,14 @@ def test_sum_prod_utility():
     assert prod_([]) == 1
 
 
-def precise_sleep(seconds):
-    """Sleep function for testing the stopwatch utility precisely."""
-    start_time = time.perf_counter()
-    while time.perf_counter() - start_time < seconds:
-        pass
-
-
 def test_stopwatch():
-    """Test the stopwatch utility."""
+    """Test the stopwatch utility.
+
+    The clock is driven by a stub rather than by real time.  What is under
+    test is the arithmetic the stopwatch does on the readings, so feeding it
+    known readings makes the expected output exact and independent of how
+    busy the machine is.
+    """
 
     tensor = types.SimpleNamespace(n_terms=2, cache=MagicMock())
     res_holder = [None]
@@ -51,23 +49,27 @@ def test_stopwatch():
     def print_cb(stamp):
         res_holder[0] = stamp
 
-    stamper = Stopwatch(print_cb)
-    precise_sleep(0.5)
-    stamper.tock("Nothing")
-    res = res_holder[0]
-    assert res.startswith("Nothing done")
-    assert float(res.split()[-2]) - 0.5 < 0.001
+    # One reading per call the stopwatch makes: construction, the two tocks,
+    # and the total.
+    readings = iter([0.0, 0.5, 1.25, 2.0])
 
-    precise_sleep(0.5)
-    stamper.tock("Tensor", tensor)
-    res = res_holder[0]
-    assert res.startswith("Tensor done, 2 terms")
-    assert float(res.split()[-2]) - 0.5 < 0.001
-    tensor.cache.assert_called_once_with()
+    with patch(
+        "drudge.utils.time.perf_counter", side_effect=lambda: next(readings)
+    ):
+        stamper = Stopwatch(print_cb)
 
-    stamper.tock_total()
-    res = res_holder[0]
-    assert float(res.split()[-2]) - 1.0 < 0.001
+        stamper.tock("Nothing")
+        res = res_holder[0]
+        assert res == "Nothing done, wall time: 0.50 s"
+
+        stamper.tock("Tensor", tensor)
+        res = res_holder[0]
+        assert res == "Tensor done, 2 terms, wall time: 0.75 s"
+        tensor.cache.assert_called_once_with()
+
+        stamper.tock_total()
+        res = res_holder[0]
+        assert res == "Total wall time: 2.00 s"
 
 
 def test_invariant_indexable():
