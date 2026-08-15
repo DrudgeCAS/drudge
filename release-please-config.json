@@ -33,6 +33,14 @@
           "section": "Miscellaneous Chores"
         },
         {
+          "type": "refactor",
+          "section": "Code Refactoring"
+        },
+        {
+          "type": "test",
+          "section": "Tests"
+        },
+        {
           "type": "docs",
           "section": "Documentation",
           "hidden": true
@@ -40,16 +48,6 @@
         {
           "type": "style",
           "section": "Styles",
-          "hidden": true
-        },
-        {
-          "type": "refactor",
-          "section": "Code Refactoring",
-          "hidden": true
-        },
-        {
-          "type": "test",
-          "section": "Tests",
           "hidden": true
         },
         {
