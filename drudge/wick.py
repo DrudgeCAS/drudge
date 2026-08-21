@@ -101,10 +101,10 @@ class WickDrudge(Drudge, abc.ABC):
         """
         comparator = kwargs.pop("comparator", self.comparator)
         contractor = kwargs.pop("contractor", self.contractor)
+        phase = kwargs.pop("phase", self.phase)
         if len(kwargs) != 0:
             raise ValueError("Invalid arguments to Wick normal order", kwargs)
 
-        phase = self.phase
         symms = self.symms
         resolvers = self.resolvers
 
