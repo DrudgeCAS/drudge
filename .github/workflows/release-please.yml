@@ -23,7 +23,7 @@ jobs:
       # it on the release branch it just wrote.
       - name: Check out the release branch
         if: ${{ steps.release.outputs.pr != '' }}
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: ${{ fromJson(steps.release.outputs.pr).headBranchName }}
 
