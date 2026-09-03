@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.11.4](https://github.com/DrudgeCAS/drudge/compare/drudge-v0.11.3...drudge-v0.11.4) (2026-09-03)
+
+
+### Dependencies
+
+* **deps:** bump deps/libcanon from `7ed33f5` to `9268d6f` ([7a534aa](https://github.com/DrudgeCAS/drudge/commit/7a534aae269ee165c437ca78caade6f654bdb2fd))
+* **deps:** bump requests from 2.33.0 to 2.34.2 ([2f3c06d](https://github.com/DrudgeCAS/drudge/commit/2f3c06d1fd49f6c30e76ed895f7b0eb0f52a1bfa))
+* **deps:** bump tornado from 6.5.7 to 6.5.8 ([c46148f](https://github.com/DrudgeCAS/drudge/commit/c46148fd0c441263fe1c0415be87c692321f7242))
+
 ## [0.11.3](https://github.com/DrudgeCAS/drudge/compare/drudge-v0.11.2...drudge-v0.11.3) (2026-08-15)
 
 
