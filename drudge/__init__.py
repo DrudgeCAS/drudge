@@ -23,6 +23,12 @@ from .fock import (
     SpinOneHalfPartHoleDrudge,
     RestrictedPartHoleDrudge,
     BogoliubovDrudge,
+    MixDrudge,
+    GenEPhDrudge,
+    RestrictedGenEPhDrudge,
+    PartHoleEPhDrudge,
+    SpinOneHalfPartHoleEPhDrudge,
+    RestrictedPartHoleEPhDrudge,
 )
 from .genquad import GenQuadDrudge, GenQuadLatticeDrudge
 from .su2 import SU2LatticeDrudge
@@ -75,6 +81,12 @@ __all__ = [
     "SpinOneHalfPartHoleDrudge",
     "RestrictedPartHoleDrudge",
     "BogoliubovDrudge",
+    "MixDrudge",
+    "GenEPhDrudge",
+    "RestrictedGenEPhDrudge",
+    "PartHoleEPhDrudge",
+    "SpinOneHalfPartHoleEPhDrudge",
+    "RestrictedPartHoleEPhDrudge",
     #
     # Other algebraic systems.
     "GenQuadDrudge",
