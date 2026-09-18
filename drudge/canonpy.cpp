@@ -22,6 +22,7 @@ using libcanon::Point_vec;
 using libcanon::Simple_perm;
 using libcanon::build_sims_sys;
 using libcanon::canon_eldag;
+using libcanon::chain;
 
 //
 // General utilities
@@ -880,14 +881,141 @@ static PyObject* group_new(PyTypeObject* type, PyObject* args, PyObject* kwargs)
 // ----------------
 //
 
+/** Docstring for the group elements method.
+ */
+
+static const char* group_elements_doc
+    = R"__doc__(Get all elements of the group.
+
+The elements are returned in a list of Perm objects, with the identity
+permutation included.  Each element is the product of one coset representative,
+or the identity, from each level of the Sims transversal system, with the
+accompanied actions composed along.  No particular order of the elements is
+guaranteed.
+)__doc__";
+
+/** Gets all elements of the group.
+ */
+
+static PyObject* group_elements(Group_object* self, PyObject* Py_UNUSED(args))
+{
+    const Transv* transv = self->transv.get();
+    if (!transv) {
+        PyErr_SetString(PyExc_ValueError, "Group has no transversal system.");
+        return NULL;
+    }
+
+    // Size of the permutation domain.
+    size_t size = transv->size();
+
+    // Coset representatives of each level, with the null pointer for the
+    // identity.
+    std::vector<std::vector<const Simple_perm*>> levels{};
+    for (const Transv* curr = transv; curr; curr = curr->next()) {
+        std::vector<const Simple_perm*> reps{ nullptr };
+        for (const auto& i : *curr) {
+            reps.push_back(&i);
+        }
+        levels.push_back(std::move(reps));
+    }
+    size_t n_levels = levels.size();
+
+    PyObject* res = PyList_New(0);
+    if (!res) {
+        return NULL;
+    }
+
+    // The elements are enumerated by an odometer over the levels.
+    std::vector<size_t> idxes(n_levels, 0);
+    std::vector<const Simple_perm*> chosen(n_levels, nullptr);
+
+    while (true) {
+        for (size_t i = 0; i < n_levels; ++i) {
+            chosen[i] = levels[i][idxes[i]];
+        }
+        Simple_perm prod
+            = chain<Simple_perm>(size, chosen.begin(), chosen.end());
+
+        Perm_object* perm_obj = PyObject_New(Perm_object, &perm_type);
+        if (!perm_obj) {
+            Py_DECREF(res);
+            return NULL;
+        }
+        new (&perm_obj->perm) Simple_perm(std::move(prod));
+
+        int stat = PyList_Append(res, (PyObject*)perm_obj);
+        Py_DECREF(perm_obj);
+        if (stat != 0) {
+            Py_DECREF(res);
+            return NULL;
+        }
+
+        // Advance the odometer.
+        size_t level = 0;
+        for (; level < n_levels; ++level) {
+            if (++idxes[level] < levels[level].size()) {
+                break;
+            }
+            idxes[level] = 0;
+        }
+        if (level == n_levels) {
+            break;
+        }
+    }
+
+    return res;
+}
+
+/** Gets the order of the group.
+ *
+ * The order is the product of the number of cosets in each level of the
+ * transversal system.
+ */
+
+static Py_ssize_t group_length(Group_object* self)
+{
+    Py_ssize_t res = 1;
+    for (const Transv* curr = self->transv.get(); curr; curr = curr->next()) {
+        Py_ssize_t n_cosets = 1; // The identity.
+        for (const auto& i : *curr) {
+            (void)i;
+            ++n_cosets;
+        }
+        res *= n_cosets;
+    }
+    return res;
+}
+
 /** Methods for permutation group objects.
  */
 
 static PyMethodDef group_methods[] = {
     { "__getnewargs__", (PyCFunction)group_getnewargs, METH_NOARGS,
         group_getnewargs_doc },
+    { "elements", (PyCFunction)group_elements, METH_NOARGS,
+        group_elements_doc },
     { NULL, NULL } /* sentinel */
 };
+
+/** Sequence operations for Group objects.
+ *
+ * Here we only support the size, which gives the order of the group.
+ */
+
+// clang-format off
+static PySequenceMethods group_as_sequence = {
+    (lenfunc)group_length,                      /* sq_length */
+    0,                                          /* sq_concat */
+    0,                                          /* sq_repeat */
+    0,                                          /* sq_item */
+    0,                                          /* sq_slice */
+    0,                                          /* sq_ass_item */
+    0,                                          /* sq_ass_slice */
+    0,                                          /* sq_contains */
+    0,                                          /* sq_inplace_concat */
+    0,                                          /* sq_inplace_repeat */
+};
+// clang-format on
 
 /** Sims transversal type doc string.
  */
@@ -900,7 +1028,9 @@ action pair can be given for the generators of the group.  Then the
 Schreier-Sims algorithm in libcanon will be invoked to generate the Sims
 transversal system, which will be stored internally for the group.  This class
 is mostly designed to be used to give input for the Eldag canonicalization
-facility.  So it is basically an opaque object after its creation.
+facility.  So it is basically an opaque object after its creation, with only
+its elements enumerable by the ``elements`` method and its order given by
+``len``.
 
 Internally, the transversal system can also be constructed directly from the
 transversal system, without going through the Schreier-Sims algorithm.
@@ -925,7 +1055,7 @@ static PyTypeObject group_type = {
     0,                                          /* tp_reserved */
     0,                                          /* tp_repr */
     0,                                          /* tp_as_number */
-    0,                                          /* tp_as_sequence */
+    &group_as_sequence,                         /* tp_as_sequence */
     0,                                          /* tp_as_mapping */
     0,                                          /* tp_hash */
     0,                                          /* tp_call */

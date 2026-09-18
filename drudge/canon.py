@@ -95,6 +95,53 @@ _FACTOR = 2
 #
 
 
+def lookup_symm(symms, base, valence=None):
+    """Look up the symmetry for an indexed base.
+
+    The symmetries are looked up in the given mapping in the same way as in
+    the canonicalization of terms, so that other users of the symmetries can
+    never diverge from it.  The keys are tried in the order of the base with the
+    valence, the label of the base with the valence, the base, and finally the
+    label of the base.  The first key present in the mapping gives the result,
+    even when its value is None, which explicitly disables the symmetry.
+
+    Parameters
+    ----------
+
+    symms
+        The mapping from bases, or base/valence pairs, to the symmetry groups.
+
+    base
+        The indexed base, or any other object to be used as the key.
+
+    valence
+        The number of indices.  When it is None, only the valence-free keys
+        are tried.
+
+    Returns
+    -------
+
+    The symmetry group, or None when no symmetry is present.
+
+    """
+
+    prim_keys = [base]
+    if hasattr(base, "label"):
+        prim_keys.append(base.label)
+
+    if valence is None:
+        keys = prim_keys
+    else:
+        keys = itertools.chain(((i, valence) for i in prim_keys), prim_keys)
+
+    for i in keys:
+        if i in symms:
+            return symms[i]
+        continue
+
+    return None
+
+
 def canon_factors(sums, factors, symms):
     """Canonicalize the factors.
 
@@ -245,18 +292,7 @@ def _build_eldag(sums, factors, symms):
         if n_indices < 2:
             factor_symms = None
         else:
-            prim_keys = [base]
-            if hasattr(base, "label"):
-                prim_keys.append(base.label)
-            keys = itertools.chain(
-                ((i, n_indices) for i in prim_keys), prim_keys
-            )
-            for i in keys:
-                if i in symms:
-                    factor_symms = symms[i]
-                    break
-            else:
-                factor_symms = None
+            factor_symms = lookup_symm(symms, base, n_indices)
 
         index_nodes = _proc_indices(indices, dumms, eldag)
         idx = eldag.add_node(index_nodes, factor_symms, (_FACTOR, colour))

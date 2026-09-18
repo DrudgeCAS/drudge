@@ -822,7 +822,10 @@ class PartHoleDrudge(GenMBDrudge):
         self,
         *args,
         op_label="c",
-        part_orb=(Range("V", 0, Symbol("nv")), DEFAULT_PART_DUMMS),
+        part_orb=(
+            Range("V", Symbol("no"), Symbol("no") + Symbol("nv")),
+            DEFAULT_PART_DUMMS,
+        ),
         hole_orb=(Range("O", 0, Symbol("no")), DEFAULT_HOLE_DUMMS),
         all_orb_dumms=DEFAULT_ORB_DUMMS,
         spin=(),
@@ -1004,7 +1007,7 @@ class SpinOneHalfPartHoleDrudge(PartHoleDrudge):
         self,
         *args,
         part_orb=(
-            Range("V", 0, Symbol("nv")),
+            Range("V", Symbol("no"), Symbol("no") + Symbol("nv")),
             PartHoleDrudge.DEFAULT_PART_DUMMS + symbols("beta gamma"),
         ),
         hole_orb=(

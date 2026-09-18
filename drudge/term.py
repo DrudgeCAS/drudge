@@ -36,7 +36,7 @@ from sympy import (
 )
 from sympy.core.sympify import CantSympify
 
-from .canon import canon_factors
+from .canon import canon_factors, NEG, CONJ
 from .utils import (
     ensure_symb,
     ensure_expr,
@@ -894,6 +894,136 @@ class Term(ATerms):
             dummbegs[range_i] = new_beg
 
         return tuple(new_sums), substs, dummbegs
+
+    #
+    # Symmetry of external indices
+    #
+
+    def permute_exts(self, perm, exts):
+        """Permute the external indices of the term.
+
+        The permutation is applied to the given external indices
+        simultaneously, in the same convention as the symmetry generators
+        given to :py:meth:`Drudge.set_symm`, with the index at position ``i``
+        replaced by the index at position ``perm[i]``.  The accompanied action
+        of the permutation is applied to the amplitude, with the negation
+        action flipping its sign.  Conjugation is not supported.
+
+        Parameters
+        ----------
+
+        perm
+            The permutation, with the accompanied action.
+
+        exts
+            The external indices, as an iterable of symbols, in the order the
+            permutation acts on.  None of them can be a dummy summed in the
+            term.
+
+        """
+
+        exts = tuple(exts)
+        n_exts = len(exts)
+        if len(perm) != n_exts:
+            raise ValueError(
+                "Invalid permutation", perm, "for external indices", exts
+            )
+
+        acc = perm.acc
+        if acc & CONJ:
+            raise ValueError(
+                "Conjugation is not supported for external indices", perm
+            )
+        sign = -1 if acc & NEG else 1
+
+        dumms = self.dumms
+        for i in exts:
+            if i in dumms:
+                raise ValueError(
+                    "External index", i, "is summed in the term", self
+                )
+            continue
+
+        substs = {
+            exts[i]: exts[perm[i]] for i in range(n_exts) if perm[i] != i
+        }
+        res = self.subst(substs)
+        return res.scale(sign) if sign != 1 else res
+
+    def orbit_repr(self, group, exts, symms, dumms, excl=None):
+        """Get the canonical representative of the orbit of the term.
+
+        The term is acted on by all elements of the given permutation group on
+        the given external indices, as in :py:meth:`permute_exts`.  Each image
+        is canonicalized with the given tensor symmetries and has its dummies
+        reset, so that images equal up to dummy renaming have the same form.
+        The image with the smallest sort key, with its coefficient stripped, is
+        chosen as the representative of the orbit.
+
+        Parameters
+        ----------
+
+        group
+            An iterable of permutations forming a group, normally the elements
+            of a :py:class:`Group`.
+
+        exts
+            The external indices the group acts on.
+
+        symms
+            The symmetries of the tensors, as in :py:meth:`canon`.
+
+        dumms
+            The dummies for the ranges, as in :py:meth:`reset_dumms`.
+
+        excl
+            Symbols to be excluded from being used as dummies.  The external
+            indices and the free variables of the term are always excluded.
+
+        Returns
+        -------
+
+        A pair of the representative term, with unit coefficient, and the
+        coefficient such that the image of the term under the chosen group
+        element is the product of the coefficient and the representative.  The
+        coefficient carries the sign from the group action as well as any sign
+        from the canonicalization.  When the orbit contains both the
+        representative and its negation, the projection of the term onto the
+        symmetric subspace vanishes and the coefficient is zero.
+
+        """
+
+        exts = tuple(exts)
+        excl = set() if excl is None else set(excl)
+        excl.update(exts)
+        excl.update(self.free_vars)
+
+        repr_ = None
+        repr_key = None
+        coeffs = None  # Coefficients of images with the representative form.
+
+        for perm in group:
+            image = self.permute_exts(perm, exts).canon(symms=symms)
+            image, _ = image.reset_dumms(dumms, excl=excl)
+            factors, coeff = image.amp_factors
+            form = Term(image.sums, Mul(*factors), image.vecs)
+
+            key = form.sort_key
+            if repr_ is None or key < repr_key:
+                repr_ = form
+                repr_key = key
+                coeffs = {coeff}
+            elif key == repr_key:
+                coeffs.add(coeff)
+            continue
+
+        if repr_ is None:
+            raise ValueError("Empty group is given")
+
+        # With a signed stabilizer, the symmetrization annihilates the term.
+        coeff = coeffs.pop() if len(coeffs) == 1 else 0
+
+        return repr_, coeff
 
     #
     # Amplitude simplification

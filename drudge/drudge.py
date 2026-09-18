@@ -4,6 +4,7 @@ import collections
 import contextlib
 import functools
 import inspect
+import itertools
 import operator
 import pickle
 import sys
@@ -23,10 +24,12 @@ from sympy import (
     Add,
     Mul,
     Matrix,
+    Integer,
     sympify,
 )
 from sympy.concrete.summations import eval_sum_symbolic
 
+from .canon import lookup_symm, NEG, CONJ
 from .canonpy import Perm, Group
 from .drs import compile_drs, DrsEnv, DrsSymbol
 from .report import Report, ScalarLatexPrinter
@@ -1731,6 +1734,58 @@ class Tensor:
         return functools.partial(meth, self)
 
 
+def _validate_symm_action(perms, exts):
+    """Validate the action of permutations on external indices.
+
+    The permutations should carry no conjugation, and each of them must map
+    every external index to another one of the same range.
+    """
+
+    n_exts = len(exts)
+    for perm in perms:
+        if len(perm) != n_exts:
+            raise ValueError(
+                "Invalid permutation", perm, "for external indices", exts
+            )
+        if perm.acc & CONJ:
+            raise ValueError(
+                "Conjugation is not supported for external indices", perm
+            )
+        for i in range(n_exts):
+            if exts[i][1] != exts[perm[i]][1]:
+                raise ValueError(
+                    "Invalid permutation",
+                    perm,
+                    "mixing external indices of different ranges",
+                    exts[i],
+                    exts[perm[i]],
+                )
+            continue
+        continue
+
+    return
+
+
+def _check_symm_closure(orig, seed, assembly):
+    """Check that the symmetry reduction reconstructs the original definition.
+
+    The seed is substituted into the assembly step and the difference from the
+    original definition is simplified.  ValueError is raised when the
+    difference is not zero, which means that the original definition does not
+    have the declared symmetry.  Note that the equality is established under
+    the simplifier of drudge rather than by a full symbolic proof.
+    """
+
+    reconstructed = seed.act(assembly)
+    diff = (reconstructed - orig).simplify()
+    if not diff == 0:
+        raise ValueError(
+            "Definition does not have the declared symmetry", orig.lhs
+        )
+
+    return
+
+
 class TensorDef(Tensor):
     """Definition of a tensor.
 
@@ -1935,6 +1990,188 @@ class TensorDef(Tensor):
         )
 
         return TensorDef(self._base, exts, tensor)
+
+    #
+    # Symmetry of the left-hand side.
+    #
+
+    def symm_reduce(self, interm_base=None, check=True):
+        r"""Reduce the definition by the symmetry of its left-hand side.
+
+        The symmetry of the base of the definition, as set by
+        :py:meth:`Drudge.set_symm`, is factored out of the right-hand side.  The
+        result is a seed definition, containing only one representative term
+        for each orbit of the terms under the symmetry group, and an assembly
+        definition, which recovers the original left-hand side from the seed by
+        summing over its signed permutations.  For a symmetry group :math:`G`,
+
+        .. math::
+
+            s = \frac{1}{|G|} \sum_{T} \epsilon_T T_{\mathrm{repr}}
+            \qquad
+            r = \sum_{g \in G} \chi(g)\, g s
+
+        where the first sum goes over all terms of the right-hand side.  Since
+        the seed has fewer terms than the original definition, its evaluation
+        can be optimized better, while the assembly step consists of only
+        additions.
+
+        Parameters
+        ----------
+
+        interm_base
+            The base for the seed.  By default, the name of the original base
+            with ``_s`` appended is used, with a numeric suffix added when it
+            conflicts with an existing name.  An explicitly given name
+            conflicting with the base of the definition or any tensor on its
+            right-hand side is rejected.
+
+        check
+            If the reconstruction of the original definition from the seed is
+            to be checked.  This is a simplification of the full right-hand
+            side, which can be costly for large problems, but it is the only
+            protection against a wrongly declared symmetry, which would
+            silently project the definition onto a different expression.
+
+        Returns
+        -------
+
+        The seed definition and the assembly definition.
+
+        """
+
+        dr = self.drudge
+        exts = self._exts
+        elements = self._get_symm_elements()
+        ext_symbs = tuple(i for i, _ in exts)
+        order = len(elements)
+        self._check_dumm_clash()
+
+        symms = dr.symms
+        dumms = dr.dumms
+        excl = set(self.free_vars)
+
+        reprs = self.expand().terms.map(
+            lambda term: term.orbit_repr(
+                elements, ext_symbs, symms.value, dumms.value, excl=excl
+            )
+        )
+        reduced = (
+            reprs.reduceByKey(operator.add)
+            .filter(lambda x: x[1] != 0)
+            .map(lambda x: x[0].scale(x[1] / order))
+        )
+
+        seed_base = self._form_seed_base(interm_base)
+        seed = TensorDef(seed_base, exts, Tensor(dr, reduced, expanded=True))
+        assembly = self.symm_assembly(seed.base)
+
+        if check:
+            _check_symm_closure(self, seed, assembly)
+
+        return seed, assembly
+
+    def symm_assembly(self, interm_base):
+        """Form the assembly of the definition from its symmetry seed.
+
+        The result is a definition of the same left-hand side as the current
+        definition, given as the sum of the signed permutations of the seed
+        tensor by the elements of the symmetry group of the base, as described
+        in :py:meth:`symm_reduce`.  The external indices are kept exactly.
+        """
+
+        exts = self._exts
+        n_exts = len(exts)
+        elements = self._get_symm_elements()
+        ext_symbs = tuple(i for i, _ in exts)
+
+        base = (
+            interm_base
+            if isinstance(interm_base, IndexedBase)
+            else IndexedBase(str(interm_base))
+        )
+
+        terms = []
+        for perm in elements:
+            sign = -1 if perm.acc & NEG else 1
+            indices = tuple(ext_symbs[perm[i]] for i in range(n_exts))
+            terms.append(Term((), Integer(sign) * base[indices], ()))
+            continue
+
+        return TensorDef(self._base, exts, self.drudge.create_tensor(terms))
+
+    def _get_symm_elements(self):
+        """Get the elements of the symmetry group of the left-hand side.
+
+        The action of the group is validated on the external indices.
+        """
+
+        exts = self._exts
+        n_exts = len(exts)
+        group = self.drudge.get_symm(self._base, n_exts)
+        if group is None:
+            raise ValueError(
+                "No symmetry is set for base",
+                self._base,
+                "with valence",
+                n_exts,
+            )
+
+        elements = group.elements()
+        _validate_symm_action(elements, exts)
+        return elements
+
+    def _check_dumm_clash(self):
+        """Check that no tensor in the definition is named as a dummy.
+
+        A tensor whose base has the same label as a dummy symbol of the drudge
+        cannot be told apart from the dummy in symbol substitutions, so the
+        renaming of dummies would silently rename the tensor.
+        """
+
+        dumms = set(
+            itertools.chain.from_iterable(self.drudge.dumms.value.values())
+        )
+        label_sets = self.terms.map(
+            lambda term: {i.base.label for i in term.amp.atoms(Indexed)}
+        ).collect()
+        labels = set().union(*label_sets)
+        clash = labels & dumms
+        if len(clash) > 0:
+            raise ValueError(
+                "Tensors named as dummies",
+                sorted(clash, key=sympy_key),
+                "rename the tensors or the dummies of their ranges",
+            )
+
+        return
+
+    def _form_seed_base(self, interm_base):
+        """Form the base for the symmetry seed of the definition."""
+
+        base_name = str(self._base)
+        used = {base_name}
+        used.update(str(i) for i in self.free_vars)
+
+        if interm_base is not None:
+            name = str(interm_base)
+            if name in used:
+                raise ValueError(
+                    "Invalid base for the symmetry seed",
+                    name,
+                    "conflicting with tensors in the definition",
+                )
+            return interm_base
+
+        names = self.drudge.names
+        name = base_name + "_s"
+        for i in itertools.count(1):
+            if name not in used and not hasattr(names, name):
+                break
+            name = "{}_s{}".format(base_name, i)
+            continue
+
+        return name
 
     def __eq__(self, other):
         """Compare two tensor definitions for equality.
@@ -2427,12 +2664,44 @@ class Drudge:
         if set_base_name:
             self.set_name(**{str(base): base})
 
+        if any(
+            str(base) == str(i)
+            for i in itertools.chain.from_iterable(self._dumms.ro.values())
+        ):
+            warnings.warn(
+                "Base {} has the same name as a dummy, which can be silently "
+                "renamed together with the dummies".format(base),
+                stacklevel=2,
+            )
+
         return group
 
     @property
     def symms(self):
         """The broadcast form of the symmetries."""
         return self._symms.bcast
+
+    def get_symm(self, base, valence=None):
+        """Get the symmetry set for a given base.
+
+        The symmetry is looked up in the same way as in the canonicalization
+        of terms, with the keys of the base with the valence, the label of the
+        base with the valence, the base, and the label of the base tried in
+        turn.  None is returned when no symmetry is set.
+
+        Parameters
+        ----------
+
+        base
+            The base whose symmetry is to be queried.
+
+        valence : int
+            The number of indices.  When it is not given, only the symmetries
+            set without valence are considered.
+
+        """
+
+        return lookup_symm(self._symms.ro, base, valence)
 
     def add_resolver(self, resolver):
         """Append a resolver to the list of resolvers.
@@ -2870,6 +3139,15 @@ class Drudge:
             base, exts = self._parse_def_lhs(args[:-1])
 
         return TensorDef(base, exts, tensor)
+
+    def symm_reduce(self, tdef: TensorDef, interm_base=None, check=True):
+        """Reduce a tensor definition by the symmetry of its left-hand side.
+
+        This is a shallow wrapper over :py:meth:`TensorDef.symm_reduce`, for
+        convenience inside drudge scripts.
+        """
+
+        return tdef.symm_reduce(interm_base=interm_base, check=check)
 
     def _parse_def_lhs(self, args):
         """Parse the user-given LHS of tensor definitions.
